@@ -1,80 +1,37 @@
 import os
-import subprocess
 import sys
 from django.core.wsgi import get_wsgi_application
 
-def ensure_database_initialized():
-    """Ensure database tables exist, running migrations if needed"""
-    try:
-        # Check if we can query a basic table (like django_migrations)
-        # This is safer than just checking if the file exists
-        import sqlite3
-        db_path = '/tmp/db.sqlite3'
+print("=== WSGI.PY LOADED ===", file=sys.stdout)
 
-        # If database file doesn't exist, we definitely need to migrate
-        if not os.path.exists(db_path):
-            print(f"Database file does not exist at {db_path}", file=sys.stdout)
-            run_migrations()
-            return
+# Simple approach: always try to run migrations
+# In Vercel serverless, each invocation gets a fresh container
+# so we need to ensure tables exist on each startup
+try:
+    print("=== ATTEMPTING MIGRATIONS ===", file=sys.stdout)
+    # Change to the directory where manage.py is
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
+    print(f"Current directory: {os.getcwd()}", file=sys.stdout)
+    print(f"manage.py exists: {os.path.exists('manage.py')}", file=sys.stdout)
 
-        # Check if we can query the database
-        try:
-            conn = sqlite3.connect(db_path)
-            cursor = conn.cursor()
-            # Check if django_migrations table exists (created by first migration)
-            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='django_migrations';")
-            if cursor.fetchone() is None:
-                print("django_migrations table not found, running migrations", file=sys.stdout)
-                run_migrations()
-            else:
-                # Optionally, we could check if our app tables exist
-                cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='recommender_userprofile';")
-                if cursor.fetchone() is None:
-                    print("App tables not found, running migrations", file=sys.stdout)
-                    run_migrations()
-                else:
-                    print("Database already initialized", file=sys.stdout)
-            conn.close()
-        except sqlite3.Error as e:
-            print(f"Database error: {e}, running migrations", file=sys.stdout)
-            run_migrations()
+    # Import Django settings first
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'skill_recommender.settings')
 
-    except Exception as e:
-        print(f"Error in ensure_database_initialized: {e}", file=sys.stdout)
-        # Fallback: try to run migrations anyway
-        try:
-            run_migrations()
-        except Exception as e2:
-            print(f"Migration also failed: {e2}", file=sys.stdout)
+    # Now run migrations
+    from django.core.management import execute_from_command_line
+    import django
+    django.setup()
 
-def run_migrations():
-    """Run Django migrations"""
-    try:
-        print("Running Django migrations...", file=sys.stdout)
-        result = subprocess.run(
-            [sys.executable, 'manage.py', 'migrate', '--noinput'],
-            cwd=os.getcwd(),
-            capture_output=True,
-            text=True,
-            timeout=30
-        )
+    print("=== RUNNING MIGRATIONS NOW ===", file=sys.stdout)
+    execute_from_command_line(['manage.py', 'migrate', '--noinput'])
+    print("=== MIGRATIONS COMPLETED ===", file=sys.stdout)
 
-        if result.returncode == 0:
-            print("Migrations completed successfully", file=sys.stdout)
-            if result.stdout.strip():
-                print(f"Migration output: {result.stdout.strip()}", file=sys.stdout)
-        else:
-            print(f"Migration failed with return code {result.returncode}", file=sys.stderr)
-            print(f"Migration stdout: {result.stdout}", file=sys.stderr)
-            print(f"Migration stderr: {result.stderr}", file=sys.stderr)
-            # Don't raise - let the app continue in case tables partially exist
-    except subprocess.TimeoutExpired:
-        print("Migration timed out after 30 seconds", file=sys.stderr)
-    except Exception as e:
-        print(f"Unexpected error during migration: {e}", file=sys.stderr)
+except Exception as e:
+    print(f"=== MIGRATION ERROR: {e} ===", file=sys.stderr)
+    import traceback
+    print(f"=== TRACEBACK: {traceback.format_exc()} ===", file=sys.stderr)
+    # Don't re-raise - let the app continue in case tables already exist
 
-# Run database initialization
-ensure_database_initialized()
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'skill_recommender.settings')
+print("=== INITIALIZING DJANGO APPLICATION ===", file=sys.stdout)
 application = get_wsgi_application()
+print("=== DJANGO APPLICATION READY ===", file=sys.stdout)
