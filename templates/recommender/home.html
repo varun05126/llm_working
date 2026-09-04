@@ -1,0 +1,112 @@
+{% extends 'recommender/base.html' %}
+
+{% block title %}Home - Women Skill Development Recommender{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-lg-8 mx-auto">
+                <h1 class="display-4 mb-4">Empower Your Career Journey</h1>
+                <p class="lead mb-5">
+                    Get personalized skill development recommendations powered by AI, specifically designed for women's professional growth.
+                </p>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg me-sm-2">Get Started</a>
+                    <a href="{% url 'about' %}" class="btn btn-outline-light btn-lg">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3>AI-Powered Insights</h3>
+                <p>Leverage cutting-edge LLMs to analyze your profile and provide tailored skill recommendations.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-venus"></i>
+                </div>
+                <h3>Women-Focused</h3>
+                <p>Designed specifically to address the unique career development needs and challenges of women professionals.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <h3>Career Acceleration</h3>
+                <p>Identify skill gaps and create actionable learning paths to accelerate your career growth.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-8 mx-auto">
+            <h2 class="text-center mb-4">How It Works</h2>
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <div class="h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-edit"></i>
+                        </div>
+                        <h4>Build Your Profile</h4>
+                        <p>Share your background, interests, and career goals to help our AI understand your unique journey.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h4>Assess Your Skills</h4>
+                        <p>Evaluate your current skill set across technical, soft, and leadership domains.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="h-100">
+                        <div class="feature-icon">
+                            <i class="fas fa-lightbulb"></i>
+                        </div>
+                        <h4>Get Recommendations</h4>
+                        <p>Receive personalized skill gap analysis, learning paths, and career advice from our AI advisor.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if user.is_authenticated %}
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card recommendation-card">
+                <div class="card-body">
+                    <h3><i class="fas fa-chart-line me-2"></i>Your Skill Progress</h3>
+                    <p class="text-muted">Keep track of your skill development journey.</p>
+                    <a href="{% url 'profile' %}" class="btn btn-primary w-100">View Profile</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card recommendation-card">
+                <div class="card-body">
+                    <h3><i class="fas fa-rocket me-2"></i>Next Steps</h3>
+                    <p class="text-muted">Ready to get your personalized recommendations?</p>
+                    <a href="{% url 'skill_assessment' %}" class="btn btn-primary w-100">Start Skill Assessment</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
