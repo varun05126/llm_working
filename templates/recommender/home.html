@@ -1,34 +1,34 @@
 {% extends 'recommender/base.html' %}
-
+ 
 {% block title %}Home - Women Skill Development Recommender{% endblock %}
-
+ 
 {% block content %}
-<div class="hero-section">
+<div class="hero-section text-center">
     <div class="container">
-        <div class="row text-center">
+        <div class="row">
             <div class="col-lg-8 mx-auto">
-                <h1 class="display-4 mb-4">Empower Your Career Journey</h1>
+                <h1 class="display-heading display-4 mb-4">Empower your career journey</h1>
                 <p class="lead mb-5">
                     Get personalized skill development recommendations powered by AI, specifically designed for women's professional growth.
                 </p>
                 <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                    <a href="{% url 'register' %}" class="btn btn-primary btn-lg me-sm-2">Get Started</a>
-                    <a href="{% url 'about' %}" class="btn btn-outline-light btn-lg">Learn More</a>
+                    <a href="{% url 'register' %}" class="btn btn-accent-skillrec btn-lg me-sm-2">Get started</a>
+                    <a href="{% url 'about' %}" class="btn btn-outline-light btn-lg">Learn more</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
+ 
 <div class="container">
-    <div class="row mb-5">
+    <div class="row g-3 mb-5">
         <div class="col-md-4">
             <div class="stats-card text-center">
                 <div class="feature-icon">
                     <i class="fas fa-brain"></i>
                 </div>
-                <h3>AI-Powered Insights</h3>
-                <p>Leverage cutting-edge LLMs to analyze your profile and provide tailored skill recommendations.</p>
+                <h3>AI-powered insights</h3>
+                <p class="text-muted mb-0">Leverage cutting-edge LLMs to analyze your profile and provide tailored skill recommendations.</p>
             </div>
         </div>
         <div class="col-md-4">
@@ -36,8 +36,8 @@
                 <div class="feature-icon">
                     <i class="fas fa-venus"></i>
                 </div>
-                <h3>Women-Focused</h3>
-                <p>Designed specifically to address the unique career development needs and challenges of women professionals.</p>
+                <h3>Women-focused</h3>
+                <p class="text-muted mb-0">Designed specifically to address the unique career development needs and challenges of women professionals.</p>
             </div>
         </div>
         <div class="col-md-4">
@@ -45,66 +45,274 @@
                 <div class="feature-icon">
                     <i class="fas fa-rocket"></i>
                 </div>
-                <h3>Career Acceleration</h3>
-                <p>Identify skill gaps and create actionable learning paths to accelerate your career growth.</p>
+                <h3>Career acceleration</h3>
+                <p class="text-muted mb-0">Identify skill gaps and create actionable learning paths to accelerate your career growth.</p>
             </div>
         </div>
     </div>
-
+ 
     <div class="row mb-5">
-        <div class="col-md-8 mx-auto">
-            <h2 class="text-center mb-4">How It Works</h2>
-            <div class="row text-center">
+        <div class="col-lg-9 mx-auto">
+            <h2 class="display-heading text-center mb-4">How it works</h2>
+            <div class="row text-center g-4">
                 <div class="col-md-4">
                     <div class="h-100">
+                        <div class="step-number mb-2">01</div>
                         <div class="feature-icon">
                             <i class="fas fa-user-edit"></i>
                         </div>
-                        <h4>Build Your Profile</h4>
-                        <p>Share your background, interests, and career goals to help our AI understand your unique journey.</p>
+                        <h4>Build your profile</h4>
+                        <p class="text-muted">Share your background, interests, and career goals to help our AI understand your unique journey.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="h-100">
+                        <div class="step-number mb-2">02</div>
                         <div class="feature-icon">
                             <i class="fas fa-bullseye"></i>
                         </div>
-                        <h4>Assess Your Skills</h4>
-                        <p>Evaluate your current skill set across technical, soft, and leadership domains.</p>
+                        <h4>Assess your skills</h4>
+                        <p class="text-muted">Evaluate your current skill set across technical, soft, and leadership domains.</p>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="h-100">
+                        <div class="step-number mb-2">03</div>
                         <div class="feature-icon">
                             <i class="fas fa-lightbulb"></i>
                         </div>
-                        <h4>Get Recommendations</h4>
-                        <p>Receive personalized skill gap analysis, learning paths, and career advice from our AI advisor.</p>
+                        <h4>Get recommendations</h4>
+                        <p class="text-muted">Receive personalized skill gap analysis, learning paths, and career advice from our AI advisor.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
+ 
     {% if user.is_authenticated %}
-    <div class="row">
+    <div class="row g-3 mb-4">
         <div class="col-md-6">
-            <div class="card recommendation-card">
+            <div class="card card-skillrec h-100">
                 <div class="card-body">
-                    <h3><i class="fas fa-chart-line me-2"></i>Your Skill Progress</h3>
+                    <h3 class="h4"><i class="fas fa-chart-line me-2" style="color: var(--color-accent);"></i>Your skill progress</h3>
                     <p class="text-muted">Keep track of your skill development journey.</p>
-                    <a href="{% url 'profile' %}" class="btn btn-primary w-100">View Profile</a>
+                    <a href="{% url 'profile' %}" class="btn btn-primary-skillrec w-100">View profile</a>
                 </div>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card recommendation-card">
+            <div class="card card-skillrec h-100">
                 <div class="card-body">
-                    <h3><i class="fas fa-rocket me-2"></i>Next Steps</h3>
+                    <h3 class="h4"><i class="fas fa-rocket me-2" style="color: var(--color-accent);"></i>Next steps</h3>
                     <p class="text-muted">Ready to get your personalized recommendations?</p>
-                    <a href="{% url 'skill_assessment' %}" class="btn btn-primary w-100">Start Skill Assessment</a>
+                    <a href="{% url 'skill_assessment' %}" class="btn btn-primary-skillrec w-100">Start skill assessment</a>
                 </div>
             </div>
+            
+/* SkillRecommender — design tokens
+   Palette: deep pine (grounded, growth) + warm amber (opportunity, momentum)
+   on a pale sage-tinted paper background. Serif display for warmth,
+   a plain sans for data-dense screens (assessment, resources). */
+ 
+:root {
+  --color-bg: #f3f6f2;
+  --color-surface: #ffffff;
+  --color-surface-tint: #edf1ea;
+  --color-primary: #2c3e35;
+  --color-primary-dark: #1e2a22;
+  --color-accent: #d68c45;
+  --color-accent-dark: #b8712e;
+  --color-mauve: #7a5c61;
+  --color-text: #1e2a22;
+  --color-text-muted: #5c6b60;
+  --color-border: #dfe6db;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Work Sans", -apple-system, Segoe UI, sans-serif;
+  --radius-card: 6px;
+}
+ 
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  line-height: 1.55;
+}
+ 
+h1, h2, h3, h4, .display-heading {
+  font-family: var(--font-display);
+  color: var(--color-primary-dark);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+ 
+a {
+  color: var(--color-primary);
+}
+a:hover {
+  color: var(--color-accent-dark);
+}
+ 
+/* Navbar */
+.navbar-skillrec {
+  background-color: var(--color-primary-dark);
+}
+.navbar-skillrec .navbar-brand {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.35rem;
+  color: #f3f6f2;
+}
+.navbar-skillrec .nav-link {
+  color: #cfd9cc;
+  font-weight: 500;
+}
+.navbar-skillrec .nav-link:hover,
+.navbar-skillrec .nav-link.active {
+  color: var(--color-accent);
+}
+.navbar-skillrec .nav-link.logout-link {
+  color: #e8b7ab;
+}
+ 
+/* Page header used at the top of interior pages */
+.page-header {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 1.25rem;
+  margin-bottom: 2rem;
+}
+.page-header p.lead {
+  color: var(--color-text-muted);
+}
+ 
+/* Cards */
+.card-skillrec {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: none;
+}
+ 
+/* Recommendation cards carry a left rail colored by type — the color
+   itself is the label, not a badge stacked on top of another badge. */
+.rec-card {
+  border-left: 4px solid var(--color-mauve);
+}
+.rec-card.type-skill_gap { border-left-color: var(--color-accent); }
+.rec-card.type-learning_path { border-left-color: var(--color-primary); }
+.rec-card.type-career_advice { border-left-color: var(--color-mauve); }
+ 
+.badge-skillrec {
+  background-color: var(--color-surface-tint);
+  color: var(--color-primary-dark);
+  border: 1px solid var(--color-border);
+  font-weight: 500;
+  padding: 0.35em 0.7em;
+}
+ 
+.btn-primary-skillrec {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+.btn-primary-skillrec:hover {
+  background-color: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  color: #fff;
+}
+.btn-accent-skillrec {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+.btn-accent-skillrec:hover {
+  background-color: var(--color-accent-dark);
+  border-color: var(--color-accent-dark);
+  color: #fff;
+}
+ 
+.proficiency-meter {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-surface-tint);
+  overflow: hidden;
+}
+.proficiency-meter .fill {
+  height: 100%;
+  background: var(--color-accent);
+}
+ 
+.priority-flag {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--color-accent-dark);
+  min-width: 2.5rem;
+  text-align: center;
+}
+ 
+.footer-skillrec {
+  background-color: var(--color-primary-dark);
+  color: #b9c3b5;
+  margin-top: 4rem;
+}
+.footer-skillrec a {
+  color: #d9e0d6;
+}
+ 
+/* Home page */
+.hero-section {
+  background-color: var(--color-primary-dark);
+  background-image: radial-gradient(circle at 15% 20%, rgba(214, 140, 69, 0.18), transparent 45%),
+                     radial-gradient(circle at 85% 80%, rgba(122, 92, 97, 0.25), transparent 50%);
+  color: #f3f6f2;
+  padding: 5rem 0 4.5rem;
+  margin-bottom: 3.5rem;
+}
+.hero-section h1 {
+  color: #ffffff;
+}
+.hero-section .lead {
+  color: #cfd9cc;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+ 
+.feature-icon {
+  width: 3.25rem;
+  height: 3.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: var(--color-surface-tint);
+  color: var(--color-primary);
+  font-size: 1.15rem;
+  margin-bottom: 1rem;
+}
+ 
+.stats-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 2rem 1.5rem;
+  height: 100%;
+}
+ 
+.step-number {
+  font-family: var(--font-display);
+  color: var(--color-accent-dark);
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+ 
+.empty-state {
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-card);
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--color-text-muted);
+}
         </div>
     </div>
     {% endif %}
