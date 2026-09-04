@@ -2,7 +2,8 @@
   "builds": [
     {
       "src": "skill_recommender/wsgi.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": { "maxLambdaSize": "50mb" }
     }
   ],
   "routes": [
@@ -10,5 +11,8 @@
       "src": "/(.*)",
       "dest": "skill_recommender/wsgi.py"
     }
-  ]
+  ],
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "skill_recommender.settings"
+  }
 }

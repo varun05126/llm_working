@@ -77,6 +77,8 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
