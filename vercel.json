@@ -2,28 +2,13 @@
   "builds": [
     {
       "src": "skill_recommender/wsgi.py",
-      "use": "@vercel/python",
-      "config": {
-        "maxLambdaSize": "1mb",
-        "runtime": "python3.12",
-        "installCommand": "pip install -r requirements.txt",
-        "buildCommand": "python manage.py makemigrations && python manage.py migrate --noinput"
-      }
+      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
       "src": "/(.*)",
       "dest": "skill_recommender/wsgi.py"
     }
-  ],
-  "env": {
-    "DJANGO_SETTINGS_MODULE": "skill_recommender.settings",
-    "PYTHONPATH": ".",
-    "DATABASE_NAME": "/tmp/db.sqlite3"
-  }
+  ]
 }
