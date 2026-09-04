@@ -172,7 +172,7 @@ def get_recommendations(request):
                     'Content-Type': 'application/json'
                 }
                 data = {
-                    'model': 'llama3-8b-8192',  # Using a supported Groq model
+                    'model': 'gemma-7b-it',  # Trying a different supported model
                     'messages': [
                         {'role': 'system', 'content': 'You are a career development advisor specializing in women\'s skill development.'},
                         {'role': 'user', 'content': prompt}
@@ -220,7 +220,7 @@ def get_recommendations(request):
                     title='Skill Gap Analysis',
                     description='Analysis of skills to develop for career advancement',
                     generated_by_llm=True,
-                    groq_model_used='llama3-8b-8192'  # Updated to reflect the model used
+                    groq_model_used='gemma-7b-it'  # Updated to reflect the model used
                 )
 
                 # Add skills to skill gap recommendation
@@ -255,7 +255,7 @@ def get_recommendations(request):
                     title='Personalized Learning Path',
                     description='3-month learning plan to develop recommended skills',
                     generated_by_llm=True,
-                    groq_model_used='llama3-8b-8192'  # Updated to reflect the model used
+                    groq_model_used='gemma-7b-it'  # Updated to reflect the model used
                 )
 
                 # Add skills and resources to learning path recommendation
@@ -298,7 +298,7 @@ def get_recommendations(request):
                     title='Career Development Advice',
                     description='Personalized advice for women\'s career growth',
                     generated_by_llm=True,
-                    groq_model_used='llama3-8b-8192'  # Updated to reflect the model used
+                    groq_model_used='gemma-7b-it'  # Updated to reflect the model used
                 )
 
                 # For career advice, we might not link to specific skills/resources, or we could link to soft skills
