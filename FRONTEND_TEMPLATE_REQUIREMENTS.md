@@ -155,6 +155,9 @@ All templates should extend `base.html` and:
 All templates must be placed in:
 `skill_recommender/templates/recommender/`
 
+### LLM Backend Development Note
+The Groq LLM backend integration has been completed and is functioning with proper error handling and fallback mechanisms. Frontend developers should focus on implementing the required templates listed below to complete the user interface. Any future LLM enhancements or model updates will be handled separately in the backend.
+
 ### Verification
 After creating each template, verify by:
 1. Starting the development server: `python manage.py runserver`
