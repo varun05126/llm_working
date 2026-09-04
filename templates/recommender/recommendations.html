@@ -1,0 +1,79 @@
+{% extends 'recommender/base.html' %}
+
+{% block title %}
+My Recommendations - SkillHer
+{% endblock %}
+
+{% block content %}
+<section>
+    <div class="container">
+        <div class="section-title text-center mb-5">
+            <h2>Your Recommendations</h2>
+            <p class="text-muted">
+                Here are your personalized skill development recommendations
+            </p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% if recommendations %}
+            <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+                {% for recommendation in recommendations %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">{{ recommendation.title }}</h5>
+                            <p class="card-text text-muted mb-2">
+                                <small>{{ recommendation.get_recommendation_type_display }}</small>
+                            </p>
+                            <p class="card-text flex-grow-1">
+                                {{ recommendation.description }}
+                            </p>
+                            {% if recommendation.generated_by_llm %}
+                                <div class="mt-3">
+                                    <span class="badge bg-primary me-2">
+                                        AI Generated
+                                    </span>
+                                    <span class="badge bg-info text-dark">
+                                        {{ recommendation.groq_model_used|title }}
+                                    </span>
+                                </div>
+                            {% else %}
+                                <div class="mt-3">
+                                    <span class="badge bg-secondary">
+                                        Demo Data
+                                    </span>
+                                </div>
+                            {% endif %}
+                            <a href="{% url 'recommendation_detail' recommendation.id %}" class="btn btn-primary-skillher mt-3">
+                                View Details
+                                <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-chart-bar fa-3x mb-4 text-muted"></i>
+                <h4>No recommendations yet</h4>
+                <p class="text-muted">
+                    Complete your skill assessment to get personalized recommendations
+                </p>
+                <a href="{% url 'skill_assessment' %}" class="btn btn-primary-skillher mt-3">
+                    Take Skill Assessment
+                    <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

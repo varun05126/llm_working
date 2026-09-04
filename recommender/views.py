@@ -172,7 +172,7 @@ def get_recommendations(request):
                     'Content-Type': 'application/json'
                 }
                 data = {
-                    'model': 'mixtral-8x7b-32768',
+                    'model': 'llama2-70b-4096',  # Changed from decommissioned model to a supported one
                     'messages': [
                         {'role': 'system', 'content': 'You are a career development advisor specializing in women\'s skill development.'},
                         {'role': 'user', 'content': prompt}
@@ -187,10 +187,10 @@ def get_recommendations(request):
                     llm_response = result['choices'][0]['message']['content']
                 except requests.exceptions.RequestException as e:
                     messages.warning(request, f'Groq API request failed: {str(e)}. Using demo recommendations.')
-                    return _create_demo_recommendations(user_profile)
+                    return _create_demo_recommendations(request, user_profile)
                 except (KeyError, IndexError, json.JSONDecodeError) as e:
                     messages.warning(request, f'Error parsing Groq API response: {str(e)}. Using demo recommendations.')
-                    return _create_demo_recommendations(user_profile)
+                    return _create_demo_recommendations(request, user_profile)
 
                 # Parse the LLM response
                 try:
@@ -220,7 +220,7 @@ def get_recommendations(request):
                     title='Skill Gap Analysis',
                     description='Analysis of skills to develop for career advancement',
                     generated_by_llm=True,
-                    groq_model_used='mixtral-8x7b-32768'
+                    groq_model_used='llama2-70b-4096'  # Updated to reflect the model used
                 )
 
                 # Add skills to skill gap recommendation
@@ -255,7 +255,7 @@ def get_recommendations(request):
                     title='Personalized Learning Path',
                     description='3-month learning plan to develop recommended skills',
                     generated_by_llm=True,
-                    groq_model_used='mixtral-8x7b-32768'
+                    groq_model_used='llama2-70b-4096'  # Updated to reflect the model used
                 )
 
                 # Add skills and resources to learning path recommendation
@@ -298,7 +298,7 @@ def get_recommendations(request):
                     title='Career Development Advice',
                     description='Personalized advice for women\'s career growth',
                     generated_by_llm=True,
-                    groq_model_used='mixtral-8x7b-32768'
+                    groq_model_used='llama2-70b-4096'  # Updated to reflect the model used
                 )
 
                 # For career advice, we might not link to specific skills/resources, or we could link to soft skills
@@ -319,17 +319,17 @@ def get_recommendations(request):
             else:
                 messages.warning(request, 'Groq API key not configured. Using demo recommendations.')
                 # Create demo recommendations without API call
-                return _create_demo_recommendations(user_profile)
+                return _create_demo_recommendations(request, user_profile)
 
         except Exception as e:
             messages.error(request, f'Error generating recommendations: {str(e)}')
             # Fallback to demo recommendations
-            return _create_demo_recommendations(user_profile)
+            return _create_demo_recommendations(request, user_profile)
 
     # Show existing recommendations
     return redirect('view_recommendations')
 
-def _create_demo_recommendations(user_profile):
+def _create_demo_recommendations(request, user_profile):
     """Create demo recommendations when API is not available"""
     # Clear old recommendations
     Recommendation.objects.filter(user_profile=user_profile, is_active=True).update(is_active=False)
