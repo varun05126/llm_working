@@ -7,13 +7,14 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'skill_recommender.settings')
 # Setup Django
 django.setup()
 
-# Run migrations once per container
-if not os.environ.get('MIGRATIONS_RUN'):
-    try:
-        execute_from_command_line(['manage.py', 'migrate', '--noinput'])
-        os.environ['MIGRATIONS_RUN'] = 'true'
-    except Exception as e:
-        # Log the error but don't break the application
-        print(f"Error running migrations: {e}")
+# Run migrations - important for serverless where tmp directory may be wiped
+# Note: In production with external DB, ensure MIGRATIONS_RUN is managed properly
+try:
+    execute_from_command_line(['manage.py', 'migrate', '--noinput'])
+    # Note: We don't set MIGRATIONS_RUN env var as it doesn't persist between processes
+    # Migrations are idempotent and safe to run on each startup in this context
+except Exception as e:
+    # Log the error but don't break the application
+    print(f"Error running migrations: {e}")
 
 application = get_wsgi_application()

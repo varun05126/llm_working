@@ -50,12 +50,30 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'skill_recommender.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': '/tmp/db.sqlite3',
+# Database configuration - for persistent storage on Vercel, use an external database
+# For development/demo, SQLite in /tmp works but data won't persist between container invocations
+import os
+
+if os.environ.get('USE_EXTERNAL_DB'):
+    # External database configuration (e.g., PostgreSQL, MySQL)
+    DATABASES = {
+        'default': {
+            'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'),
+            'NAME': os.environ.get('DB_NAME'),
+            'USER': os.environ.get('DB_USER'),
+            'PASSWORD': os.environ.get('DB_PASSWORD'),
+            'HOST': os.environ.get('DB_HOST'),
+            'PORT': os.environ.get('DB_PORT', '5432'),
+        }
     }
-}
+else:
+    # Default to SQLite for development/demo - WARNING: data not persistent on Vercel!
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': '/tmp/db.sqlite3',
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
