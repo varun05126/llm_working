@@ -166,9 +166,7 @@ def get_recommendations(request):
                 }}
                 """
 
-                # For demo purposes, we'll create mock recommendations since we don't have actual API key
-                # In production, you would uncomment the following lines and use the actual Groq API
-                """
+                # Call the actual Groq API
                 headers = {
                     'Authorization': f'Bearer {groq_api_key}',
                     'Content-Type': 'application/json'
@@ -182,63 +180,17 @@ def get_recommendations(request):
                     'temperature': 0.7,
                     'max_tokens': 2000
                 }
-                response = requests.post('https://api.groq.com/openai/v1/chat/completions', headers=headers, json=data)
-                result = response.json()
-                llm_response = result['choices'][0]['message']['content']
-                """
-
-                # Mock response for demonstration
-                llm_response = '''
-                {
-                    "skill_gaps": [
-                        {
-                            "skill": "Data Analysis",
-                            "reasoning": "Based on your background in [current occupation], developing data analysis skills will significantly boost your career prospects in today\'s data-driven job market.",
-                            "priority": 1
-                        },
-                        {
-                            "skill": "Project Management",
-                            "reasoning": "Project management skills are essential for leadership roles and will help you coordinate complex initiatives effectively.",
-                            "priority": 2
-                        },
-                        {
-                            "skill": "Digital Marketing",
-                            "reasoning": "Understanding digital marketing will help you promote your ideas and projects more effectively, especially valuable for entrepreneurs and those in customer-facing roles.",
-                            "priority": 3
-                        }
-                    ],
-                    "learning_path": [
-                        {
-                            "skill": "Data Analysis",
-                            "resources": [
-                                {
-                                    "title": "Introduction to Data Analysis",
-                                    "type": "course",
-                                    "url": "https://www.coursera.org/learn/data-analysis"
-                                },
-                                {
-                                    "title": "Python for Data Science",
-                                    "type": "tutorial",
-                                    "url": "https://www.kaggle.com/learn/python"
-                                }
-                            ],
-                            "timeline": "month_1"
-                        },
-                        {
-                            "skill": "Project Management",
-                            "resources": [
-                                {
-                                    "title": "Project Management Principles and Practices",
-                                    "type": "course",
-                                    "url": "https://www.coursera.org/learn/project-management"
-                                }
-                            ],
-                            "timeline": "month_2"
-                        }
-                    ],
-                    "career_advice": "Focus on building a strong online presence through LinkedIn and professional networking. Seek mentorship from women leaders in your field. Don\'t hesitate to apply for positions even if you don\'t meet 100% of the requirements - women often underestimate their qualifications."
-                }
-                '''
+                try:
+                    response = requests.post('https://api.groq.com/openai/v1/chat/completions', headers=headers, json=data, timeout=30)
+                    response.raise_for_status()  # Raises an HTTPError for bad responses
+                    result = response.json()
+                    llm_response = result['choices'][0]['message']['content']
+                except requests.exceptions.RequestException as e:
+                    messages.warning(request, f'Groq API request failed: {str(e)}. Using demo recommendations.')
+                    return _create_demo_recommendations(user_profile)
+                except (KeyError, IndexError, json.JSONDecodeError) as e:
+                    messages.warning(request, f'Error parsing Groq API response: {str(e)}. Using demo recommendations.')
+                    return _create_demo_recommendations(user_profile)
 
                 # Parse the LLM response
                 try:
