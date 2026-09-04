@@ -1,0 +1,14 @@
+{
+  "builds": [
+    {
+      "src": "skill_recommender/wsgi.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "skill_recommender/wsgi.py"
+    }
+  ]
+}
