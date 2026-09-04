@@ -2,7 +2,7 @@ import os
 import sys
 from django.core.wsgi import get_wsgi_application
 
-print("=== WSGI.PY LOADED ===", file=sys.stdout)
+print("=== WSGI.PY LOADED - CUSTOM BUILD ===", file=sys.stdout)
 
 # Add the project root to Python path so we can import skill_recommender module
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
