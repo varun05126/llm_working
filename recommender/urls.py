@@ -11,5 +11,4 @@ urlpatterns = [
     path('recommendation/<int:rec_id>/', views.recommendation_detail, name='recommendation_detail'),
     path('resources/', views.resources, name='resources'),
     path('about/', views.about, name='about'),
-    path('logout/', views.logout, name='logout')
 ]
