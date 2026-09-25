@@ -492,3 +492,8 @@ def resources(request):
 def about(request):
     """About page"""
     return render(request, 'recommender/about.html')
+
+
+def logout(request):
+    """Home page view"""
+    return render(request, 'recommender/logout.html')
