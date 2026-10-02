@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
@@ -11,6 +11,7 @@ import os
 import requests
 from .models import UserProfile, Skill, UserSkill, LearningResource, Recommendation, RecommendationSkill, RecommendationResource
 from django.conf import settings
+from mongoengine import NotUniqueError
 
 def home(request):
     """Home page view"""
@@ -49,7 +50,7 @@ def profile(request):
         return redirect('profile')
 
     # Get user's skills
-    user_skills = UserSkill.objects.filter(user_profile=user_profile).select_related('skill')
+    user_skills = UserSkill.objects(user_profile=user_profile)
 
     context = {
         'user_profile': user_profile,
@@ -60,8 +61,8 @@ def profile(request):
 @login_required
 def skill_assessment(request):
     """Skill assessment view"""
-    user_profile = get_object_or_404(UserProfile, user=request.user)
-    skills = Skill.objects.filter(is_active=True)
+    user_profile = UserProfile.objects.get(user=request.user)
+    skills = Skill.objects(is_active=True)
 
     if request.method == 'POST':
         # Process skill assessment form
@@ -70,26 +71,34 @@ def skill_assessment(request):
             years_exp = request.POST.get(f'years_{skill.id}')
 
             if proficiency:
-                user_skill, created = UserSkill.objects.get_or_create(
-                    user_profile=user_profile,
-                    skill=skill,
-                    defaults={
-                        'proficiency_level': proficiency,
-                        'years_experience': years_exp if years_exp else None
-                    }
-                )
-                if not created:
+                try:
+                    user_skill = UserSkill.objects.get(
+                        user_profile=user_profile,
+                        skill=skill
+                    )
+                    # Update existing
                     user_skill.proficiency_level = proficiency
                     user_skill.years_experience = years_exp if years_exp else None
                     user_skill.save()
+                    created = False
+                except UserSkill.DoesNotExist:
+                    # Create new
+                    user_skill = UserSkill(
+                        user_profile=user_profile,
+                        skill=skill,
+                        proficiency_level=proficiency,
+                        years_experience=years_exp if years_exp else None
+                    )
+                    user_skill.save()
+                    created = True
 
         messages.success(request, 'Skill assessment saved!')
         return redirect('get_recommendations')
 
     # Get user's current skills for pre-populating form
     user_skills = {}
-    for us in UserSkill.objects.filter(user_profile=user_profile):
-        user_skills[us.skill.id] = {
+    for us in UserSkill.objects(user_profile=user_profile):
+        user_skills[str(us.skill.id)] = {
             'proficiency': us.proficiency_level,
             'years': us.years_experience
         }
@@ -103,10 +112,10 @@ def skill_assessment(request):
 @login_required
 def get_recommendations(request):
     """Generate skill recommendations using Groq LLM"""
-    user_profile = get_object_or_404(UserProfile, user=request.user)
+    user_profile = UserProfile.objects.get(user=request.user)
 
     # Get user's current skills
-    user_skills = UserSkill.objects.filter(user_profile=user_profile).select_related('skill')
+    user_skills = UserSkill.objects(user_profile=user_profile)
 
     # Prepare data for LLM prompt
     user_info = {
@@ -211,10 +220,10 @@ def get_recommendations(request):
 
                 # Save recommendations to database
                 # Clear old recommendations for this user
-                Recommendation.objects.filter(user_profile=user_profile, is_active=True).update(is_active=False)
+                Recommendation.objects(user_profile=user_profile, is_active=True).update(is_active=False)
 
                 # Create skill gap recommendation
-                skill_gap_rec = Recommendation.objects.create(
+                skill_gap_rec = Recommendation(
                     user_profile=user_profile,
                     recommendation_type='skill_gap',
                     title='Skill Gap Analysis',
@@ -222,34 +231,36 @@ def get_recommendations(request):
                     generated_by_llm=True,
                     groq_model_used='openai/gpt-oss-20b'  # Updated to reflect the model used
                 )
+                skill_gap_rec.save()
 
                 # Add skills to skill gap recommendation
                 for i, gap in enumerate(llm_data.get('skill_gaps', [])):
                     try:
                         skill_obj = Skill.objects.get(name__iexact=gap['skill'])
-                        RecommendationSkill.objects.create(
+                        RecommendationSkill(
                             recommendation=skill_gap_rec,
                             skill=skill_obj,
                             priority=i+1,
                             reasoning=gap.get('reasoning', '')
-                        )
+                        ).save()
                     except Skill.DoesNotExist:
                         # Create skill if it doesn't exist
-                        skill_obj = Skill.objects.create(
+                        skill_obj = Skill(
                             name=gap['skill'],
                             category='other',
                             description=f"Skill related to {gap['skill']}",
                             difficulty_level='beginner'
                         )
-                        RecommendationSkill.objects.create(
+                        skill_obj.save()
+                        RecommendationSkill(
                             recommendation=skill_gap_rec,
                             skill=skill_obj,
                             priority=i+1,
                             reasoning=gap.get('reasoning', '')
-                        )
+                        ).save()
 
                 # Create learning path recommendation
-                learning_path_rec = Recommendation.objects.create(
+                learning_path_rec = Recommendation(
                     user_profile=user_profile,
                     recommendation_type='learning_path',
                     title='Personalized Learning Path',
@@ -257,42 +268,47 @@ def get_recommendations(request):
                     generated_by_llm=True,
                     groq_model_used='openai/gpt-oss-20b'  # Updated to reflect the model used
                 )
+                learning_path_rec.save()
 
                 # Add skills and resources to learning path recommendation
                 for i, path_item in enumerate(llm_data.get('learning_path', [])):
                     try:
                         skill_obj = Skill.objects.get(name__iexact=path_item['skill'])
-                        rec_skill = RecommendationSkill.objects.create(
+                        rec_skill = RecommendationSkill(
                             recommendation=learning_path_rec,
                             skill=skill_obj,
                             priority=i+1,
                             reasoning=f"Part of {path_item.get('timeline', 'learning plan')}"
                         )
+                        rec_skill.save()
 
                         # Add resources
                         for resource_data in path_item.get('resources', []):
                             # Create or get learning resource
-                            resource_obj, created = LearningResource.objects.get_or_create(
-                                title=resource_data['title'],
-                                defaults={
-                                    'description': f"Learn about {resource_data['title']}",
-                                    'resource_type': resource_data.get('type', 'course'),
-                                    'url': resource_data['url'],
-                                    'skill': skill_obj,
-                                    'difficulty_level': 'beginner',
-                                    'is_free': True
-                                }
-                            )
-                            RecommendationResource.objects.create(
+                            try:
+                                resource_obj = LearningResource.objects.get(title=resource_data['title'])
+                            except LearningResource.DoesNotExist:
+                                resource_obj = LearningResource(
+                                    title=resource_data['title'],
+                                    description=f"Learn about {resource_data['title']}",
+                                    resource_type=resource_data.get('type', 'course'),
+                                    url=resource_data['url'],
+                                    skill=skill_obj,
+                                    difficulty_level='beginner',
+                                    is_free=True
+                                )
+                                resource_obj.save()
+
+                            RecommendationResource(
                                 recommendation=learning_path_rec,
                                 resource=resource_obj,
                                 relevance_score=0.9
-                            )
+                            ).save()
                     except Skill.DoesNotExist:
                         pass  # Skip if skill doesn't exist
 
                 # Create career advice recommendation
-                career_advice_rec = Recommendation.objects.create(
+                career_advice_rec = Recommendation(
                     user_profile=user_profile,
                     recommendation_type='career_advice',
                     title='Career Development Advice',
@@ -300,16 +316,17 @@ def get_recommendations(request):
                     generated_by_llm=True,
                     groq_model_used='openai/gpt-oss-20b'  # Updated to reflect the model used
                 )
+                career_advice_rec.save()
 
                 # For career advice, we might not link to specific skills/resources, or we could link to soft skills
                 try:
                     comm_skill = Skill.objects.get(name__iexact='Communication')
-                    RecommendationSkill.objects.create(
+                    RecommendationSkill(
                         recommendation=career_advice_rec,
                         skill=comm_skill,
                         priority=1,
                         reasoning="Communication is key for career advice implementation"
-                    )
+                    ).save()
                 except Skill.DoesNotExist:
                     pass
 
@@ -332,10 +349,10 @@ def get_recommendations(request):
 def _create_demo_recommendations(request, user_profile):
     """Create demo recommendations when API is not available"""
     # Clear old recommendations
-    Recommendation.objects.filter(user_profile=user_profile, is_active=True).update(is_active=False)
+    Recommendation.objects(user_profile=user_profile, is_active=True).update(is_active=False)
 
     # Create skill gap recommendation
-    skill_gap_rec = Recommendation.objects.create(
+    skill_gap_rec = Recommendation(
         user_profile=user_profile,
         recommendation_type='skill_gap',
         title='Skill Gap Analysis',
@@ -343,6 +360,7 @@ def _create_demo_recommendations(request, user_profile):
         generated_by_llm=False,
         groq_model_used='demo'
     )
+    skill_gap_rec.save()
 
     # Add some demo skills
     demo_skills = [
@@ -352,23 +370,26 @@ def _create_demo_recommendations(request, user_profile):
     ]
 
     for skill_name, description, priority in demo_skills:
-        skill_obj, created = Skill.objects.get_or_create(
-            name=skill_name,
-            defaults={
-                'category': 'technical' if skill_name == 'Data Analysis' else 'business',
-                'description': description,
-                'difficulty_level': 'beginner'
-            }
-        )
-        RecommendationSkill.objects.create(
+        try:
+            skill_obj = Skill.objects.get(name=skill_name)
+        except Skill.DoesNotExist:
+            skill_obj = Skill(
+                name=skill_name,
+                category='technical' if skill_name == 'Data Analysis' else 'business',
+                description=description,
+                difficulty_level='beginner'
+            )
+            skill_obj.save()
+
+        RecommendationSkill(
             recommendation=skill_gap_rec,
             skill=skill_obj,
             priority=priority,
             reasoning=f"Important skill for career advancement in {user_profile.current_occupation or 'your field'}"
-        )
+        ).save()
 
     # Create learning path recommendation
-    learning_path_rec = Recommendation.objects.create(
+    learning_path_rec = Recommendation(
         user_profile=user_profile,
         recommendation_type='learning_path',
         title='Personalized Learning Path',
@@ -376,16 +397,28 @@ def _create_demo_recommendations(request, user_profile):
         generated_by_llm=False,
         groq_model_used='demo'
     )
+    learning_path_rec.save()
 
     # Add learning path skills with demo resources
     for i, (skill_name, description, _) in enumerate(demo_skills[:2]):  # First two skills
-        skill_obj = Skill.objects.get(name=skill_name)
-        rec_skill = RecommendationSkill.objects.create(
+        try:
+            skill_obj = Skill.objects.get(name=skill_name)
+        except Skill.DoesNotExist:
+            skill_obj = Skill(
+                name=skill_name,
+                description=f"Learn about {skill_name}",
+                category='technical' if skill_name == 'Data Analysis' else 'business',
+                difficulty_level='beginner'
+            )
+            skill_obj.save()
+
+        rec_skill = RecommendationSkill(
             recommendation=learning_path_rec,
             skill=skill_obj,
             priority=i+1,
             reasoning=f"Part of 3-month learning plan"
         )
+        rec_skill.save()
 
         # Add demo resources
         resource_titles = [
@@ -393,25 +426,28 @@ def _create_demo_recommendations(request, user_profile):
             f"Advanced {skill_name} Techniques"
         ]
         for j, title in enumerate(resource_titles):
-            resource_obj, created = LearningResource.objects.get_or_create(
-                title=title,
-                defaults={
-                    'description': f"Comprehensive guide to {title}",
-                    'resource_type': 'course' if j == 0 else 'tutorial',
-                    'url': f"https://example.com/{skill_name.lower().replace(' ', '-')}-{j+1}",
-                    'skill': skill_obj,
-                    'difficulty_level': 'beginner' if j == 0 else 'intermediate',
-                    'is_free': True
-                }
-            )
-            RecommendationResource.objects.create(
+            try:
+                resource_obj = LearningResource.objects.get(title=title)
+            except LearningResource.DoesNotExist:
+                resource_obj = LearningResource(
+                    title=title,
+                    description=f"Comprehensive guide to {title}",
+                    resource_type='course' if j == 0 else 'tutorial',
+                    url=f"https://example.com/{skill_name.lower().replace(' ', '-')}-{j+1}",
+                    skill=skill_obj,
+                    difficulty_level='beginner' if j == 0 else 'intermediate',
+                    is_free=True
+                )
+                resource_obj.save()
+
+            RecommendationResource(
                 recommendation=learning_path_rec,
                 resource=resource_obj,
                 relevance_score=0.9 - (j * 0.1)
-            )
+            ).save()
 
     # Create career advice recommendation
-    career_advice_rec = Recommendation.objects.create(
+    career_advice_rec = Recommendation(
         user_profile=user_profile,
         recommendation_type='career_advice',
         title='Career Development Advice',
@@ -419,15 +455,16 @@ def _create_demo_recommendations(request, user_profile):
         generated_by_llm=False,
         groq_model_used='demo'
     )
+    career_advice_rec.save()
 
     try:
         comm_skill = Skill.objects.get(name__iexact='Communication')
-        RecommendationSkill.objects.create(
+        RecommendationSkill(
             recommendation=career_advice_rec,
             skill=comm_skill,
             priority=1,
             reasoning="Effective communication is essential for career success"
-        )
+        ).save()
     except Skill.DoesNotExist:
         pass
 
@@ -437,8 +474,8 @@ def _create_demo_recommendations(request, user_profile):
 @login_required
 def view_recommendations(request):
     """View all recommendations for the user"""
-    user_profile = get_object_or_404(UserProfile, user=request.user)
-    recommendations = Recommendation.objects.filter(user_profile=user_profile, is_active=True).order_by('-created_at')
+    user_profile = UserProfile.objects.get(user=request.user)
+    recommendations = Recommendation.objects(user_profile=user_profile, is_active=True).order_by('-created_at')
 
     context = {
         'user_profile': user_profile,
@@ -449,11 +486,11 @@ def view_recommendations(request):
 @login_required
 def recommendation_detail(request, rec_id):
     """View details of a specific recommendation"""
-    recommendation = get_object_or_404(Recommendation, id=rec_id, user_profile__user=request.user, is_active=True)
+    recommendation = Recommendation.objects.get(id=rec_id, user_profile__user=request.user, is_active=True)
 
     # Get related skills and resources
-    recommendation_skills = RecommendationSkill.objects.filter(recommendation=recommendation).select_related('skill')
-    recommendation_resources = RecommendationResource.objects.filter(recommendation=recommendation).select_related('resource__skill')
+    recommendation_skills = RecommendationSkill.objects(recommendation=recommendation)
+    recommendation_resources = RecommendationResource.objects(recommendation=recommendation)
 
     context = {
         'recommendation': recommendation,
@@ -465,19 +502,23 @@ def recommendation_detail(request, rec_id):
 @login_required
 def resources(request):
     """View all learning resources"""
-    resources_list = LearningResource.objects.all().select_related('skill')
+    resources_list = LearningResource.objects()
 
     # Filter by skill if requested
     skill_id = request.GET.get('skill')
     if skill_id:
-        resources_list = resources_list.filter(skill_id=skill_id)
+        try:
+            skill_obj = Skill.objects.get(id=skill_id)
+            resources_list = resources_list.filter(skill=skill_obj)
+        except Skill.DoesNotExist:
+            pass  # Invalid skill ID, show all resources
 
     # Filter by resource type
     resource_type = request.GET.get('type')
     if resource_type:
         resources_list = resources_list.filter(resource_type=resource_type)
 
-    skills = Skill.objects.filter(is_active=True)
+    skills = Skill.objects(is_active=True)
     resource_types = LearningResource.RESOURCE_TYPES
 
     context = {
