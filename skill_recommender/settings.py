@@ -51,11 +51,32 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'skill_recommender.wsgi.application'
 
-# Database configuration - for persistent storage on Vercel, use an external database
-# For development/demo, SQLite in /tmp works but data won't persist between container invocations
+# Database configuration
 import os
 
-if os.environ.get('USE_EXTERNAL_DB'):
+if os.environ.get('USE_MONGODB'):
+    # MongoDB configuration using mongoengine
+    # We'll keep DATABASES for Django components that still need it (like sessions)
+    # but use mongoengine for our models
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',  # In-memory SQLite for Django internals
+        }
+    }
+
+    # MongoEngine configuration
+    import mongoengine
+    mongoengine.connect(
+        db=os.environ.get('MONGO_DB_NAME', 'skill_recommender'),
+        host=os.environ.get('MONGO_HOST', 'localhost'),
+        port=int(os.environ.get('MONGO_PORT', 27017)),
+        username=os.environ.get('MONGO_USER', '') or None,
+        password=os.environ.get('MONGO_PASSWORD', '') or None,
+        authentication_source=os.environ.get('MONGO_AUTH_SOURCE', 'admin'),
+        auth_mechanism=os.environ.get('MONGO_AUTH_MECHANISM', 'SCRAM-SHA-256')
+    )
+elif os.environ.get('USE_EXTERNAL_DB'):
     # External database configuration (e.g., PostgreSQL, MySQL)
     DATABASES = {
         'default': {
