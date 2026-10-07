@@ -109,18 +109,62 @@ def get_or_create_user_profile(user):
 # CORE PAGES
 # ==============================================================================
 def home(request):
-    """Modern home landing page"""
+    """Modern home landing page with real-time dynamic database metrics"""
     stats = {
         'skills_count': Skill.objects.filter(is_active=True).count(),
         'resources_count': LearningResource.objects.count(),
         'domains_count': len(Skill.DOMAIN_CHOICES) - 1,
     }
-    top_skills = Skill.objects.filter(is_active=True)[:8]
+    top_skills = Skill.objects.filter(is_active=True).order_by('-market_demand', 'name')[:8]
+
+    # Real-time preview calculation
+    live_preview = {
+        'is_personalized': False,
+        'target_role': 'Full-Stack Web Developer',
+        'match_score': 78,
+        'milestones': []
+    }
+
+    if request.user.is_authenticated:
+        profile = get_or_create_user_profile(request.user)
+        rec = Recommendation.objects.filter(user_profile=profile, is_active=True).first()
+        if not rec:
+            rec = generate_hybrid_recommendation(profile)
+        
+        live_preview['is_personalized'] = True
+        live_preview['target_role'] = rec.target_role or profile.target_role
+        live_preview['match_score'] = round(rec.match_score)
+        
+        milestones = []
+        for rs in rec.skills.select_related('skill')[:3]:
+            milestones.append({
+                'name': rs.skill.name,
+                'icon': rs.skill.icon,
+                'timeline': rs.timeline,
+                'priority': rs.priority,
+            })
+        live_preview['milestones'] = milestones
+    else:
+        # Live market benchmark preview from database
+        sample_skills = Skill.objects.filter(is_active=True, market_demand='Very High')[:3]
+        milestones = []
+        timelines = ['Month 1 (Core Foundations)', 'Month 2 (Applied Frameworks)', 'Month 3 (Mastery & Scale)']
+        for idx, sk in enumerate(sample_skills):
+            milestones.append({
+                'name': sk.name,
+                'icon': sk.icon,
+                'timeline': timelines[idx] if idx < len(timelines) else 'Month 3',
+                'priority': idx + 1,
+            })
+        live_preview['milestones'] = milestones
+
     return render(request, 'recommender/home.html', {
         'stats': stats,
         'top_skills': top_skills,
+        'live_preview': live_preview,
         'domain_benchmarks': DOMAIN_BENCHMARKS
     })
+
 
 
 def register(request):
@@ -452,40 +496,60 @@ def generate_hybrid_recommendation(user_profile, domain=None):
                 defaults={'relevance_score': 0.95 - (i * 0.05)}
             )
 
-    # Optional Groq LLM enhancement if API key is provided
+    # Live Real-Time Groq LLM Generation
     groq_api_key = getattr(settings, 'GROQ_API_KEY', None)
     if groq_api_key:
         try:
+            current_skills_summary = [f"{item['skill'].name} ({item['current_proficiency']})" for item in scored_skills[:6]]
             prompt = f"""
-            As an elite executive career mentor advocating for women in tech, provide actionable advice:
-            User Target Role: {target_role}
-            Focus Domain: {domain}
-            Current Skills & Levels: {[f"{item['skill'].name}: {item['current_proficiency']}" for item in top_gaps]}
-            Weekly Study Time: {user_profile.weekly_hours} hours.
-            Provide 2-3 concise paragraphs of strategic advice on building visible leadership, portfolio leverage, and negotiation strategy.
+            You are a real-time AI career intelligence mentor specializing in women's technical career advancement.
+            Analyze this live profile:
+            - Target Career Role: {target_role}
+            - Focus Domain: {dict(Skill.DOMAIN_CHOICES).get(domain, domain)}
+            - Weekly Study Hours: {user_profile.weekly_hours} hours/week
+            - Assessed Competencies: {current_skills_summary}
+            
+            Provide tailored real-time career advice for women in technology pursuing {target_role}:
+            1. Executive summary of immediate competitive advantages and high-leverage growth areas.
+            2. Strategic career guidance covering portfolio visibility, technical credibility, and compensation advocacy.
+            3. Recommended focus for the next 90 days.
+            Keep the advice inspiring, highly specific, and actionable.
             """
 
-            response = requests.post(
-                'https://api.groq.com/openai/v1/chat/completions',
-                headers={'Authorization': f'Bearer {groq_api_key}', 'Content-Type': 'application/json'},
-                json={
-                    'model': 'llama-3.3-70b-versatile',
-                    'messages': [
-                        {'role': 'system', 'content': 'You are an inspiring, pragmatic career advisor for women in technology.'},
-                        {'role': 'user', 'content': prompt}
-                    ],
-                    'max_tokens': 600,
-                    'temperature': 0.7
-                },
-                timeout=8
-            )
-            if response.status_code == 200:
-                result = response.json()
-                llm_text = result['choices'][0]['message']['content']
-                recommendation.description += f"\n\n### Strategic Career Guidance:\n{llm_text}"
+            # Active supported models on Groq
+            models_to_try = ['openai/gpt-oss-20b', 'openai/gpt-oss-120b', 'qwen/qwen3.8-27b']
+            llm_text = None
+            model_used_name = None
+
+            for model_candidate in models_to_try:
+                try:
+                    response = requests.post(
+                        'https://api.groq.com/openai/v1/chat/completions',
+                        headers={'Authorization': f'Bearer {groq_api_key}', 'Content-Type': 'application/json'},
+                        json={
+                            'model': model_candidate,
+                            'messages': [
+                                {'role': 'system', 'content': 'You are an inspiring, authoritative AI career advisor for women in technology.'},
+                                {'role': 'user', 'content': prompt}
+                            ],
+                            'max_tokens': 700,
+                            'temperature': 0.6
+                        },
+                        timeout=10
+                    )
+                    if response.status_code == 200:
+                        res_json = response.json()
+                        llm_text = res_json['choices'][0]['message']['content'].strip()
+                        model_used_name = model_candidate
+                        break
+                except Exception:
+                    continue
+
+            if llm_text:
+                recommendation.description = f"{rec_desc}\n\n### Strategic AI Career Guidance ({model_used_name}):\n{llm_text}"
                 recommendation.generated_by_llm = True
-                recommendation.groq_model_used = 'Groq / Llama-3.3-70b'
-                recommendation.save()
+                recommendation.groq_model_used = f"Groq / {model_used_name.split('/')[-1].upper()} (Live)"
+                recommendation.save(update_fields=['description', 'generated_by_llm', 'groq_model_used'])
         except Exception:
             # Graceful fallback: maintain fast response without failing
             pass

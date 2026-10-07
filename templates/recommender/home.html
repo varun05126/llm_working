@@ -78,48 +78,45 @@
                         <span class="badge-pill badge-purple">AI Engine</span>
                     </div>
 
-                    <!-- Match Readiness Gauge Preview -->
+                    <!-- Match Readiness Gauge Preview (Dynamic) -->
                     <div class="text-center p-3 mb-3 rounded-4" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-subtle);">
                         <div class="gauge-circle-container" style="height: 100px;">
                             <div>
-                                <div class="gauge-score text-gradient" style="font-size: 2.5rem;">88%</div>
-                                <div class="gauge-label">Market Readiness Match</div>
+                                <div class="gauge-score text-gradient" style="font-size: 2.5rem;">{{ live_preview.match_score }}%</div>
+                                <div class="gauge-label">
+                                    {% if live_preview.is_personalized %}Your Active Match{% else %}Market Benchmark Match{% endif %}
+                                </div>
                             </div>
                         </div>
-                        <p class="small text-secondary mb-0 mt-2">Target Role: <strong class="text-white">Senior Full-Stack Architect</strong></p>
+                        <p class="small text-secondary mb-0 mt-2">Target Role: <strong class="text-white">{{ live_preview.target_role }}</strong></p>
                     </div>
 
-                    <!-- Top Priority Skill Gaps Preview -->
-                    <h6 class="small text-uppercase text-secondary fw-bold mb-2" style="letter-spacing: 0.05em;">Priority Milestones</h6>
+                    <!-- Priority Skill Gaps Preview (Dynamic) -->
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="small text-uppercase text-secondary fw-bold mb-0" style="letter-spacing: 0.05em;">Priority Milestones</h6>
+                        <span class="badge-pill badge-emerald small py-0 px-2" style="font-size: 0.68rem;">Live Data</span>
+                    </div>
                     
                     <div class="d-flex flex-column gap-2 mb-3">
+                        {% for m in live_preview.milestones %}
                         <div class="p-2 px-3 rounded-3 d-flex align-items-center justify-content-between" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
                             <div class="d-flex align-items-center gap-2">
-                                <i class="fab fa-react text-info"></i>
-                                <span class="small fw-semibold">React & Architecture</span>
+                                <i class="{{ m.icon }} text-gradient"></i>
+                                <span class="small fw-semibold">{{ m.name }}</span>
                             </div>
-                            <span class="badge-pill badge-pink py-0 px-2" style="font-size: 0.72rem;">Month 1 &bull; Priority 1</span>
+                            <span class="badge-pill {% if forloop.first %}badge-pink{% elif forloop.counter == 2 %}badge-purple{% else %}badge-emerald{% endif %} py-0 px-2" style="font-size: 0.72rem;">
+                                {{ m.timeline }}
+                            </span>
                         </div>
-
-                        <div class="p-2 px-3 rounded-3 d-flex align-items-center justify-content-between" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fas fa-database text-warning"></i>
-                                <span class="small fw-semibold">PostgreSQL & Indexing</span>
-                            </div>
-                            <span class="badge-pill badge-purple py-0 px-2" style="font-size: 0.72rem;">Month 2 &bull; Priority 2</span>
+                        {% empty %}
+                        <div class="p-2 text-center text-secondary small">
+                            Calibrate your profile to compute live milestones.
                         </div>
-
-                        <div class="p-2 px-3 rounded-3 d-flex align-items-center justify-content-between" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="fas fa-handshake text-success"></i>
-                                <span class="small fw-semibold">Executive Advocacy</span>
-                            </div>
-                            <span class="badge-pill badge-emerald py-0 px-2" style="font-size: 0.72rem;">Month 3 &bull; Priority 3</span>
-                        </div>
+                        {% endfor %}
                     </div>
 
-                    <a href="{% url 'skill_assessment' %}" class="btn-cyan-gradient w-100 py-2 text-center justify-content-center small fw-bold">
-                        <i class="fas fa-bolt"></i> Calibrate Your Skills Now
+                    <a href="{% if user.is_authenticated %}{% url 'view_recommendations' %}{% else %}{% url 'skill_assessment' %}{% endif %}" class="btn-cyan-gradient w-100 py-2 text-center justify-content-center small fw-bold">
+                        <i class="fas fa-bolt"></i> {% if user.is_authenticated %}Open Live Recommendations{% else %}Calibrate Your Skills Now{% endif %}
                     </a>
                 </div>
             </div>
