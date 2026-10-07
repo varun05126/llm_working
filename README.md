@@ -1,112 +1,129 @@
-# Women Skill Development Recommender
+# 🌸 SkillHer — AI-Powered Skill Development & Career Roadmap Platform
 
-An AI-powered skill development recommendation system specifically designed for women's career growth. Built with Django and integrated with Groq API for personalized recommendations.
+[![Live Deployment](https://img.shields.io/badge/Production-Live%20on%20Vercel-success?style=for-the-badge&logo=vercel)](https://skillrecommender.vercel.app/)
+[![Django](https://img.shields.io/badge/Django-5.x-092E20?style=for-the-badge&logo=django)](https://www.djangoproject.com/)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python)](https://python.org)
+[![Groq AI](https://img.shields.io/badge/Groq%20AI-Llama%203-f55036?style=for-the-badge)](https://groq.com/)
+[![Nodemailer](https://img.shields.io/badge/Mailer-Dual--Engine%20TLS-6366f1?style=for-the-badge)](file:///Users/malthumkarvarun/LLM%20working/skill_recommender/mailer.js)
 
-## Features
+**SkillHer** is an intelligent career acceleration platform tailored for women in technology, leadership, and engineering. It analyzes user skill profiles, evaluates competencies via interactive assessments, and generates structured 3-month growth roadmaps powered by **Groq LLM** with deterministic real-time fallbacks.
 
-- User registration and profile management
-- Skill assessment across various categories (technical, soft skills, leadership, etc.)
-- AI-powered skill gap analysis using Groq LLM
-- Personalized learning path recommendations
-- Career development advice tailored for women professionals
-- Learning resources database with filtering capabilities
-- Responsive design with Bootstrap
+🌐 **Live Website**: [https://skillrecommender.vercel.app/](https://skillrecommender.vercel.app/)  
+📬 **Contact**: [malthumkarvarun@gmail.com](mailto:malthumkarvarun@gmail.com)
 
-## Tech Stack
+---
 
-- **Backend**: Django 6.1.1
-- **Frontend**: HTML5, CSS3, Bootstrap 5.3.0
-- **AI Integration**: Groq API (using Mixtral 8x7B model)
-- **Database**: SQLite (for development), can be switched to PostgreSQL/MySQL
-- **Environment Variables**: Python-dotenv for configuration
+## ✨ Key Features
 
-## Setup Instructions
+- **🎯 Skill Assessment Engine**: Interactive quizzes across technical domains, soft skills, and leadership to identify proficiency benchmarks.
+- **⚡ Real-Time AI Roadmaps**: Custom 3-month actionable learning paths powered by Groq's high-speed LLM inference, with instant domain synthesis across 8 key tracks.
+- **🔄 Interactive Progress Tracker**: Live skill status tracking (Not Started, In Progress, Completed) with automatic completion percentages.
+- **📬 Dual-Engine Email Dispatcher**:
+  - **Local / Container**: Node.js & Nodemailer (`mailer.js`).
+  - **Vercel Serverless**: Native Python TLS `smtplib` with automatic Google App Password sanitization.
+- **🎨 Modern Responsive UI**:
+  - Theme switcher with Dark, Light, and Cyber-Purple modes.
+  - Fully mobile-optimized responsive navigation and card layouts.
+  - Glassmorphic panels, gradient badges, and micro-animations.
+- **📚 Curated Learning Library**: Filterable database of tutorials, courses, books, and certifications categorized by domain and level.
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd skill_recommender
-   ```
+---
 
-2. **Create a virtual environment**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+## 🛠️ Technology Stack
 
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+| Layer | Technologies |
+| :--- | :--- |
+| **Backend** | Python 3.12, Django 5.x, WhiteNoise |
+| **Frontend** | Vanilla CSS3, Bootstrap 5.3, FontAwesome 6, Google Fonts (Outfit / Inter) |
+| **AI / Inference** | Groq Cloud API (Llama 3 / Mixtral) |
+| **Email Engines** | Python `smtplib` (TLS), Nodemailer (Node.js) |
+| **Hosting & CI/CD** | Vercel Serverless (`@vercel/python`), GitHub Actions |
+| **Testing** | Django `TestCase`, Mock, Integration Test Suite |
 
-4. **Set up environment variables**
-   Create a `.env` file in the project root with:
-   ```
-   GROQ_API_KEY=your_groq_api_key_here
-   SECRET_KEY=your_django_secret_key_here
-   DEBUG=True
-   ```
+---
 
-5. **Apply migrations**
-   ```bash
-   python manage.py makemigrations
-   python manage.py migrate
-   ```
+## 🚀 Quick Start & Local Setup
 
-6. **Create a superuser (optional)**
-   ```bash
-   python manage.py createsuperuser
-   ```
-
-7. **Run the development server**
-   ```bash
-   python manage.py runserver
-   ```
-
-8. **Visit** `http://127.0.0.1:8000/` in your browser.
-
-## Project Structure
-
-- `skill_recommender/` - Django project settings
-- `recommender/` - Main application containing models, views, templates
-- `templates/recommender/` - HTML templates
-- `static/` - Static files (CSS, JavaScript, images) - to be added
-
-## Usage
-
-1. Register a new account or log in
-2. Complete your profile information
-3. Take the skill assessment to evaluate your current competencies
-4. Get personalized recommendations including:
-   - Skill gap analysis
-   - 3-month learning path
-   - Career development advice
-5. Explore learning resources by skill type or resource type
-
-## Customization
-
-- To change the AI model, modify the `groq_model_used` field in the `Recommendation` model or update the view logic.
-- To add more skill categories, update the `CATEGORY_CHOICES` in the `Skill` model.
-- To adjust the recommendation logic, modify the `get_recommendations` view in `recommender/views.py`.
-
-## Acknowledgments
-
-- Built with ❤️ for women's career advancement
-- Powered by Groq's fast LLM inference
-- Inspired by the need for personalized skill development guidance
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Contact
-
-For questions or support, please open an issue on this repository.
-
+### 1. Clone & Navigate
+```bash
+git clone https://github.com/varun05126/llm_working.git
+cd skill_recommender
 ```
 
-Note: This README is a template and should be adjusted as per the actual project requirements.
+### 2. Set Up Virtual Environment
+```bash
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 3. Optional: Install Node Dependencies (For Nodemailer)
+```bash
+npm install
+```
+
+### 4. Configure Environment Variables
+Create a `.env` file in the project root:
+```env
+# AI API
+GROQ_API_KEY=your_groq_api_key_here
+
+# Django Security
+SECRET_KEY=your_django_secret_key_here
+DEBUG=True
+
+# Email Delivery Configuration
+CONTACT_EMAIL=malthumkarvarun@gmail.com
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=malthumkarvarun@gmail.com
+SMTP_PASS=your_google_app_password
+```
+
+### 5. Run Migrations & Start Server
+```bash
+python manage.py migrate
+python manage.py runserver
+```
+Visit `http://127.0.0.1:8000/` in your browser.
+
+---
+
+## 🧪 Running Automated Tests
+
+Run the full automated unit and integration test suite:
+```bash
+python manage.py test
+```
+**Test Coverage Includes:**
+- Public route availability (`home`, `about`, `contact`, `resources`).
+- Authenticated vs unauthenticated permissions.
+- Contact form submissions and database logging (`ContactMessage`).
+- Dual-engine email dispatching and error handling.
+- AJAX JSON API endpoints (`/api/contact/`).
+
+---
+
+## ☁️ Vercel Deployment
+
+The project is configured for one-click Vercel serverless deployment using `vercel.json`:
+- **Builder**: `@vercel/python` routing through `skill_recommender/wsgi.py`.
+- **Static Assets**: Served via `WhiteNoiseMiddleware`.
+- **CSRF Protection**: Preconfigured for HTTPS wildcard subdomains (`https://*.vercel.app`).
+
+### Production Environment Variables in Vercel:
+Add the following in **Project Settings > Environment Variables**:
+- `GROQ_API_KEY`: Groq inference API key.
+- `CONTACT_EMAIL`: Recipient inbox (`malthumkarvarun@gmail.com`).
+- `SMTP_HOST`: `smtp.gmail.com`
+- `SMTP_PORT`: `587`
+- `SMTP_USER`: Gmail address.
+- `SMTP_PASS`: 16-character Google App Password.
+
+---
+
+## 📄 License & Credits
+
+- Developed with ❤️ for women empowerment and career advancement.
+- Licensed under the [MIT License](LICENSE).
+- Maintainer: [Varun Malthumkar](mailto:malthumkarvarun@gmail.com).
