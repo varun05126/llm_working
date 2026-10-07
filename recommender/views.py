@@ -24,6 +24,8 @@ from .models import (
     AssessmentResult, LearningResource, Recommendation,
     RecommendationSkill, RecommendationResource, ContactMessage
 )
+from .guardrails import validate_input_guardrails, moderate_output, sanitize_input
+
 
 
 # ==============================================================================
@@ -448,10 +450,11 @@ def generate_hybrid_recommendation(user_profile, domain=None, desired_skills=Non
     """
     domain = domain or user_profile.primary_interest or 'web_dev'
     if desired_skills is not None:
-        user_profile.interests = desired_skills.strip()
+        desired_skills = sanitize_input(desired_skills, max_length=300)
+        user_profile.interests = desired_skills
         user_profile.save(update_fields=['interests'])
     else:
-        desired_skills = user_profile.interests or ''
+        desired_skills = sanitize_input(user_profile.interests or '', max_length=300)
 
     metrics = calculate_realtime_metrics(user_profile, domain)
     benchmark = metrics['benchmark']
@@ -622,6 +625,7 @@ def generate_hybrid_recommendation(user_profile, domain=None, desired_skills=Non
                     continue
 
             if llm_text:
+                llm_text = moderate_output(llm_text)
                 recommendation.description = f"{rec_desc}\n\n### Strategic AI Career Guidance ({model_used_name}):\n{llm_text}"
                 recommendation.generated_by_llm = True
                 recommendation.groq_model_used = f"Groq / {model_used_name.split('/')[-1].upper()} (Live)"
@@ -742,16 +746,16 @@ def realtime_recommendations_api(request):
         desired_skills = data.get('desired_skills')
 
         if target_role:
-            user_profile.target_role = target_role
+            user_profile.target_role = sanitize_input(target_role, max_length=100)
         if domain:
-            user_profile.primary_interest = domain
+            user_profile.primary_interest = sanitize_input(domain, max_length=50)
         if weekly_hours:
             try:
-                user_profile.weekly_hours = int(weekly_hours)
+                user_profile.weekly_hours = max(1, min(100, int(weekly_hours)))
             except (ValueError, TypeError):
                 pass
         if desired_skills is not None:
-            user_profile.interests = desired_skills.strip()
+            user_profile.interests = sanitize_input(desired_skills, max_length=300)
 
         user_profile.save()
     else:
@@ -823,6 +827,31 @@ def api_chatbot(request):
     if not user_message:
         return JsonResponse({'status': 'error', 'message': 'Message is required.'}, status=400)
 
+    # Sanitize input
+    user_message = sanitize_input(user_message, max_length=1500)
+
+    # Extract client IP for sliding window rate limiting
+    forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    client_ip = forwarded_for.split(',')[0].strip() if forwarded_for else request.META.get('REMOTE_ADDR')
+
+    groq_api_key = getattr(settings, 'GROQ_API_KEY', None) or os.getenv('GROQ_API_KEY')
+
+    # Comprehensive Guardrails Validation: Rate limiting + Heuristics + Meta Llama-Prompt-Guard
+    is_valid, deflection_msg, guardrail_details = validate_input_guardrails(
+        user_message,
+        client_ip=client_ip,
+        groq_api_key=groq_api_key
+    )
+
+    if not is_valid:
+        return JsonResponse({
+            'status': 'success',
+            'reply': deflection_msg,
+            'guardrail_flagged': True,
+            'guardrail_reason': guardrail_details.get('code'),
+            'model': 'SkillHer AI Guardrails'
+        })
+
     # Contextual user data
     target_role = "Technology Professional"
     domain = "Full-Stack Web Development"
@@ -836,7 +865,6 @@ def api_chatbot(request):
         weekly_hours = user_profile.weekly_hours
         desired_skills = user_profile.interests or ""
 
-    groq_api_key = getattr(settings, 'GROQ_API_KEY', None) or os.getenv('GROQ_API_KEY')
     reply_text = None
     model_name = "SkillHer AI Mentor"
 
@@ -894,6 +922,9 @@ def api_chatbot(request):
             reply_text = f"**Standout Project Ideas for {target_role}:**\n\n- Build an end-to-end full-stack app featuring {desired_skills or 'modern API architectures'}.\n- Include robust authentication, database indexing, automated tests, and Docker deployment.\n- Write an in-depth README with architectural diagrams, API docs, and performance benchmarks."
         else:
             reply_text = f"Hello! As your AI Career Mentor for **{target_role}** ({domain}), I'm excited to support your journey. Focus on consistent incremental progress with your {weekly_hours} hrs/week.\n\nTry asking me about:\n- 🚀 *Step-by-step learning breakdown for {desired_skills or 'your target role'}*\n- 💼 *How to showcase your projects on LinkedIn/GitHub*\n- 🎯 *Mock interview questions and system design tips*"
+
+    # Output guardrail: sanitize credentials, keys, or sensitive internal tokens
+    reply_text = moderate_output(reply_text)
 
     return JsonResponse({
         'status': 'success',
@@ -1209,11 +1240,11 @@ def api_contact(request):
     except json.JSONDecodeError:
         data = request.POST
 
-    name = data.get('name', '').strip()
-    email = data.get('email', '').strip()
-    category = data.get('category', 'general')
-    subject = data.get('subject', '').strip()
-    message_text = data.get('message', '').strip()
+    name = sanitize_input(data.get('name', ''), max_length=100)
+    email = sanitize_input(data.get('email', ''), max_length=120)
+    category = sanitize_input(data.get('category', 'general'), max_length=50)
+    subject = sanitize_input(data.get('subject', ''), max_length=200)
+    message_text = sanitize_input(data.get('message', ''), max_length=3000)
 
     if not name or not email or not subject or not message_text:
         return JsonResponse({'status': 'error', 'message': 'All fields are required.'}, status=400)

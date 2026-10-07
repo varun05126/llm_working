@@ -17,6 +17,15 @@
 
 - **🎯 Skill Assessment Engine**: Interactive quizzes across technical domains, soft skills, and leadership to identify proficiency benchmarks.
 - **⚡ Real-Time AI Roadmaps**: Custom 3-month actionable learning paths powered by Groq's high-speed LLM inference, with instant domain synthesis across 8 key tracks.
+- **🛡️ Multi-Tier AI Guardrails Engine**:
+  - **Rate Limiting**: Sliding-window IP rate limiter (30 req / 60s) preventing automated spam and abuse.
+  - **Input Sanitization**: Cleanses non-printable control characters, null bytes, and enforces maximum character bounds.
+  - **Heuristic Pattern Defense**: Zero-latency regex detection against jailbreaks, system overrides (`DAN`, roleplay bypasses), and malicious exploits.
+  - **Meta Llama-Prompt-Guard-2-86M**: Real-time semantic injection probability analysis via Groq Cloud (`threshold > 0.85`).
+  - **Output Moderation & Redaction**: Automatic scrubbing of sensitive API keys (`gsk_...`) and security credentials.
+  - **Aria Persona Deflection**: Graceful, brand-aligned redirects maintaining professional career mentorship tone.
+- **💬 Aria • AI Career Mentor Chatbot**: Floating, responsive AI coach with contextual career guidance, mock interviews, and portfolio strategies.
+- **📄 1-Click High-Res PDF Export**: Client-side vectorized PDF export for customized 3-month blueprints.
 - **🔄 Interactive Progress Tracker**: Live skill status tracking (Not Started, In Progress, Completed) with automatic completion percentages.
 - **📬 Dual-Engine Email Dispatcher**:
   - **Local / Container**: Node.js & Nodemailer (`mailer.js`).
