@@ -1,80 +1,324 @@
 {% extends 'recommender/base.html' %}
+{% load static %}
+{% load recommender_tags %}
 
-{% block title %}
-Skill Assessment - SkillHer
-{% endblock %}
+{% block title %}Skill Assessment - {{ domain_label }} - SkillHer{% endblock %}
 
 {% block content %}
-<section class="auth-section">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="auth-card">
-                    <div class="auth-icon">
-                        <i class="fas fa-list-check"></i>
-                    </div>
-                    <h2>Skill Assessment</h2>
-                    <p>Update your skill proficiency levels below:</p>
-                    <form method="post">
+<div class="container py-4">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div>
+            <span class="badge-pill badge-purple mb-2">
+                <i class="fas fa-bullseye"></i> Personalized Diagnostic
+            </span>
+            <h1 class="h2 fw-bold mb-1">
+                Skill Assessment: <span class="text-gradient">{{ domain_label }}</span>
+            </h1>
+            <p class="text-secondary small mb-0">
+                Calibrate your proficiency levels or take scenario-based diagnostic quizzes tailored to your chosen specialization.
+            </p>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'view_recommendations' %}" class="btn-outline-glass btn-sm py-2 px-3">
+                <i class="fas fa-wand-magic-sparkles text-gradient me-1"></i> View Live Roadmap
+            </a>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         INTEREST DOMAIN SELECTOR TABS
+         ========================================== -->
+    <div class="mb-4">
+        <label class="form-label-custom mb-2">
+            <i class="fas fa-compass text-gradient me-1"></i> Select Your Focus Area / Interest Track:
+        </label>
+        <div class="track-pill-grid" id="trackPillContainer">
+            {% for code, label in domain_choices %}
+                {% if code != 'general' %}
+                <a href="?domain={{ code }}" 
+                   class="track-pill-item {% if selected_domain == code %}active{% endif %}"
+                   id="trackPill_{{ code }}">
+                    {% if code == 'web_dev' %}<i class="fas fa-code"></i>
+                    {% elif code == 'ai_ml' %}<i class="fas fa-brain"></i>
+                    {% elif code == 'data_science' %}<i class="fas fa-chart-line"></i>
+                    {% elif code == 'cloud_devops' %}<i class="fas fa-cloud"></i>
+                    {% elif code == 'cybersecurity' %}<i class="fas fa-shield-halved"></i>
+                    {% elif code == 'ui_ux' %}<i class="fas fa-pen-nib"></i>
+                    {% elif code == 'product_management' %}<i class="fas fa-list-check"></i>
+                    {% elif code == 'soft_skills' %}<i class="fas fa-microphone-lines"></i>
+                    {% else %}<i class="fas fa-star"></i>{% endif %}
+                    <span>{{ label }}</span>
+                </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Assessment Column -->
+        <div class="col-lg-8">
+            <!-- Navigation Tabs: Self-Rating Matrix vs Scenario Quiz -->
+            <ul class="nav nav-pills mb-4 gap-2" id="assessmentTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link-custom active px-4 py-2" id="matrix-tab" data-bs-toggle="pill" data-bs-target="#matrixTabContent" type="button" role="tab">
+                        <i class="fas fa-sliders me-1"></i> Skill Proficiency Matrix ({{ skills|length }} Skills)
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link-custom px-4 py-2" id="quiz-tab" data-bs-toggle="pill" data-bs-target="#quizTabContent" type="button" role="tab">
+                        <i class="fas fa-circle-question me-1"></i> Scenario Diagnostic Quiz ({{ questions|length }} Questions)
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="assessmentTabPanels">
+                
+                <!-- ==========================================
+                     TAB 1: SKILL PROFICIENCY MATRIX
+                     ========================================== -->
+                <div class="tab-pane fade show active" id="matrixTabContent" role="tabpanel">
+                    <form method="post" id="skillMatrixForm">
                         {% csrf_token %}
+                        <input type="hidden" name="action" value="save_skills">
 
-                        <div class="skills-list">
+                        <div class="d-flex flex-column gap-3 mb-4">
                             {% for skill in skills %}
-                            <div class="skill-item mb-4 p-3 bg-light rounded">
-                                <h5>{{ skill.name }}</h5>
-                                <p class="text-muted">{{ skill.description|truncatewords:15 }}</p>
-
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="skill_{{ skill.id }}" value="none" id="skill_{{ skill.id }}_none">
-                                    <label class="form-check-label" for="skill_{{ skill.id }}_none">
-                                        None
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="skill_{{ skill.id }}" value="basic" id="skill_{{ skill.id }}_basic">
-                                    <label class="form-check-label" for="skill_{{ skill.id }}_basic">
-                                        Basic
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="skill_{{ skill.id }}" value="intermediate" id="skill_{{ skill.id }}_intermediate">
-                                    <label class="form-check-label" for="skill_{{ skill.id }}_intermediate">
-                                        Intermediate
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="skill_{{ skill.id }}" value="advanced" id="skill_{{ skill.id }}_advanced">
-                                    <label class="form-check-label" for="skill_{{ skill.id }}_advanced">
-                                        Advanced
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="skill_{{ skill.id }}" value="expert" id="skill_{{ skill.id }}_expert">
-                                    <label class="form-check-label" for="skill_{{ skill.id }}_expert">
-                                        Expert
-                                    </label>
+                            <div class="glass-panel p-4" id="skillCard_{{ skill.id }}">
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-2 mb-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="brand-icon" style="width: 38px; height: 38px;">
+                                            <i class="{{ skill.icon }}"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="fw-bold mb-1">{{ skill.name }}</h5>
+                                            <p class="text-secondary small mb-0">{{ skill.description }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 flex-shrink-0">
+                                        <span class="badge-pill badge-purple small">{{ skill.get_difficulty_level_display }}</span>
+                                        <span class="badge-pill {% if skill.market_demand == 'Very High' %}badge-pink{% else %}badge-cyan{% endif %} small">
+                                            Demand: {{ skill.market_demand }}
+                                        </span>
+                                    </div>
                                 </div>
 
+                                <!-- Proficiency Levels Selector -->
                                 <div class="mb-3">
-                                    <label class="form-label">Years of Experience (optional)</label>
-                                    <input type="number" class="form-control" name="years_{{ skill.id }}" min="0" max="50" placeholder="Years of experience">
-                                    <small class="form-text text-muted">Enter number of years experience (0-50)</small>
+                                    <label class="form-label-custom small mb-2">Proficiency Level:</label>
+                                    <div class="row g-2">
+                                        {% for level_code, level_label in skill.user_skills.model.PROFICIENCY_LEVELS %}
+                                        <div class="col">
+                                            <input type="radio" 
+                                                   class="btn-check" 
+                                                   name="skill_{{ skill.id }}" 
+                                                   id="skill_{{ skill.id }}_{{ level_code }}" 
+                                                   value="{{ level_code }}"
+                                                   {% with user_skill_data=user_skills|get_item:skill.id %}
+                                                       {% if user_skill_data and user_skill_data.proficiency == level_code %}checked
+                                                       {% elif not user_skill_data and level_code == 'none' %}checked{% endif %}
+                                                   {% endwith %}>
+                                            <label class="btn btn-outline-glass w-100 py-2 px-1 text-center small text-capitalize" 
+                                                   for="skill_{{ skill.id }}_{{ level_code }}"
+                                                   style="font-size: 0.8rem;">
+                                                {{ level_label }}
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <!-- Years Experience & Confidence Slider -->
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-sm-6">
+                                        <label class="form-label-custom small mb-1" for="years_{{ skill.id }}">Experience (Years):</label>
+                                        <input type="number" 
+                                               step="0.5" 
+                                               min="0" 
+                                               max="40" 
+                                               name="years_{{ skill.id }}" 
+                                               id="years_{{ skill.id }}"
+                                               class="form-control-custom py-1 small" 
+                                               placeholder="e.g. 1.5"
+                                               value="{% with user_skill_data=user_skills|get_item:skill.id %}{% if user_skill_data %}{{ user_skill_data.years }}{% endif %}{% endwith %}">
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <label class="form-label-custom small mb-1">Confidence Score: <span id="confVal_{{ skill.id }}">75</span>%</label>
+                                        <input type="range" 
+                                               name="confidence_{{ skill.id }}" 
+                                               id="confidence_{{ skill.id }}" 
+                                               class="form-range" 
+                                               min="10" 
+                                               max="100" 
+                                               value="{% with user_skill_data=user_skills|get_item:skill.id %}{% if user_skill_data %}{{ user_skill_data.confidence }}{% else %}70{% endif %}{% endwith %}"
+                                               oninput="document.getElementById('confVal_{{ skill.id }}').innerText = this.value">
+                                    </div>
                                 </div>
                             </div>
-                            <hr class="my-4">
                             {% endfor %}
                         </div>
 
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary-skillher">
-                                Save Assessment
-                                <i class="fas fa-arrow-right ms-2"></i>
+                        <div class="d-flex justify-content-end gap-3 sticky-bottom py-3 px-4 glass-panel glow-purple" style="bottom: 1rem;">
+                            <button type="submit" class="btn-primary-gradient px-4 py-2 fs-6" id="btnSaveSkillMatrix">
+                                <i class="fas fa-check-circle"></i> Save Assessment & Generate Live Recommendations
                             </button>
                         </div>
                     </form>
                 </div>
+
+                <!-- ==========================================
+                     TAB 2: SCENARIO DIAGNOSTIC QUIZ
+                     ========================================== -->
+                <div class="tab-pane fade" id="quizTabContent" role="tabpanel">
+                    {% if questions %}
+                    <form method="post" id="scenarioQuizForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="submit_quiz">
+
+                        <div class="glass-panel p-4 mb-4">
+                            <h5 class="fw-bold mb-2">Scenario-Based Diagnostic for {{ domain_label }}</h5>
+                            <p class="text-secondary small mb-0">
+                                Answer the real-world engineering questions below. Your answers directly evaluate your conceptual and practical depth, automatically calibrating your recommendation roadmap.
+                            </p>
+                        </div>
+
+                        <div class="d-flex flex-column gap-4 mb-4">
+                            {% for q in questions %}
+                            <div class="glass-panel p-4" id="quizCard_{{ q.id }}">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <span class="badge-pill badge-purple small">Question {{ forloop.counter }} of {{ questions|length }}</span>
+                                    <span class="badge-pill badge-cyan small">{{ q.get_difficulty_display }}</span>
+                                </div>
+
+                                <h6 class="fw-bold mb-4" style="line-height: 1.45; font-size: 1.05rem;">
+                                    {{ q.question_text }}
+                                </h6>
+
+                                <div class="d-flex flex-column gap-2 mb-3">
+                                    <!-- Option A -->
+                                    <div class="p-2 px-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_a" value="a" required>
+                                            <label class="form-check-label small fw-medium" for="q_{{ q.id }}_a">
+                                                <strong>A:</strong> {{ q.option_a }}
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Option B -->
+                                    <div class="p-2 px-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_b" value="b">
+                                            <label class="form-check-label small fw-medium" for="q_{{ q.id }}_b">
+                                                <strong>B:</strong> {{ q.option_b }}
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Option C -->
+                                    <div class="p-2 px-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_c" value="c">
+                                            <label class="form-check-label small fw-medium" for="q_{{ q.id }}_c">
+                                                <strong>C:</strong> {{ q.option_c }}
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <!-- Option D -->
+                                    <div class="p-2 px-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_d" value="d">
+                                            <label class="form-check-label small fw-medium" for="q_{{ q.id }}_d">
+                                                <strong>D:</strong> {{ q.option_d }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-3 glass-panel glow-cyan p-4">
+                            <button type="submit" class="btn-cyan-gradient px-4 py-2 fs-6" id="btnSubmitQuiz">
+                                <i class="fas fa-paper-plane"></i> Submit Diagnostic & Auto-Score
+                            </button>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="glass-panel p-5 text-center">
+                        <i class="fas fa-clipboard-question fa-3x text-secondary mb-3"></i>
+                        <h5>No diagnostic questions available yet for this track.</h5>
+                        <p class="text-secondary small mb-3">You can calibrate your skill levels directly using the Proficiency Matrix tab above!</p>
+                        <button class="btn-primary-gradient" onclick="document.getElementById('matrix-tab').click();">
+                            Switch to Proficiency Matrix
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Sidebar: Domain Benchmark & Diagnostic Summary -->
+        <div class="col-lg-4">
+            <div class="d-flex flex-column gap-4 sticky-top" style="top: 5rem;">
+                
+                <!-- Track Overview Card -->
+                <div class="glass-panel p-4" id="trackOverviewCard">
+                    <span class="badge-pill badge-cyan mb-2">Track Overview</span>
+                    <h5 class="fw-bold mb-3">{{ benchmark_info.title }}</h5>
+
+                    <h6 class="small text-uppercase text-secondary fw-bold mb-2">Target Career Roles:</h6>
+                    <div class="d-flex flex-wrap gap-1 mb-4">
+                        {% for role in benchmark_info.target_roles %}
+                        <span class="badge-pill badge-purple small">{{ role }}</span>
+                        {% endfor %}
+                    </div>
+
+                    <h6 class="small text-uppercase text-secondary fw-bold mb-2">Core Competencies:</h6>
+                    <ul class="list-unstyled small d-flex flex-column gap-2 mb-4">
+                        {% for cskill in benchmark_info.core_skills %}
+                        <li class="d-flex align-items-center gap-2 text-secondary">
+                            <i class="fas fa-check-circle text-success small"></i>
+                            <span>{{ cskill }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="p-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <i class="fas fa-clock text-gradient"></i>
+                            <strong class="small">Recommended Pace:</strong>
+                        </div>
+                        <p class="small text-secondary mb-0">
+                            {{ user_profile.weekly_hours }} hours/week (~3 months to mastery)
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Latest Diagnostic Result Card (if exists) -->
+                {% if latest_result %}
+                <div class="glass-panel glow-purple p-4" id="latestResultCard">
+                    <span class="badge-pill badge-pink mb-2">Latest Assessment Score</span>
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h3 class="fw-bold text-gradient mb-0">{{ latest_result.score_percentage }}%</h3>
+                        <span class="badge-pill badge-emerald">{{ latest_result.assessed_level }}</span>
+                    </div>
+                    <p class="small text-secondary mb-3">
+                        {{ latest_result.feedback_summary }}
+                    </p>
+                    <a href="{% url 'view_recommendations' %}" class="btn-outline-glass w-100 py-2 text-center justify-content-center small fw-bold">
+                        <i class="fas fa-chart-pie me-1"></i> Review Recommendations
+                    </a>
+                </div>
+                {% endif %}
+
             </div>
         </div>
     </div>
-</section>
+
+</div>
 {% endblock %}

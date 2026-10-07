@@ -1,15 +1,15 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-here')
-# DEBUG = os.getenv('DEBUG', 'True') == 'True'
-DEBUG='True'
-ALLOWED_HOSTS = ['skillrecommender.vercel.app', '.vercel.app', 'localhost', '127.0.0.1']
+DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 't')
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.vercel.app', 'skillrecommender.vercel.app', '*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -18,7 +18,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'recommender',
+    'recommender.apps.RecommenderConfig',
 ]
 
 MIDDLEWARE = [
@@ -51,49 +51,34 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'skill_recommender.wsgi.application'
 
-# Database configuration
-import os
-
-if os.environ.get('USE_MONGODB'):
-    # MongoDB configuration using mongoengine
-    # We'll keep DATABASES for Django components that still need it (like sessions)
-    # but use mongoengine for our models
+# Production-grade Relational Database Configuration:
+# Defaults to robust persistent SQLite for zero-config local development,
+# and switches to PostgreSQL automatically when DATABASE_URL or DB_NAME is set.
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': ':memory:',  # In-memory SQLite for Django internals
-        }
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
-
-    # MongoEngine configuration
-    import mongoengine
-    mongoengine.connect(
-        db=os.environ.get('MONGO_DB_NAME', 'skill_recommender'),
-        host=os.environ.get('MONGO_HOST', 'localhost'),
-        port=int(os.environ.get('MONGO_PORT', 27017)),
-        username=os.environ.get('MONGO_USER', '') or None,
-        password=os.environ.get('MONGO_PASSWORD', '') or None,
-        authentication_source=os.environ.get('MONGO_AUTH_SOURCE', 'admin'),
-        auth_mechanism=os.environ.get('MONGO_AUTH_MECHANISM', 'SCRAM-SHA-256')
-    )
-elif os.environ.get('USE_EXTERNAL_DB'):
-    # External database configuration (e.g., PostgreSQL, MySQL)
+elif os.environ.get('DB_NAME'):
     DATABASES = {
         'default': {
             'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'),
             'NAME': os.environ.get('DB_NAME'),
-            'USER': os.environ.get('DB_USER'),
-            'PASSWORD': os.environ.get('DB_PASSWORD'),
-            'HOST': os.environ.get('DB_HOST'),
+            'USER': os.environ.get('DB_USER', 'postgres'),
+            'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
             'PORT': os.environ.get('DB_PORT', '5432'),
         }
     }
 else:
-    # Default to SQLite for development/demo - WARNING: data not persistent on Vercel!
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': '/tmp/db.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 
@@ -117,13 +102,15 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+LOGIN_REDIRECT_URL = 'profile'
+LOGIN_URL = 'login'
+LOGOUT_REDIRECT_URL = 'logout'
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    BASE_DIR / 'static',
 ]
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

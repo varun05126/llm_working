@@ -1,0 +1,107 @@
+{% extends 'recommender/base.html' %}
+{% load static %}
+
+{% block title %}Curated Tech Learning Resources - SkillHer{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div>
+            <span class="badge-pill badge-cyan mb-2">Verified Curations</span>
+            <h1 class="h2 fw-bold mb-1">Learning Resource Library</h1>
+            <p class="text-secondary small mb-0">
+                Top-rated, verified free and premium courses from Harvard, MIT, Mozilla, and leading engineering communities.
+            </p>
+        </div>
+
+        <a href="{% url 'view_recommendations' %}" class="btn-outline-glass btn-sm py-2 px-3">
+            <i class="fas fa-wand-magic-sparkles text-gradient me-1"></i> My Tailored Roadmap
+        </a>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="glass-panel p-3 mb-4">
+        <form method="get" class="row g-2 align-items-center">
+            <!-- Domain Filter -->
+            <div class="col-md-3">
+                <select name="domain" class="form-select-custom py-1 small">
+                    <option value="">All Career Domains</option>
+                    {% for code, label in domains %}
+                        {% if code != 'general' %}
+                        <option value="{{ code }}" {% if selected_domain == code %}selected{% endif %}>{{ label }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Resource Type Filter -->
+            <div class="col-md-3">
+                <select name="type" class="form-select-custom py-1 small">
+                    <option value="">All Formats (Course, Book...)</option>
+                    {% for code, label in resource_types %}
+                    <option value="{{ code }}" {% if selected_type == code %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Free Only Checkbox -->
+            <div class="col-md-3 d-flex align-items-center gap-2 px-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="free" value="1" id="freeCheck" {% if free_only == '1' %}checked{% endif %}>
+                    <label class="form-check-label small text-secondary" for="freeCheck">
+                        100% Free Only
+                    </label>
+                </div>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn-primary-gradient btn-sm w-100 justify-content-center">
+                    <i class="fas fa-filter me-1"></i> Filter
+                </button>
+                <a href="{% url 'resources' %}" class="btn-outline-glass btn-sm">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Resources Grid -->
+    <div class="row g-4">
+        {% for res in resources %}
+        <div class="col-md-6 col-lg-4">
+            <div class="glass-panel p-4 h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="badge-pill badge-cyan small py-0 px-2">{{ res.get_resource_type_display }}</span>
+                        <span class="small text-muted"><i class="fas fa-star text-warning"></i> {{ res.rating }}</span>
+                    </div>
+
+                    <h5 class="fw-bold mb-2 text-white">{{ res.title }}</h5>
+                    <p class="text-secondary small mb-3">{{ res.description }}</p>
+                </div>
+
+                <div>
+                    <div class="d-flex align-items-center justify-content-between small text-muted mb-3 pt-2 border-top border-secondary border-opacity-25">
+                        <span><i class="fas fa-building text-gradient me-1"></i> {{ res.provider }}</span>
+                        <span><i class="fas fa-clock me-1"></i> {{ res.duration_hours }} hrs</span>
+                    </div>
+
+                    <a href="{{ res.url }}" target="_blank" class="btn btn-outline-glass btn-sm w-100 justify-content-center">
+                        Launch Course <i class="fas fa-external-link-alt ms-1 small"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5 glass-panel">
+            <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+            <h5>No resources found matching your filter criteria.</h5>
+            <p class="text-secondary small">Try clearing filters to browse all verified learning options.</p>
+            <a href="{% url 'resources' %}" class="btn-primary-gradient btn-sm">Clear Filters</a>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

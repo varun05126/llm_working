@@ -1,79 +1,409 @@
 {% extends 'recommender/base.html' %}
+{% load static %}
 
-{% block title %}
-My Recommendations - SkillHer
-{% endblock %}
+{% block title %}AI Skill Recommendations - SkillHer{% endblock %}
 
 {% block content %}
-<section>
-    <div class="container">
-        <div class="section-title text-center mb-5">
-            <h2>Your Recommendations</h2>
-            <p class="text-muted">
-                Here are your personalized skill development recommendations
+<div class="container py-4">
+
+    <!-- Header & Live Regenerate Bar -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+        <div>
+            <span class="badge-pill badge-emerald mb-2">
+                <span class="spinner-grow spinner-grow-sm me-1" role="status" style="width: 8px; height: 8px;"></span>
+                Live Intelligence Active
+            </span>
+            <h1 class="h2 fw-bold mb-1">
+                Your Career Roadmap: <span class="text-gradient" id="displayTargetRole">{{ recommendation.target_role|default:"Full-Stack Developer" }}</span>
+            </h1>
+            <p class="text-secondary small mb-0">
+                Synthesized in real-time based on your assessed competencies, market demand, and weekly hours.
             </p>
         </div>
 
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn-primary-gradient btn-sm py-2 px-3" id="btnSyncRealtime" onclick="triggerRealtimeUpdate()">
+                <i class="fas fa-arrows-rotate me-1" id="syncSpinner"></i> Refresh Real-Time Analysis
+            </button>
+            <a href="{% url 'skill_assessment' %}?domain={{ user_profile.primary_interest }}" class="btn-outline-glass btn-sm py-2 px-3">
+                <i class="fas fa-sliders me-1"></i> Retake Assessment
+            </a>
+        </div>
+    </div>
 
-        {% if recommendations %}
-            <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
-                {% for recommendation in recommendations %}
-                <div class="col">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title">{{ recommendation.title }}</h5>
-                            <p class="card-text text-muted mb-2">
-                                <small>{{ recommendation.get_recommendation_type_display }}</small>
-                            </p>
-                            <p class="card-text flex-grow-1">
-                                {{ recommendation.description }}
-                            </p>
-                            {% if recommendation.generated_by_llm %}
-                                <div class="mt-3">
-                                    <span class="badge bg-primary me-2">
-                                        AI Generated
-                                    </span>
-                                    <span class="badge bg-info text-dark">
-                                        {{ recommendation.groq_model_used|title }}
-                                    </span>
+    <!-- ==========================================
+         LIVE CALIBRATION CONTROLS (AJAX NO-RELOAD)
+         ========================================== -->
+    <div class="glass-panel p-4 mb-4 glow-purple" id="realtimeControlPanel">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <label class="form-label-custom small mb-1">Focus Career Domain:</label>
+                <select class="form-select-custom" id="liveDomainSelect" onchange="triggerRealtimeUpdate()">
+                    {% for code, label in domains %}
+                        {% if code != 'general' %}
+                        <option value="{{ code }}" {% if user_profile.primary_interest == code %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-5">
+                <label class="form-label-custom small mb-1">Target Professional Title:</label>
+                <input type="text" class="form-control-custom" id="liveTargetRoleInput" 
+                       value="{{ recommendation.target_role }}" 
+                       placeholder="e.g. Senior Machine Learning Engineer" 
+                       onblur="triggerRealtimeUpdate()">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label-custom small mb-1">Weekly Commitment:</label>
+                <select class="form-select-custom" id="liveWeeklyHoursSelect" onchange="triggerRealtimeUpdate()">
+                    <option value="5" {% if user_profile.weekly_hours == 5 %}selected{% endif %}>5 hrs/week (Casual)</option>
+                    <option value="10" {% if user_profile.weekly_hours == 10 %}selected{% endif %}>10 hrs/week (Steady)</option>
+                    <option value="15" {% if user_profile.weekly_hours == 15 %}selected{% endif %}>15 hrs/week (Intensive)</option>
+                    <option value="20" {% if user_profile.weekly_hours == 20 %}selected{% endif %}>20+ hrs/week (Sprint)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Main Roadmap Column -->
+        <div class="col-lg-8">
+            
+            <!-- Strategic Career Guidance Banner -->
+            <div class="glass-panel p-4 mb-4" id="careerGuidanceBox">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="brand-icon" style="width: 34px; height: 34px;">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h5 class="fw-bold mb-0">Strategic Career Blueprint</h5>
+                    </div>
+                    {% if recommendation.generated_by_llm %}
+                    <span class="badge-pill badge-pink small">
+                        <i class="fas fa-robot"></i> {{ recommendation.groq_model_used }}
+                    </span>
+                    {% else %}
+                    <span class="badge-pill badge-cyan small">
+                        <i class="fas fa-bolt"></i> Real-Time Heuristic Engine
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="text-secondary small" style="line-height: 1.65; white-space: pre-line;" id="recommendationDescription">
+                    {{ recommendation.description }}
+                </div>
+            </div>
+
+            <!-- 3-Month Priority Skills Roadmap -->
+            <div class="glass-panel p-4 mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h5 class="fw-bold mb-0">Prioritized Competency Roadmap</h5>
+                    <span class="small text-muted">Click badges to toggle progress live</span>
+                </div>
+
+                <div class="roadmap-timeline" id="roadmapSkillsContainer">
+                    {% for rec_skill in rec_skills %}
+                    <div class="timeline-step" id="recSkillRow_{{ rec_skill.id }}">
+                        <div class="glass-panel p-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="brand-icon flex-shrink-0" style="width: 38px; height: 38px;">
+                                    <i class="{{ rec_skill.skill.icon }}"></i>
                                 </div>
-                            {% else %}
-                                <div class="mt-3">
-                                    <span class="badge bg-secondary">
-                                        Demo Data
-                                    </span>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                        <h6 class="fw-bold mb-0">{{ rec_skill.skill.name }}</h6>
+                                        <span class="badge-pill badge-purple small py-0 px-2">{{ rec_skill.timeline }}</span>
+                                    </div>
+                                    <p class="text-secondary small mb-0">{{ rec_skill.reasoning }}</p>
                                 </div>
-                            {% endif %}
-                            <a href="{% url 'recommendation_detail' recommendation.id %}" class="btn btn-primary-skillher mt-3">
-                                View Details
-                                <i class="fas fa-arrow-right ms-2"></i>
-                            </a>
+                            </div>
+
+                            <!-- Live Status Toggle Dropdown / Button -->
+                            <div class="flex-shrink-0">
+                                <button class="btn btn-sm {% if rec_skill.status == 'completed' %}btn-cyan-gradient{% elif rec_skill.status == 'in_progress' %}btn-primary-gradient{% else %}btn-outline-glass{% endif %} py-1 px-3 text-capitalize"
+                                        id="statusBtn_{{ rec_skill.id }}"
+                                        onclick="toggleSkillStatus({{ rec_skill.id }}, '{% if rec_skill.status == 'todo' %}in_progress{% elif rec_skill.status == 'in_progress' %}completed{% else %}todo{% endif %}')">
+                                    {% if rec_skill.status == 'completed' %}
+                                        <i class="fas fa-check-double me-1"></i> Mastered
+                                    {% elif rec_skill.status == 'in_progress' %}
+                                        <i class="fas fa-spinner fa-spin me-1"></i> In Progress
+                                    {% else %}
+                                        <i class="far fa-circle me-1"></i> To Do
+                                    {% endif %}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4 text-secondary">
+                        <p>No skill gaps detected! You can take or refresh your assessment anytime.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recommended High-Impact Resources -->
+            <div class="glass-panel p-4 mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <h5 class="fw-bold mb-0">Recommended Learning Resources</h5>
+                    <a href="{% url 'resources' %}" class="small text-secondary text-decoration-none">View All Resources &rarr;</a>
+                </div>
+
+                <div class="row g-3" id="roadmapResourcesContainer">
+                    {% for rec_res in rec_resources %}
+                    <div class="col-md-6">
+                        <div class="glass-panel p-3 h-100 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <span class="badge-pill badge-cyan small py-0 px-2">{{ rec_res.resource.get_resource_type_display }}</span>
+                                    <span class="small text-muted"><i class="fas fa-star text-warning"></i> {{ rec_res.resource.rating }}</span>
+                                </div>
+                                <h6 class="fw-bold mb-2 text-white">{{ rec_res.resource.title }}</h6>
+                                <p class="text-secondary small mb-3">{{ rec_res.resource.description|truncatewords:15 }}</p>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary border-opacity-25">
+                                <span class="small text-muted">{{ rec_res.resource.provider }}</span>
+                                <a href="{{ rec_res.resource.url }}" target="_blank" class="btn btn-outline-glass btn-sm py-1 px-3">
+                                    Start Learning <i class="fas fa-external-link-alt ms-1 small"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-3 text-secondary">
+                        <p class="small mb-0">Resources will automatically link to your top skill gaps.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sidebar Metrics Column -->
+        <div class="col-lg-4">
+            <div class="d-flex flex-column gap-4 sticky-top" style="top: 5rem;">
+                
+                <!-- Match Score Gauge Panel -->
+                <div class="glass-panel glow-cyan text-center p-4" id="matchGaugePanel">
+                    <span class="badge-pill badge-cyan mb-3">Market Readiness Score</span>
+                    
+                    <div class="gauge-circle-container my-3" style="width: 130px; height: 130px;">
+                        <div>
+                            <div class="gauge-score text-gradient-cyan" id="gaugeScoreVal">{{ recommendation.match_score|floatformat:0 }}%</div>
+                            <div class="gauge-label">Role Readiness</div>
+                        </div>
+                    </div>
+
+                    <p class="small text-secondary mb-3" id="matchScoreText">
+                        Your current assessed skill profile covers <strong>{{ recommendation.match_score|floatformat:0 }}%</strong> of market requirements for this position.
+                    </p>
+
+                    <div class="progress-container mb-3">
+                        <div class="progress-bar-glow" id="matchProgressBar" style="width: {{ recommendation.match_score }}%;"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-between small text-muted">
+                        <span>Foundational</span>
+                        <span>Proficient</span>
+                        <span>Job Ready</span>
+                    </div>
+                </div>
+
+                <!-- Benchmarks & Timeline Summary -->
+                <div class="glass-panel p-4" id="timelineSummaryPanel">
+                    <h6 class="fw-bold mb-3">Roadmap Milestones</h6>
+                    
+                    <div class="d-flex flex-column gap-3">
+                        <div class="p-2 px-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge-pill badge-pink small py-0 px-2">Month 1</span>
+                                <strong class="small text-white">Foundations & Core</strong>
+                            </div>
+                            <p class="small text-secondary mb-0">{{ benchmark.month_1 }}</p>
+                        </div>
+
+                        <div class="p-2 px-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge-pill badge-purple small py-0 px-2">Month 2</span>
+                                <strong class="small text-white">Applied Frameworks</strong>
+                            </div>
+                            <p class="small text-secondary mb-0">{{ benchmark.month_2 }}</p>
+                        </div>
+
+                        <div class="p-2 px-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge-pill badge-emerald small py-0 px-2">Month 3</span>
+                                <strong class="small text-white">Scale & Leadership</strong>
+                            </div>
+                            <p class="small text-secondary mb-0">{{ benchmark.month_3 }}</p>
                         </div>
                     </div>
                 </div>
-                {% endfor %}
+
             </div>
-        {% else %}
-            <div class="text-center py-5">
-                <i class="fas fa-chart-bar fa-3x mb-4 text-muted"></i>
-                <h4>No recommendations yet</h4>
-                <p class="text-muted">
-                    Complete your skill assessment to get personalized recommendations
-                </p>
-                <a href="{% url 'skill_assessment' %}" class="btn btn-primary-skillher mt-3">
-                    Take Skill Assessment
-                    <i class="fas fa-arrow-right ms-2"></i>
-                </a>
-            </div>
-        {% endif %}
+        </div>
     </div>
-</section>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    // CSRF helper for AJAX requests
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Trigger Real-Time Instant Synthesis via API without reloading
+    async function triggerRealtimeUpdate() {
+        const spinner = document.getElementById('syncSpinner');
+        if (spinner) spinner.classList.add('fa-spin');
+
+        const domain = document.getElementById('liveDomainSelect').value;
+        const targetRole = document.getElementById('liveTargetRoleInput').value;
+        const weeklyHours = document.getElementById('liveWeeklyHoursSelect').value;
+
+        try {
+            const response = await fetch("{% url 'api_realtime_recommendations' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                body: JSON.stringify({
+                    domain: domain,
+                    target_role: targetRole,
+                    weekly_hours: weeklyHours
+                })
+            });
+
+            const data = await response.json();
+            if (data.status === 'success') {
+                // Update header and description
+                document.getElementById('displayTargetRole').innerText = data.target_role;
+                document.getElementById('recommendationDescription').innerText = data.description;
+                
+                // Update match score & gauge
+                const roundedScore = Math.round(data.match_score);
+                document.getElementById('gaugeScoreVal').innerText = roundedScore + '%';
+                document.getElementById('matchProgressBar').style.width = data.match_score + '%';
+                document.getElementById('matchScoreText').innerHTML = 
+                    `Your current assessed skill profile covers <strong>${roundedScore}%</strong> of market requirements for this position.`;
+
+                // Re-render skills dynamically
+                const skillsContainer = document.getElementById('roadmapSkillsContainer');
+                if (skillsContainer && data.skills) {
+                    skillsContainer.innerHTML = data.skills.map(s => `
+                        <div class="timeline-step" id="recSkillRow_${s.id}">
+                            <div class="glass-panel p-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="brand-icon flex-shrink-0" style="width: 38px; height: 38px;">
+                                        <i class="${s.icon}"></i>
+                                    </div>
+                                    <div>
+                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                            <h6 class="fw-bold mb-0">${s.name}</h6>
+                                            <span class="badge-pill badge-purple small py-0 px-2">${s.timeline}</span>
+                                        </div>
+                                        <p class="text-secondary small mb-0">${s.reasoning}</p>
+                                    </div>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <button class="btn btn-sm ${s.status === 'completed' ? 'btn-cyan-gradient' : s.status === 'in_progress' ? 'btn-primary-gradient' : 'btn-outline-glass'} py-1 px-3 text-capitalize"
+                                            id="statusBtn_${s.id}"
+                                            onclick="toggleSkillStatus(${s.id}, '${s.status === 'todo' ? 'in_progress' : s.status === 'in_progress' ? 'completed' : 'todo'}')">
+                                        ${s.status === 'completed' ? '<i class="fas fa-check-double me-1"></i> Mastered' : 
+                                          s.status === 'in_progress' ? '<i class="fas fa-spinner fa-spin me-1"></i> In Progress' : 
+                                          '<i class="far fa-circle me-1"></i> To Do'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                // Re-render resources dynamically
+                const resContainer = document.getElementById('roadmapResourcesContainer');
+                if (resContainer && data.resources) {
+                    resContainer.innerHTML = data.resources.map(r => `
+                        <div class="col-md-6">
+                            <div class="glass-panel p-3 h-100 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <span class="badge-pill badge-cyan small py-0 px-2">${r.type}</span>
+                                        <span class="small text-muted"><i class="fas fa-star text-warning"></i> ${r.rating}</span>
+                                    </div>
+                                    <h6 class="fw-bold mb-2 text-white">${r.title}</h6>
+                                    <p class="text-secondary small mb-3">Tailored for ${r.skill}</p>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary border-opacity-25">
+                                    <span class="small text-muted">${r.provider}</span>
+                                    <a href="${r.url}" target="_blank" class="btn btn-outline-glass btn-sm py-1 px-3">
+                                        Start Learning <i class="fas fa-external-link-alt ms-1 small"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        } catch (err) {
+            console.error("Realtime update error:", err);
+        } finally {
+            if (spinner) spinner.classList.remove('fa-spin');
+        }
+    }
+
+    // Toggle status of skill (todo -> in_progress -> completed)
+    async function toggleSkillStatus(recSkillId, newStatus) {
+        try {
+            const response = await fetch("{% url 'api_toggle_skill_status' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                body: JSON.stringify({
+                    rec_skill_id: recSkillId,
+                    status: newStatus
+                })
+            });
+            const data = await response.json();
+            if (data.status === 'success') {
+                const btn = document.getElementById('statusBtn_' + recSkillId);
+                if (btn) {
+                    if (newStatus === 'completed') {
+                        btn.className = "btn btn-sm btn-cyan-gradient py-1 px-3 text-capitalize";
+                        btn.innerHTML = '<i class="fas fa-check-double me-1"></i> Mastered';
+                        btn.setAttribute('onclick', `toggleSkillStatus(${recSkillId}, 'todo')`);
+                    } else if (newStatus === 'in_progress') {
+                        btn.className = "btn btn-sm btn-primary-gradient py-1 px-3 text-capitalize";
+                        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> In Progress';
+                        btn.setAttribute('onclick', `toggleSkillStatus(${recSkillId}, 'completed')`);
+                    } else {
+                        btn.className = "btn btn-sm btn-outline-glass py-1 px-3 text-capitalize";
+                        btn.innerHTML = '<i class="far fa-circle me-1"></i> To Do';
+                        btn.setAttribute('onclick', `toggleSkillStatus(${recSkillId}, 'in_progress')`);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Toggle skill status error:", err);
+        }
+    }
+</script>
 {% endblock %}

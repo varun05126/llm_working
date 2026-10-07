@@ -1,8 +1,10 @@
 from django.urls import path
+from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
     path('', views.home, name='home'),
+    path('login/', auth_views.LoginView.as_view(template_name='recommender/login.html'), name='login'),
     path('register/', views.register, name='register'),
     path('profile/', views.profile, name='profile'),
     path('skill-assessment/', views.skill_assessment, name='skill_assessment'),
@@ -11,5 +13,9 @@ urlpatterns = [
     path('recommendation/<int:rec_id>/', views.recommendation_detail, name='recommendation_detail'),
     path('resources/', views.resources, name='resources'),
     path('about/', views.about, name='about'),
-    path('logout/', views.logout, name='logout')
+    path('logout/', views.logout_view, name='logout'),
+    
+    # Real-Time APIs for interactive async operations
+    path('api/recommendations/realtime/', views.realtime_recommendations_api, name='api_realtime_recommendations'),
+    path('api/recommendations/toggle-status/', views.toggle_skill_status_api, name='api_toggle_skill_status'),
 ]

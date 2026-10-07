@@ -1,0 +1,44 @@
+{% extends 'recommender/base.html' %}
+{% load static %}
+
+{% block title %}About - SkillHer{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="glass-panel p-5 glow-purple mb-5">
+                <span class="badge-pill badge-pink mb-3">Our Mission</span>
+                <h1 class="display-6 fw-bold mb-3">Empowering Women in Technology & Leadership</h1>
+                <p class="lead text-secondary mb-4">
+                    SkillHer is designed to address systemic career progression gaps in tech. By combining intelligent diagnostic skill assessments with real-time competency matching and curated roadmaps, we help women achieve high-leverage engineering and leadership roles.
+                </p>
+
+                <div class="row g-4 pt-3">
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                            <i class="fas fa-bullseye text-gradient fs-4 mb-2"></i>
+                            <h6 class="fw-bold text-white mb-1">Targeted Diagnostics</h6>
+                            <p class="small text-secondary mb-0">Scenario-based assessments evaluate real-world problem solving rather than trivia.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                            <i class="fas fa-bolt text-gradient-cyan fs-4 mb-2"></i>
+                            <h6 class="fw-bold text-white mb-1">Real-Time Synthesis</h6>
+                            <p class="small text-secondary mb-0">Dynamic recommendation engine recalculates readiness scores in milliseconds.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                            <i class="fas fa-database text-success fs-4 mb-2"></i>
+                            <h6 class="fw-bold text-white mb-1">Robust Architecture</h6>
+                            <p class="small text-secondary mb-0">Powered by Django ORM with PostgreSQL & SQLite relational reliability.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

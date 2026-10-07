@@ -1,451 +1,292 @@
 {% extends 'recommender/base.html' %}
+{% load static %}
 
-{% block title %}
-SkillHer - Empower Your Career
-{% endblock %}
-
+{% block title %}SkillHer - AI Career Acceleration & Skill Intelligence{% endblock %}
 
 {% block content %}
+<div class="container py-4">
 
-
-<!-- HERO SECTION -->
-
-<section class="hero-section">
-
-    <div class="container">
-
-        <div class="row align-items-center">
-
+    <!-- ==========================================
+         HERO SECTION
+         ========================================== -->
+    <section class="position-relative py-5">
+        <div class="row align-items-center g-5">
+            <!-- Left Column: Copy & CTAs -->
             <div class="col-lg-7">
-
-                <div class="hero-content">
-
-                    <div class="hero-badge">
-
-                        <i class="fas fa-sparkles"></i>
-
-                        AI-Powered Career Guidance
-
-                    </div>
-
-
-                    <h1>
-
-                        Build Your Skills.
-                        <br>
-
-                        <span>Shape Your Future.</span>
-
-                    </h1>
-
-
-                    <p>
-
-                        SkillHer helps women discover the right skills,
-                        identify career opportunities, and create a
-                        personalized path toward professional success.
-
-                    </p>
-
-
-                    <div class="hero-buttons">
-
-                        {% if user.is_authenticated %}
-
-                        <a href="{% url 'skill_assessment' %}"
-                           class="btn btn-primary-skillher">
-
-                            Start Skill Assessment
-
-                            <i class="fas fa-arrow-right ms-2"></i>
-
-                        </a>
-
-                        {% else %}
-
-                        <a href="{% url 'register' %}"
-                           class="btn btn-primary-skillher">
-
-                            Start Your Journey
-
-                            <i class="fas fa-arrow-right ms-2"></i>
-
-                        </a>
-
-                        <a href="#how-it-works"
-                           class="btn btn-outline-skillher">
-
-                            Learn More
-
-                        </a>
-
-                        {% endif %}
-
-                    </div>
-
-
-                    <div class="hero-stats">
-
-                        <div>
-
-                            <h4>AI</h4>
-
-                            <span>Powered Insights</span>
-
-                        </div>
-
-
-                        <div>
-
-                            <h4>100%</h4>
-
-                            <span>Personalized</span>
-
-                        </div>
-
-
-                        <div>
-
-                            <h4>∞</h4>
-
-                            <span>Career Possibilities</span>
-
-                        </div>
-
-                    </div>
-
+                <div class="badge-pill badge-purple mb-3 animate-glow" id="heroBadge">
+                    <i class="fas fa-sparkles text-gradient"></i> Next-Gen AI Career Guidance for Women in Tech
                 </div>
 
+                <h1 class="display-4 fw-extrabold mb-4" style="line-height: 1.15;">
+                    Empowering Your Career with <br>
+                    <span class="text-gradient">Real-Time Skill Intelligence</span>
+                </h1>
+
+                <p class="lead text-secondary mb-4" style="font-size: 1.15rem; max-width: 580px;">
+                    Bridge the gender gap in tech leadership. SkillHer analyzes your unique interests, diagnoses skill gaps dynamically, and architects a personalized 3-month career roadmap tailored for high-growth roles.
+                </p>
+
+                <div class="d-flex flex-wrap align-items-center gap-3 mb-5">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'view_recommendations' %}" class="btn-primary-gradient px-4 py-3 fs-6" id="btnHeroRecs">
+                        <i class="fas fa-wand-magic-sparkles"></i> Open Recommendations Dashboard
+                    </a>
+                    <a href="{% url 'skill_assessment' %}" class="btn-outline-glass px-4 py-3 fs-6" id="btnHeroAssessment">
+                        <i class="fas fa-bullseye"></i> Take Skill Assessment
+                    </a>
+                    {% else %}
+                    <a href="{% url 'register' %}" class="btn-primary-gradient px-4 py-3 fs-6" id="btnHeroRegister">
+                        Start Your Career Path <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                    <a href="{% url 'login' %}" class="btn-outline-glass px-4 py-3 fs-6" id="btnHeroLogin">
+                        Sign In <i class="fas fa-arrow-right-to-bracket ms-2"></i>
+                    </a>
+                    {% endif %}
+                </div>
+
+                <!-- Stats Counter -->
+                <div class="row g-3 pt-3 border-top border-secondary border-opacity-25" id="heroStatsRow">
+                    <div class="col-4">
+                        <h3 class="fw-bold mb-0 text-gradient">{{ stats.skills_count }}+</h3>
+                        <span class="small text-muted">Curated Tech Skills</span>
+                    </div>
+                    <div class="col-4">
+                        <h3 class="fw-bold mb-0 text-gradient-cyan">{{ stats.domains_count }}</h3>
+                        <span class="small text-muted">Specialized Tracks</span>
+                    </div>
+                    <div class="col-4">
+                        <h3 class="fw-bold mb-0 text-gradient">Instant</h3>
+                        <span class="small text-muted">Real-Time Synthesis</span>
+                    </div>
+                </div>
             </div>
 
-
+            <!-- Right Column: Interactive Hero Preview Glass Card -->
             <div class="col-lg-5">
-
-                <div class="hero-visual">
-
-                    <div class="hero-circle circle-one"></div>
-
-                    <div class="hero-circle circle-two"></div>
-
-
-                    <div class="career-card-main">
-
-                        <div class="career-icon">
-
-                            <i class="fas fa-chart-line"></i>
-
-                        </div>
-
-                        <h4>Your Career Growth</h4>
-
-                        <p>Discover your next opportunity</p>
-
-
-                        <div class="progress">
-
-                            <div class="progress-bar"
-                                 style="width: 75%">
+                <div class="glass-panel glow-purple animate-float p-4" id="heroPreviewCard">
+                    <!-- Card Top Header -->
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="brand-icon" style="width: 44px; height: 44px;">
+                                <i class="fas fa-robot"></i>
                             </div>
-
+                            <div>
+                                <h6 class="mb-0 fw-bold">Real-Time Career Analysis</h6>
+                                <span class="badge-pill badge-emerald small py-0 px-2" style="font-size: 0.7rem;">Live Matching</span>
+                            </div>
                         </div>
-
-                        <small>75% Career Potential Unlocked</small>
-
+                        <span class="badge-pill badge-purple">AI Engine</span>
                     </div>
 
-
-                    <div class="floating-card skills-card">
-
-                        <i class="fas fa-code"></i>
-
-                        <div>
-
-                            <strong>New Skills</strong>
-
-                            <span>Recommended for you</span>
-
+                    <!-- Match Readiness Gauge Preview -->
+                    <div class="text-center p-3 mb-3 rounded-4" style="background: rgba(0,0,0,0.25); border: 1px solid var(--border-subtle);">
+                        <div class="gauge-circle-container" style="height: 100px;">
+                            <div>
+                                <div class="gauge-score text-gradient" style="font-size: 2.5rem;">88%</div>
+                                <div class="gauge-label">Market Readiness Match</div>
+                            </div>
                         </div>
-
+                        <p class="small text-secondary mb-0 mt-2">Target Role: <strong class="text-white">Senior Full-Stack Architect</strong></p>
                     </div>
 
-
-                    <div class="floating-card success-card">
-
-                        <i class="fas fa-rocket"></i>
-
-                        <div>
-
-                            <strong>Career Growth</strong>
-
-                            <span>Your journey begins here</span>
-
+                    <!-- Top Priority Skill Gaps Preview -->
+                    <h6 class="small text-uppercase text-secondary fw-bold mb-2" style="letter-spacing: 0.05em;">Priority Milestones</h6>
+                    
+                    <div class="d-flex flex-column gap-2 mb-3">
+                        <div class="p-2 px-3 rounded-3 d-flex align-items-center justify-content-between" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fab fa-react text-info"></i>
+                                <span class="small fw-semibold">React & Architecture</span>
+                            </div>
+                            <span class="badge-pill badge-pink py-0 px-2" style="font-size: 0.72rem;">Month 1 &bull; Priority 1</span>
                         </div>
 
+                        <div class="p-2 px-3 rounded-3 d-flex align-items-center justify-content-between" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-database text-warning"></i>
+                                <span class="small fw-semibold">PostgreSQL & Indexing</span>
+                            </div>
+                            <span class="badge-pill badge-purple py-0 px-2" style="font-size: 0.72rem;">Month 2 &bull; Priority 2</span>
+                        </div>
+
+                        <div class="p-2 px-3 rounded-3 d-flex align-items-center justify-content-between" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-handshake text-success"></i>
+                                <span class="small fw-semibold">Executive Advocacy</span>
+                            </div>
+                            <span class="badge-pill badge-emerald py-0 px-2" style="font-size: 0.72rem;">Month 3 &bull; Priority 3</span>
+                        </div>
                     </div>
 
+                    <a href="{% url 'skill_assessment' %}" class="btn-cyan-gradient w-100 py-2 text-center justify-content-center small fw-bold">
+                        <i class="fas fa-bolt"></i> Calibrate Your Skills Now
+                    </a>
                 </div>
-
             </div>
-
         </div>
+    </section>
 
-    </div>
-
-</section>
-
-
-
-<!-- FEATURES -->
-
-<section class="features-section">
-
-    <div class="container">
-
-        <div class="section-title text-center">
-
-            <span>WHY SKILLHER?</span>
-
-            <h2>Everything You Need to Grow</h2>
-
-            <p>
-
-                Personalized guidance designed to help you make confident
-                career decisions.
-
+    <!-- ==========================================
+         TRACKS & DOMAINS EXPLORER
+         ========================================== -->
+    <section class="py-5" id="domainsSection">
+        <div class="text-center mb-5">
+            <span class="badge-pill badge-cyan mb-2">Targeted Specialization</span>
+            <h2 class="display-6 fw-bold">Explore Career Tracks By Interest</h2>
+            <p class="text-secondary mx-auto" style="max-width: 620px;">
+                Choose your field of ambition. SkillHer customizes assessment quizzes, gap metrics, and learning curves to match industry demand.
             </p>
-
         </div>
-
 
         <div class="row g-4">
-
-            <div class="col-md-4">
-
-                <div class="feature-card">
-
-                    <div class="feature-icon purple">
-
-                        <i class="fas fa-brain"></i>
-
+            <!-- Web Dev -->
+            <div class="col-md-6 col-lg-3">
+                <a href="{% url 'skill_assessment' %}?domain=web_dev" class="text-decoration-none h-100 d-block">
+                    <div class="glass-panel h-100 d-flex flex-column justify-content-between p-4">
+                        <div>
+                            <div class="brand-icon mb-3" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+                                <i class="fas fa-code"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">Full-Stack Web</h5>
+                            <p class="small text-secondary mb-3">
+                                React, TypeScript, Django, PostgreSQL, and scalable microservices.
+                            </p>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary border-opacity-25">
+                            <span class="badge-pill badge-purple small">6 Skills</span>
+                            <span class="text-secondary small fw-bold">Assess Track &rarr;</span>
+                        </div>
                     </div>
-
-                    <h4>AI Recommendations</h4>
-
-                    <p>
-
-                        Get personalized skill recommendations based
-                        on your interests, education, and career goals.
-
-                    </p>
-
-                </div>
-
+                </a>
             </div>
 
-
-            <div class="col-md-4">
-
-                <div class="feature-card">
-
-                    <div class="feature-icon pink">
-
-                        <i class="fas fa-user-check"></i>
-
+            <!-- AI & ML -->
+            <div class="col-md-6 col-lg-3">
+                <a href="{% url 'skill_assessment' %}?domain=ai_ml" class="text-decoration-none h-100 d-block">
+                    <div class="glass-panel h-100 d-flex flex-column justify-content-between p-4">
+                        <div>
+                            <div class="brand-icon mb-3" style="background: linear-gradient(135deg, #8b5cf6, #ec4899);">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">AI & Machine Learning</h5>
+                            <p class="small text-secondary mb-3">
+                                PyTorch, Transformers, LLM fine-tuning, RAG, and MLOps pipelines.
+                            </p>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary border-opacity-25">
+                            <span class="badge-pill badge-pink small">5 Skills</span>
+                            <span class="text-secondary small fw-bold">Assess Track &rarr;</span>
+                        </div>
                     </div>
-
-                    <h4>Skill Assessment</h4>
-
-                    <p>
-
-                        Understand your current strengths and identify
-                        the skills you need to develop.
-
-                    </p>
-
-                </div>
-
+                </a>
             </div>
 
-
-            <div class="col-md-4">
-
-                <div class="feature-card">
-
-                    <div class="feature-icon orange">
-
-                        <i class="fas fa-rocket"></i>
-
+            <!-- Cloud & DevOps -->
+            <div class="col-md-6 col-lg-3">
+                <a href="{% url 'skill_assessment' %}?domain=cloud_devops" class="text-decoration-none h-100 d-block">
+                    <div class="glass-panel h-100 d-flex flex-column justify-content-between p-4">
+                        <div>
+                            <div class="brand-icon mb-3" style="background: linear-gradient(135deg, #06b6d4, #3b82f6);">
+                                <i class="fas fa-cloud"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">Cloud & DevOps</h5>
+                            <p class="small text-secondary mb-3">
+                                Linux, Docker, AWS architecture, CI/CD, and Kubernetes orchestration.
+                            </p>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary border-opacity-25">
+                            <span class="badge-pill badge-cyan small">4 Skills</span>
+                            <span class="text-secondary small fw-bold">Assess Track &rarr;</span>
+                        </div>
                     </div>
-
-                    <h4>Career Growth</h4>
-
-                    <p>
-
-                        Build a personalized learning path and take
-                        meaningful steps toward your dream career.
-
-                    </p>
-
-                </div>
-
+                </a>
             </div>
 
+            <!-- UI/UX & Product Design -->
+            <div class="col-md-6 col-lg-3">
+                <a href="{% url 'skill_assessment' %}?domain=ui_ux" class="text-decoration-none h-100 d-block">
+                    <div class="glass-panel h-100 d-flex flex-column justify-content-between p-4">
+                        <div>
+                            <div class="brand-icon mb-3" style="background: linear-gradient(135deg, #ec4899, #f59e0b);">
+                                <i class="fas fa-pen-nib"></i>
+                            </div>
+                            <h5 class="fw-bold mb-2">UI/UX & Product Design</h5>
+                            <p class="small text-secondary mb-3">
+                                Figma systems, user research, tokens, accessibility, and interactive design.
+                            </p>
+                        </div>
+                        <div class="d-flex align-items-center justify-content-between pt-2 border-top border-secondary border-opacity-25">
+                            <span class="badge-pill badge-amber small">2 Skills</span>
+                            <span class="text-secondary small fw-bold">Assess Track &rarr;</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
+    </section>
 
-    </div>
+    <!-- ==========================================
+         FEATURE SHOWCASE
+         ========================================== -->
+    <section class="py-5" id="featuresSection">
+        <div class="glass-panel glow-purple p-5">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <span class="badge-pill badge-pink mb-3">Intelligent Platform Pillars</span>
+                    <h2 class="display-6 fw-bold mb-4">How SkillHer Accelerates Your Journey</h2>
+                    
+                    <div class="d-flex gap-3 mb-4">
+                        <div class="brand-icon flex-shrink-0" style="width: 36px; height: 36px;">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Interest-Driven Diagnostic Assessments</h5>
+                            <p class="text-secondary small mb-0">
+                                Forget generic questionnaires. SkillHer serves real-world scenario questions tailored directly to your chosen tech domain.
+                            </p>
+                        </div>
+                    </div>
 
-</section>
+                    <div class="d-flex gap-3 mb-4">
+                        <div class="brand-icon flex-shrink-0" style="width: 36px; height: 36px; background: var(--gradient-accent);">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Real-Time Gap & Match Scoring</h5>
+                            <p class="text-secondary small mb-0">
+                                As you adjust proficiencies or target roles, our real-time recommendation engine computes immediate market readiness scores.
+                            </p>
+                        </div>
+                    </div>
 
+                    <div class="d-flex gap-3">
+                        <div class="brand-icon flex-shrink-0" style="width: 36px; height: 36px; background: linear-gradient(135deg, #10b981, #06b6d4);">
+                            <i class="fas fa-road"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-1">Actionable 3-Month Learning Roadmap</h5>
+                            <p class="text-secondary small mb-0">
+                                Get structured, chronological learning milestones paired with verified top-rated courses and projects from MIT, Harvard, and Mozilla.
+                            </p>
+                        </div>
+                    </div>
+                </div>
 
-
-<!-- HOW IT WORKS -->
-
-<section class="how-section"
-         id="how-it-works">
-
-    <div class="container">
-
-        <div class="section-title text-center">
-
-            <span>HOW IT WORKS</span>
-
-            <h2>Your Journey Starts Here</h2>
-
+                <div class="col-lg-6 text-center">
+                    <div class="p-4 rounded-4" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-card);">
+                        <i class="fas fa-laptop-code fa-4x text-gradient mb-3"></i>
+                        <h4 class="fw-bold mb-2">Ready to level up your engineering career?</h4>
+                        <p class="text-secondary small mb-4">
+                            Join hundreds of women stepping confidently into high-demand technical roles and engineering leadership.
+                        </p>
+                        <a href="{% url 'skill_assessment' %}" class="btn-primary-gradient px-4 py-2">
+                            Start Free Assessment Now <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
+    </section>
 
-
-        <div class="row g-4 justify-content-center">
-
-
-            <div class="col-md-4">
-
-                <div class="step-card">
-
-                    <div class="step-number">01</div>
-
-                    <div class="step-icon">
-
-                        <i class="fas fa-user-edit"></i>
-
-                    </div>
-
-                    <h4>Create Your Profile</h4>
-
-                    <p>
-
-                        Tell us about your education, interests,
-                        skills, and career goals.
-
-                    </p>
-
-                </div>
-
-            </div>
-
-
-
-            <div class="col-md-4">
-
-                <div class="step-card">
-
-                    <div class="step-number">02</div>
-
-                    <div class="step-icon">
-
-                        <i class="fas fa-list-check"></i>
-
-                    </div>
-
-                    <h4>Assess Your Skills</h4>
-
-                    <p>
-
-                        Evaluate your current abilities and identify
-                        areas where you can grow.
-
-                    </p>
-
-                </div>
-
-            </div>
-
-
-
-            <div class="col-md-4">
-
-                <div class="step-card">
-
-                    <div class="step-number">03</div>
-
-                    <div class="step-icon">
-
-                        <i class="fas fa-lightbulb"></i>
-
-                    </div>
-
-                    <h4>Get Your Path</h4>
-
-                    <p>
-
-                        Receive personalized recommendations and
-                        start building your future.
-
-                    </p>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</section>
-
-
-
-<!-- CALL TO ACTION -->
-
-<section class="cta-section">
-
-    <div class="container text-center">
-
-        <h2>
-
-            Your Future Is Waiting.
-
-        </h2>
-
-        <p>
-
-            Take the first step toward discovering your potential.
-
-        </p>
-
-
-        {% if user.is_authenticated %}
-
-        <a href="{% url 'skill_assessment' %}"
-           class="btn btn-light btn-lg">
-
-            Take Skill Assessment
-
-        </a>
-
-        {% else %}
-
-        <a href="{% url 'register' %}"
-           class="btn btn-light btn-lg">
-
-            Create Free Account
-
-        </a>
-
-        {% endif %}
-
-    </div>
-
-</section>
-
-
+</div>
 {% endblock %}
