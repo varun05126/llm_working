@@ -35,9 +35,9 @@ async function main() {
 
     // Configure transporter
     let transporter;
-    const smtpHost = process.env.SMTP_HOST;
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
+    const smtpHost = (process.env.SMTP_HOST || 'smtp.gmail.com').trim();
+    const smtpUser = (process.env.SMTP_USER || '').trim();
+    const smtpPass = (process.env.SMTP_PASS || '').replace(/\s+/g, '').trim();
 
     if (smtpHost && smtpUser && smtpPass) {
         transporter = nodemailer.createTransport({
@@ -57,7 +57,7 @@ async function main() {
     }
 
     const mailOptions = {
-        from: `"${name}" <${email}>`,
+        from: `"${name} via SkillHer" <${smtpUser || email}>`,
         to: process.env.CONTACT_EMAIL || 'malthumkarvarun@gmail.com',
         replyTo: email,
 

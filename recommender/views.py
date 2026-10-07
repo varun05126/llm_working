@@ -1,6 +1,12 @@
 import json
 import os
+import shutil
+import smtplib
+import ssl
 import subprocess
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import formataddr, make_msgid
 import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout as auth_logout
@@ -780,38 +786,168 @@ def logout_view(request):
     return render(request, 'recommender/logout.html')
 
 
-def send_email_via_nodemailer(payload):
+def send_email_via_python_smtp(payload):
     """
-    Invokes the Node.js Nodemailer script (mailer.js) to dispatch email.
-    Returns (success: bool, info: dict)
+    Direct Python TLS SMTP dispatcher (100% standard library, zero external deps).
+    Works reliably in serverless environments like Vercel where Node.js is not present.
     """
-    mailer_script = os.path.join(settings.BASE_DIR, 'mailer.js')
-    if not os.path.exists(mailer_script):
-        return False, {'message': 'mailer.js script not found'}
+    smtp_host = os.environ.get('SMTP_HOST', 'smtp.gmail.com').strip()
+    smtp_port_raw = os.environ.get('SMTP_PORT', '587').strip()
+    try:
+        smtp_port = int(smtp_port_raw)
+    except (ValueError, TypeError):
+        smtp_port = 587
+
+    smtp_user = os.environ.get('SMTP_USER', '').strip()
+    # Strip whitespace/spaces (handles Google App Passwords copied with spaces)
+    smtp_pass = os.environ.get('SMTP_PASS', '').replace(' ', '').replace('\t', '').strip()
+    contact_email = os.environ.get('CONTACT_EMAIL', 'malthumkarvarun@gmail.com').strip()
+
+    name = payload.get('name', 'Anonymous').strip()
+    sender_email = payload.get('email', '').strip()
+    category = payload.get('category', 'General').strip()
+    subject = payload.get('subject', 'New Contact Message').strip()
+    message = payload.get('message', '').strip()
+
+    if not smtp_user or not smtp_pass:
+        return False, {
+            'error': 'SMTP credentials not configured (SMTP_USER or SMTP_PASS missing in environment)',
+            'engine': 'python_smtp'
+        }
+
+    # Construct the message
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = f"[SkillHer Contact - {category}] {subject}"
+    msg['From'] = formataddr((f"{name} via SkillHer", smtp_user))
+    msg['To'] = contact_email
+    if sender_email:
+        msg['Reply-To'] = sender_email
+    msg_id = make_msgid(domain='skillher.platform')
+    msg['Message-ID'] = msg_id
+
+    # Text body
+    text_content = (
+        f"New Contact Inquiry on SkillHer\n\n"
+        f"Sender: {name} ({sender_email})\n"
+        f"Category: {category}\n"
+        f"Subject: {subject}\n\n"
+        f"Message:\n{message}\n\n"
+        f"--\n"
+        f"SkillHer Recommender Platform\n"
+        f"Recipient: {contact_email}"
+    )
+
+    # HTML body
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head><meta charset="utf-8"></head>
+    <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; padding: 24px; color: #1e293b;">
+        <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+            <div style="background: linear-gradient(135deg, #6366f1, #a855f7); padding: 24px 28px; color: #ffffff;">
+                <h2 style="margin: 0; font-size: 20px; font-weight: 700; color: #ffffff;">SkillHer Contact Inquiry</h2>
+                <p style="margin: 6px 0 0; opacity: 0.9; font-size: 13px; color: #f1f5f9;">New message submitted via contact form</p>
+            </div>
+            <div style="padding: 24px 28px;">
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                    <tr>
+                        <td style="padding: 8px 0; color: #64748b; font-size: 13px; width: 120px;"><strong>Sender Name:</strong></td>
+                        <td style="padding: 8px 0; color: #0f172a; font-size: 14px; font-weight: 600;">{name}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; color: #64748b; font-size: 13px;"><strong>Email Address:</strong></td>
+                        <td style="padding: 8px 0; color: #0f172a; font-size: 14px;"><a href="mailto:{sender_email}" style="color: #6366f1; text-decoration: none;">{sender_email}</a></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; color: #64748b; font-size: 13px;"><strong>Category:</strong></td>
+                        <td style="padding: 8px 0; color: #0f172a; font-size: 14px;"><span style="display: inline-block; padding: 2px 10px; background: #ede9fe; color: #6b21a8; border-radius: 9999px; font-size: 12px; font-weight: 600;">{category}</span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px 0; color: #64748b; font-size: 13px;"><strong>Subject:</strong></td>
+                        <td style="padding: 8px 0; color: #0f172a; font-size: 14px; font-weight: 600;">{subject}</td>
+                    </tr>
+                </table>
+                <div style="background: #f8fafc; border-left: 4px solid #6366f1; padding: 16px 20px; border-radius: 6px; margin-top: 10px;">
+                    <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700; margin-bottom: 8px;">Message Content:</div>
+                    <p style="margin: 0; color: #334155; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">{message}</p>
+                </div>
+            </div>
+            <div style="padding: 16px 28px; background: #f1f5f9; border-top: 1px solid #e2e8f0; text-align: center; font-size: 12px; color: #64748b;">
+                Delivered securely to <strong>{contact_email}</strong> via SkillHer Platform
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+    msg.attach(MIMEText(text_content, 'plain', 'utf-8'))
+    msg.attach(MIMEText(html_content, 'html', 'utf-8'))
 
     try:
-        proc = subprocess.run(
-            ['node', mailer_script, json.dumps(payload)],
-            capture_output=True,
-            text=True,
-            timeout=10,
-            cwd=settings.BASE_DIR
-        )
-        if proc.returncode == 0:
-            try:
-                res_data = json.loads(proc.stdout.strip())
-                return True, res_data
-            except json.JSONDecodeError:
-                return True, {'raw_output': proc.stdout}
+        context = ssl.create_default_context()
+        if smtp_port == 465:
+            with smtplib.SMTP_SSL(smtp_host, smtp_port, context=context, timeout=15) as server:
+                server.login(smtp_user, smtp_pass)
+                server.sendmail(smtp_user, [contact_email], msg.as_string())
         else:
-            return False, {'error': proc.stderr or proc.stdout}
+            with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as server:
+                server.ehlo()
+                server.starttls(context=context)
+                server.ehlo()
+                server.login(smtp_user, smtp_pass)
+                server.sendmail(smtp_user, [contact_email], msg.as_string())
+
+        return True, {
+            'status': 'success',
+            'messageId': msg_id,
+            'to': contact_email,
+            'engine': 'python_smtp'
+        }
     except Exception as e:
-        return False, {'error': str(e)}
+        return False, {
+            'status': 'error',
+            'error': str(e),
+            'engine': 'python_smtp'
+        }
+
+
+def send_email_via_nodemailer(payload):
+    """
+    Dual-engine email dispatcher:
+    1. If Node.js is available and script exists, attempts dispatch via Nodemailer (mailer.js).
+    2. If Node.js is missing (e.g., Vercel Python runtime) or Nodemailer encounters an error,
+       automatically dispatches via native Python SMTP (smtplib + TLS).
+    Returns (success: bool, info: dict)
+    """
+    node_bin = shutil.which('node')
+    mailer_script = os.path.join(settings.BASE_DIR, 'mailer.js')
+
+    # Engine 1: Node.js / Nodemailer if available
+    if node_bin and os.path.exists(mailer_script):
+        try:
+            proc = subprocess.run(
+                [node_bin, mailer_script, json.dumps(payload)],
+                capture_output=True,
+                text=True,
+                timeout=12,
+                cwd=settings.BASE_DIR
+            )
+            if proc.returncode == 0:
+                try:
+                    res_data = json.loads(proc.stdout.strip())
+                    return True, res_data
+                except json.JSONDecodeError:
+                    return True, {'raw_output': proc.stdout, 'engine': 'nodemailer'}
+        except Exception:
+            pass
+
+    # Engine 2: Python native smtplib (Default on Vercel Serverless)
+    return send_email_via_python_smtp(payload)
 
 
 def contact(request):
     """
-    Contact Us page view supporting both standard POST and AJAX submissions via Nodemailer.
+    Contact Us page view supporting both standard POST and AJAX submissions via dual-engine dispatcher.
     """
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
@@ -835,7 +971,7 @@ def contact(request):
             'message': message_text,
         }
 
-        # Dispatch email via Nodemailer
+        # Dispatch email
         success, info = send_email_via_nodemailer(payload)
         msg_id = info.get('messageId', '') if success else ''
 
@@ -850,7 +986,12 @@ def contact(request):
             nodemailer_message_id=msg_id
         )
 
-        messages.success(request, 'Your message has been sent successfully via Nodemailer! Our team will get back to you shortly.')
+        contact_dest = os.environ.get('CONTACT_EMAIL', 'malthumkarvarun@gmail.com')
+        if success:
+            messages.success(request, f'Thank you {name}! Your message has been sent successfully to {contact_dest}.')
+        else:
+            err = info.get('error', 'SMTP dispatch failed')
+            messages.warning(request, f'Your message was recorded, but email delivery encountered an issue: {err}')
         return redirect('contact')
 
     context = {
@@ -862,7 +1003,7 @@ def contact(request):
 @require_POST
 def api_contact(request):
     """
-    JSON API endpoint for instant AJAX contact form submissions via Nodemailer.
+    JSON API endpoint for instant AJAX contact form submissions.
     """
     try:
         data = json.loads(request.body)
@@ -899,9 +1040,18 @@ def api_contact(request):
         nodemailer_message_id=msg_id
     )
 
-    return JsonResponse({
-        'status': 'success',
-        'message': 'Message sent successfully via Nodemailer!',
-        'messageId': msg_id,
-        'preview': info.get('preview', '')
-    })
+    contact_dest = os.environ.get('CONTACT_EMAIL', 'malthumkarvarun@gmail.com')
+    if success:
+        return JsonResponse({
+            'status': 'success',
+            'message': f'Message delivered successfully to {contact_dest}!',
+            'messageId': msg_id,
+            'engine': info.get('engine', 'auto'),
+            'preview': info.get('preview', '')
+        })
+    else:
+        return JsonResponse({
+            'status': 'warning',
+            'message': f"Message recorded, but email dispatch failed: {info.get('error', 'SMTP issue')}",
+            'error': info.get('error', '')
+        }, status=200)
