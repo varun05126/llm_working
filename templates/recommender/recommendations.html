@@ -21,7 +21,32 @@
             </p>
         </div>
 
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            <!-- Roadmap Exporter -->
+            <div class="dropdown">
+                <button class="btn btn-outline-glass btn-sm py-2 px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown" id="exportDropdownBtn">
+                    <i class="fas fa-file-export me-1"></i> Export Roadmap
+                </button>
+                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg export-dropdown-menu p-2">
+                    <li><h6 class="dropdown-header text-uppercase text-secondary small px-2 py-1">Export Options</h6></li>
+                    <li>
+                        <a class="dropdown-item py-2 rounded-2 small" href="javascript:void(0)" onclick="downloadRoadmapMarkdown()">
+                            <i class="fas fa-download me-2 text-info"></i> Download Markdown (.md)
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item py-2 rounded-2 small" href="javascript:void(0)" onclick="copyRoadmapToClipboard()">
+                            <i class="fas fa-copy me-2 text-warning"></i> Copy to Clipboard
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item py-2 rounded-2 small" href="javascript:void(0)" onclick="window.print()">
+                            <i class="fas fa-print me-2 text-success"></i> Print / Save as PDF
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
             <button class="btn-primary-gradient btn-sm py-2 px-3" id="btnSyncRealtime" onclick="triggerRealtimeUpdate()">
                 <i class="fas fa-arrows-rotate me-1" id="syncSpinner"></i> Refresh Real-Time Analysis
             </button>
@@ -29,6 +54,7 @@
                 <i class="fas fa-sliders me-1"></i> Retake Assessment
             </a>
         </div>
+
     </div>
 
     <!-- ==========================================
@@ -180,7 +206,57 @@
                 </div>
             </div>
 
+            <!-- AI Technical Interview Readiness Simulator -->
+            <div class="glass-panel p-4 mb-4" id="interviewSimulatorSection">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="brand-icon" style="width: 34px; height: 34px;">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">AI Interview Readiness Simulator</h5>
+                            <span class="small text-muted">Domain scenario prompts & architectural assessment</span>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-glass btn-sm py-1 px-3" onclick="cycleNextInterviewQuestion()">
+                        <i class="fas fa-forward-step me-1"></i> Next Question
+                    </button>
+                </div>
+
+                <div class="interview-flashcard" id="interviewCard">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="badge-pill badge-purple small py-0 px-2" id="iqDomainBadge">Domain Scenario</span>
+                        <span class="badge-pill badge-pink small py-0 px-2" id="iqDifficultyBadge">Senior Staff Level</span>
+                    </div>
+                    <h6 class="fw-bold text-white mb-2" id="iqQuestionText">
+                        "How would you architect a fault-tolerant asynchronous recommendation pipeline that maintains low latency under sudden traffic spikes?"
+                    </h6>
+                    <p class="text-secondary small mb-3">
+                        Formulate your architectural approach, tradeoffs, and key failure modes before revealing the answer.
+                    </p>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary-gradient btn-sm py-1 px-3" id="iqRevealBtn" onclick="toggleInterviewRubric()">
+                            <i class="fas fa-eye me-1"></i> Reveal Architectural Rubric
+                        </button>
+                    </div>
+
+                    <div class="interview-rubric-box" id="iqRubricBox">
+                        <h6 class="small fw-bold text-success mb-2"><i class="fas fa-check-circle me-1"></i> Key Evaluator Touchpoints:</h6>
+                        <ul class="small text-secondary mb-2 ps-3" id="iqRubricList">
+                            <li>Decouple ingestion via distributed message brokers (Kafka/RabbitMQ) with backpressure controls.</li>
+                            <li>Multi-tier caching (Redis cluster + in-memory LRU) with circuit breakers for model endpoints.</li>
+                            <li>Graceful degradation strategy: return precomputed popular recommendations if real-time inference latency exceeds 150ms.</li>
+                        </ul>
+                        <div class="small text-muted pt-2 border-top border-secondary border-opacity-25">
+                            <strong>Interviewer Tip:</strong> Highlight observability (distributed tracing, P99 latency alerts) to stand out.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
+
 
         <!-- Sidebar Metrics Column -->
         <div class="col-lg-4">
@@ -243,8 +319,58 @@
                     </div>
                 </div>
 
+                <!-- Live Career Salary & ROI Estimator Card -->
+                <div class="salary-card mb-4" id="salaryEstimatorPanel">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="badge-pill badge-emerald small">Live Market Intelligence</span>
+                        <span class="small text-muted"><i class="fas fa-chart-line"></i> 2026 Index</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="text-muted small">Estimated Median Compensation</div>
+                        <div class="salary-display-number" id="salaryDisplayVal">$142,500</div>
+                        <div class="small text-success fw-bold" id="salaryUpliftText">
+                            <i class="fas fa-arrow-trend-up"></i> +$36,000 (+34%) projected upside
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between small text-secondary mb-1">
+                            <span>Experience Level:</span>
+                            <strong class="text-white" id="expLevelLabel">Mid-Level (3-5 yrs)</strong>
+                        </div>
+                        <input type="range" class="salary-slider-track" id="expSlider" min="1" max="4" value="2" oninput="calculateLiveSalary()">
+                        <div class="d-flex justify-content-between small text-muted" style="font-size: 0.72rem;">
+                            <span>Entry</span>
+                            <span>Mid</span>
+                            <span>Senior</span>
+                            <span>Staff/Lead</span>
+                        </div>
+                    </div>
+
+                    <div class="p-2 px-3 rounded-3 mb-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-secondary">Market Demand:</span>
+                            <span class="text-success fw-bold" id="marketDemandVal">96% Very High</span>
+                        </div>
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span class="text-secondary">Remote Availability:</span>
+                            <span class="text-info fw-bold" id="remoteAvailVal">74% Remote Roles</span>
+                        </div>
+                        <div class="d-flex justify-content-between small">
+                            <span class="text-secondary">Est. Readiness Timeline:</span>
+                            <span class="text-warning fw-bold" id="readinessTimelineVal">8.5 Weeks</span>
+                        </div>
+                    </div>
+
+                    <a href="{% url 'resources' %}?domain={{ user_profile.primary_interest }}" class="btn btn-outline-glass btn-sm w-100 text-center">
+                        Explore High-ROI Resources &rarr;
+                    </a>
+                </div>
+
             </div>
         </div>
+
     </div>
 
 </div>
@@ -390,6 +516,9 @@
                         btn.className = "btn btn-sm btn-cyan-gradient py-1 px-3 text-capitalize";
                         btn.innerHTML = '<i class="fas fa-check-double me-1"></i> Mastered';
                         btn.setAttribute('onclick', `toggleSkillStatus(${recSkillId}, 'todo')`);
+                        if (typeof triggerConfetti === 'function') {
+                            triggerConfetti();
+                        }
                     } else if (newStatus === 'in_progress') {
                         btn.className = "btn btn-sm btn-primary-gradient py-1 px-3 text-capitalize";
                         btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> In Progress';
@@ -405,5 +534,167 @@
             console.error("Toggle skill status error:", err);
         }
     }
+
+    // ==========================================
+    // USEFUL FEATURES: INTERVIEW SIMULATOR, SALARY & EXPORT
+    // ==========================================
+    const interviewQuestions = [
+        {
+            domain: "Full-Stack Architecture",
+            difficulty: "Senior Engineer",
+            question: "How does React Fiber architecture improve render performance over the legacy stack reconciler, and how would you diagnose layout thrashing in production?",
+            points: [
+                "Fiber introduces incremental rendering, breaking frame work into interruptible units prioritized via scheduler.",
+                "Uses workInProgress double-buffering tree to compute diffs off-screen before committing in a single DOM mutation pass.",
+                "Diagnose layout thrashing using Chrome DevTools Performance Profiler looking for interleaved style calculations and DOM reads/writes."
+            ]
+        },
+        {
+            domain: "AI & Machine Learning",
+            difficulty: "Staff AI Engineer",
+            question: "How would you optimize high-throughput vector similarity search in a production RAG system with 50M+ document embeddings?",
+            points: [
+                "Implement Approximate Nearest Neighbor (ANN) index algorithms such as HNSW or ScaNN for sub-millisecond retrieval.",
+                "Use scalar/product quantization (PQ) to compress vectors into memory-efficient codes while preserving cosine distance fidelity.",
+                "Employ a two-stage hybrid search: BM25 keyword matching + dense vector similarity, fused via Reciprocal Rank Fusion (RRF) and Cross-Encoder re-ranking."
+            ]
+        },
+        {
+            domain: "Cloud & DevOps",
+            difficulty: "Principal SRE",
+            question: "Design a zero-downtime database schema migration strategy across a Kubernetes microservices cluster with high active transaction volume.",
+            points: [
+                "Adopt the Expand and Contract pattern (parallel write to both schema states during rollout).",
+                "Decouple code deployment into 3 stages: 1) Add non-null column with default, 2) Dual-write application rollout, 3) Deprecate and drop old columns asynchronously.",
+                "Utilize online schema change tooling (e.g., gh-ost or pt-online-schema-change) to avoid table-level locks."
+            ]
+        },
+        {
+            domain: "Data Engineering",
+            difficulty: "Lead Data Architect",
+            question: "Explain the architecture of an event-driven medallion data lakehouse (Bronze, Silver, Gold) with ACID transaction guarantees.",
+            points: [
+                "Bronze layer captures immutable raw append-only event streams directly from message brokers.",
+                "Silver layer applies deduplication, schema enforcement, and cleansing using Delta Lake / Apache Iceberg ACID commit logs.",
+                "Gold layer aggregates business dimensions and metrics optimized for high-speed columnar BI querying."
+            ]
+        }
+    ];
+
+    let currentIqIndex = 0;
+
+    function cycleNextInterviewQuestion() {
+        currentIqIndex = (currentIqIndex + 1) % interviewQuestions.length;
+        const q = interviewQuestions[currentIqIndex];
+        document.getElementById('iqDomainBadge').innerText = q.domain;
+        document.getElementById('iqDifficultyBadge').innerText = q.difficulty;
+        document.getElementById('iqQuestionText').innerText = `"${q.question}"`;
+        
+        const list = document.getElementById('iqRubricList');
+        list.innerHTML = q.points.map(pt => `<li>${pt}</li>`).join('');
+        
+        const rubricBox = document.getElementById('iqRubricBox');
+        rubricBox.classList.remove('show');
+        const revealBtn = document.getElementById('iqRevealBtn');
+        revealBtn.innerHTML = '<i class="fas fa-eye me-1"></i> Reveal Architectural Rubric';
+    }
+
+    function toggleInterviewRubric() {
+        const rubricBox = document.getElementById('iqRubricBox');
+        const revealBtn = document.getElementById('iqRevealBtn');
+        if (rubricBox.classList.contains('show')) {
+            rubricBox.classList.remove('show');
+            revealBtn.innerHTML = '<i class="fas fa-eye me-1"></i> Reveal Architectural Rubric';
+        } else {
+            rubricBox.classList.add('show');
+            revealBtn.innerHTML = '<i class="fas fa-eye-slash me-1"></i> Hide Rubric';
+        }
+    }
+
+    function calculateLiveSalary() {
+        const slider = document.getElementById('expSlider');
+        const level = parseInt(slider.value, 10);
+        const weeklyHours = parseInt(document.getElementById('liveWeeklyHoursSelect').value, 10) || 10;
+        
+        const levels = {
+            1: { name: 'Entry-Level (0-2 yrs)', base: '$95k – $120k', uplift: '+$18,000 (+19%)', demand: '89% High', remote: '62% Remote', weeksBase: 12 },
+            2: { name: 'Mid-Level (3-5 yrs)', base: '$132k – $165k', uplift: '+$36,000 (+34%)', demand: '96% Very High', remote: '74% Remote', weeksBase: 8.5 },
+            3: { name: 'Senior (5-8 yrs)', base: '$170k – $220k', uplift: '+$52,000 (+38%)', demand: '98% Critical Demand', remote: '81% Remote', weeksBase: 6 },
+            4: { name: 'Staff / Lead (8+ yrs)', base: '$215k – $290k', uplift: '+$75,000 (+42%)', demand: '99% Elite Priority', remote: '88% Remote', weeksBase: 4.5 }
+        };
+
+        const current = levels[level] || levels[2];
+        const factor = weeklyHours >= 15 ? 0.8 : weeklyHours <= 5 ? 1.4 : 1.0;
+        const adjustedWeeks = (current.weeksBase * factor).toFixed(1);
+
+        document.getElementById('expLevelLabel').innerText = current.name;
+        document.getElementById('salaryDisplayVal').innerText = current.base;
+        document.getElementById('salaryUpliftText').innerHTML = `<i class="fas fa-arrow-trend-up"></i> ${current.uplift} projected upside`;
+        document.getElementById('marketDemandVal').innerText = current.demand;
+        document.getElementById('remoteAvailVal').innerText = current.remote;
+        document.getElementById('readinessTimelineVal').innerText = `${adjustedWeeks} Weeks`;
+    }
+
+    function generateRoadmapMarkdownText() {
+        const title = document.getElementById('displayTargetRole').innerText.trim();
+        const score = document.getElementById('gaugeScoreVal').innerText.trim();
+        const desc = document.getElementById('recommendationDescription').innerText.trim();
+        
+        let md = `# SkillHer AI Career Roadmap: ${title}\n\n`;
+        md += `**Market Readiness Score:** ${score}\n`;
+        md += `**Generated Date:** ${new Date().toLocaleDateString()}\n\n`;
+        md += `## Strategic AI Guidance\n${desc}\n\n`;
+        md += `## 3-Month Priority Skills Milestone Checklist\n`;
+        
+        document.querySelectorAll('#roadmapSkillsContainer .timeline-step').forEach((el, idx) => {
+            const skillName = el.querySelector('h6') ? el.querySelector('h6').innerText.trim() : `Skill ${idx + 1}`;
+            const timeline = el.querySelector('.badge-pill') ? el.querySelector('.badge-pill').innerText.trim() : '';
+            const reason = el.querySelector('p') ? el.querySelector('p').innerText.trim() : '';
+            const statusBtn = el.querySelector('button');
+            const isDone = statusBtn && statusBtn.innerText.includes('Mastered');
+            const check = isDone ? '[x]' : '[ ]';
+            md += `- ${check} **${skillName}** (${timeline}) - ${reason}\n`;
+        });
+
+        md += `\n## Recommended Learning Resources\n`;
+        document.querySelectorAll('#roadmapResourcesContainer .glass-panel').forEach(el => {
+            const rTitle = el.querySelector('h6') ? el.querySelector('h6').innerText.trim() : '';
+            const rLink = el.querySelector('a') ? el.querySelector('a').href : '';
+            const rType = el.querySelector('.badge-pill') ? el.querySelector('.badge-pill').innerText.trim() : '';
+            if (rTitle && rLink) {
+                md += `- [${rTitle}](${rLink}) - *${rType}*\n`;
+            }
+        });
+
+        md += `\n---\n*Synthesized by SkillHer Career Acceleration Intelligence (https://skillrecommender.vercel.app)*\n`;
+        return md;
+    }
+
+    function downloadRoadmapMarkdown() {
+        const text = generateRoadmapMarkdownText();
+        const blob = new Blob([text], { type: 'text/markdown;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `SkillHer-Roadmap-${new Date().toISOString().slice(0, 10)}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    async function copyRoadmapToClipboard() {
+        const text = generateRoadmapMarkdownText();
+        try {
+            await navigator.clipboard.writeText(text);
+            alert("Roadmap successfully copied to clipboard in Markdown format!");
+        } catch (err) {
+            console.error("Clipboard copy error:", err);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        calculateLiveSalary();
+    });
 </script>
 {% endblock %}

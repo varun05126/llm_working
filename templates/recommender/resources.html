@@ -21,12 +21,20 @@
         </a>
     </div>
 
-    <!-- Filters Bar -->
+    <!-- Instant Live Search & Filter Bar -->
     <div class="glass-panel p-3 mb-4">
+        <!-- Client-Side Instant Real-Time Search -->
+        <div class="position-relative mb-3">
+            <span class="search-icon-wrapper"><i class="fas fa-magnifying-glass"></i></span>
+            <input type="text" id="resourceLiveSearch" class="search-input-glass" 
+                   placeholder="Type to filter courses instantly by title, skill, provider (e.g. Harvard, Python, AWS)..." 
+                   oninput="filterResourcesLive()">
+        </div>
+
         <form method="get" class="row g-2 align-items-center">
             <!-- Domain Filter -->
             <div class="col-md-3">
-                <select name="domain" class="form-select-custom py-1 small">
+                <select name="domain" class="form-select-custom py-1 small" onchange="this.form.submit()">
                     <option value="">All Career Domains</option>
                     {% for code, label in domains %}
                         {% if code != 'general' %}
@@ -38,7 +46,7 @@
 
             <!-- Resource Type Filter -->
             <div class="col-md-3">
-                <select name="type" class="form-select-custom py-1 small">
+                <select name="type" class="form-select-custom py-1 small" onchange="this.form.submit()">
                     <option value="">All Formats (Course, Book...)</option>
                     {% for code, label in resource_types %}
                     <option value="{{ code }}" {% if selected_type == code %}selected{% endif %}>{{ label }}</option>
@@ -49,32 +57,44 @@
             <!-- Free Only Checkbox -->
             <div class="col-md-3 d-flex align-items-center gap-2 px-3">
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="free" value="1" id="freeCheck" {% if free_only == '1' %}checked{% endif %}>
+                    <input class="form-check-input" type="checkbox" name="free" value="1" id="freeCheck" onchange="this.form.submit()" {% if free_only == '1' %}checked{% endif %}>
                     <label class="form-check-label small text-secondary" for="freeCheck">
                         100% Free Only
                     </label>
                 </div>
             </div>
 
-            <!-- Filter Buttons -->
-            <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn-primary-gradient btn-sm w-100 justify-content-center">
-                    <i class="fas fa-filter me-1"></i> Filter
-                </button>
-                <a href="{% url 'resources' %}" class="btn-outline-glass btn-sm">Reset</a>
+            <!-- Filter Buttons & Live Counter -->
+            <div class="col-md-3 d-flex align-items-center justify-content-between gap-2">
+                <span class="badge-pill badge-purple small py-1 px-3" id="liveMatchCounter">
+                    {{ resources|length }} Available
+                </span>
+                <a href="{% url 'resources' %}" class="btn-outline-glass btn-sm py-1 px-2">Reset</a>
             </div>
         </form>
     </div>
 
+
     <!-- Resources Grid -->
-    <div class="row g-4">
+    <div class="row g-4" id="resourcesGrid">
         {% for res in resources %}
-        <div class="col-md-6 col-lg-4">
+
+        <div class="col-md-6 col-lg-4 resource-item-card" 
+             data-title="{{ res.title|lower }}" 
+             data-provider="{{ res.provider|lower }}" 
+             data-desc="{{ res.description|lower }}">
             <div class="glass-panel p-4 h-100 d-flex flex-column justify-content-between">
                 <div>
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <span class="badge-pill badge-cyan small py-0 px-2">{{ res.get_resource_type_display }}</span>
-                        <span class="small text-muted"><i class="fas fa-star text-warning"></i> {{ res.rating }}</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="small text-muted"><i class="fas fa-star text-warning"></i> {{ res.rating }}</span>
+                            <button class="btn btn-sm btn-link text-secondary p-0 bookmark-btn" 
+                                    title="Save to bookmarks" 
+                                    onclick="toggleBookmark(this, '{{ res.title|escapejs }}')">
+                                <i class="far fa-bookmark"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <h5 class="fw-bold mb-2 text-white">{{ res.title }}</h5>
@@ -105,3 +125,61 @@
 
 </div>
 {% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function filterResourcesLive() {
+        const query = document.getElementById('resourceLiveSearch').value.toLowerCase().trim();
+        const cards = document.querySelectorAll('.resource-item-card');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const title = card.getAttribute('data-title') || '';
+            const provider = card.getAttribute('data-provider') || '';
+            const desc = card.getAttribute('data-desc') || '';
+
+            if (!query || title.includes(query) || provider.includes(query) || desc.includes(query)) {
+                card.style.display = '';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        const counter = document.getElementById('liveMatchCounter');
+        if (counter) {
+            counter.innerText = `${visibleCount} of ${cards.length} Shown`;
+        }
+    }
+
+    function toggleBookmark(btn, title) {
+        const icon = btn.querySelector('i');
+        let bookmarks = JSON.parse(localStorage.getItem('skillher_bookmarks') || '[]');
+        
+        if (bookmarks.includes(title)) {
+            bookmarks = bookmarks.filter(b => b !== title);
+            icon.className = 'far fa-bookmark text-secondary';
+        } else {
+            bookmarks.push(title);
+            icon.className = 'fas fa-bookmark text-warning';
+            if (typeof triggerConfetti === 'function') {
+                triggerConfetti();
+            }
+        }
+        localStorage.setItem('skillher_bookmarks', JSON.stringify(bookmarks));
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const bookmarks = JSON.parse(localStorage.getItem('skillher_bookmarks') || '[]');
+        document.querySelectorAll('.resource-item-card').forEach(card => {
+            const btn = card.querySelector('.bookmark-btn');
+            const title = card.querySelector('h5') ? card.querySelector('h5').innerText.trim() : '';
+            if (btn && bookmarks.includes(title)) {
+                const icon = btn.querySelector('i');
+                if (icon) icon.className = 'fas fa-bookmark text-warning';
+            }
+        });
+    });
+</script>
+{% endblock %}
+

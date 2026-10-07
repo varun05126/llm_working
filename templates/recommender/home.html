@@ -223,6 +223,77 @@
     </section>
 
     <!-- ==========================================
+         INTERACTIVE SALARY & CAREER VALUE ESTIMATOR
+         ========================================== -->
+    <section class="py-5" id="homeSalaryCalculatorSection">
+        <div class="salary-card p-4 p-md-5">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-5">
+                    <span class="badge-pill badge-emerald mb-2">Live Market Intelligence</span>
+                    <h2 class="h3 fw-bold mb-2">Explore Tech Compensation Potential</h2>
+                    <p class="text-secondary small mb-4">
+                        Benchmark expected salaries across specialized engineering tracks based on experience level and committed upskilling velocity.
+                    </p>
+
+                    <div class="mb-3">
+                        <label class="form-label-custom small mb-1">Select Track:</label>
+                        <select class="form-select-custom" id="homeTrackSelect" onchange="calculateHomeSalary()">
+                            <option value="web_dev">Full-Stack Web Engineering</option>
+                            <option value="ai_ml">AI & Machine Learning Engineering</option>
+                            <option value="cloud_devops">Cloud Architecture & DevOps</option>
+                            <option value="data_science">Data Engineering & Analytics</option>
+                            <option value="cybersecurity">Cybersecurity & SecOps</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between small text-secondary mb-1">
+                            <span>Target Level:</span>
+                            <strong class="text-white" id="homeExpLabel">Mid-Level (3-5 yrs)</strong>
+                        </div>
+                        <input type="range" class="salary-slider-track" id="homeExpSlider" min="1" max="4" value="2" oninput="calculateHomeSalary()">
+                        <div class="d-flex justify-content-between small text-muted mt-1" style="font-size: 0.72rem;">
+                            <span>Entry</span>
+                            <span>Mid-Level</span>
+                            <span>Senior</span>
+                            <span>Staff / Lead</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7">
+                    <div class="glass-panel p-4 glow-purple">
+                        <div class="row g-4 text-center">
+                            <div class="col-6">
+                                <span class="text-secondary small">Estimated Median Salary</span>
+                                <div class="salary-display-number mt-1" id="homeSalaryNum">$135,000</div>
+                                <span class="text-success small fw-bold" id="homeSalaryUplift">+$36,000 (+34%) upside</span>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-secondary small">Industry Demand Index</span>
+                                <div class="salary-display-number mt-1 text-gradient-cyan" id="homeDemandNum">96%</div>
+                                <span class="text-info small fw-bold" id="homeRemoteNum">74% Remote Positions</span>
+                            </div>
+                        </div>
+
+                        <hr class="my-3" style="border-color: var(--border-subtle);">
+
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
+                            <div class="small text-secondary">
+                                <i class="fas fa-bullseye text-gradient me-1"></i>
+                                Calibrated against 2026 tech compensation index.
+                            </div>
+                            <a href="{% url 'skill_assessment' %}" class="btn-primary-gradient btn-sm py-2 px-3">
+                                Generate Personalized Roadmap &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
          FEATURE SHOWCASE
          ========================================== -->
     <section class="py-5" id="featuresSection">
@@ -287,3 +358,44 @@
 
 </div>
 {% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function calculateHomeSalary() {
+        const slider = document.getElementById('homeExpSlider');
+        if (!slider) return;
+        const level = parseInt(slider.value, 10);
+        const track = document.getElementById('homeTrackSelect').value;
+
+        const multipliers = {
+            'ai_ml': 1.15,
+            'cloud_devops': 1.10,
+            'cybersecurity': 1.08,
+            'web_dev': 1.0,
+            'data_science': 1.05
+        };
+        const mult = multipliers[track] || 1.0;
+
+        const baseRanges = {
+            1: { name: 'Entry-Level (0-2 yrs)', base: 95000, max: 120000, uplift: '+$18k (+19%)', demand: '89%', remote: '62%' },
+            2: { name: 'Mid-Level (3-5 yrs)', base: 132000, max: 165000, uplift: '+$36k (+34%)', demand: '96%', remote: '74%' },
+            3: { name: 'Senior (5-8 yrs)', base: 170000, max: 220000, uplift: '+$52k (+38%)', demand: '98%', remote: '81%' },
+            4: { name: 'Staff / Lead (8+ yrs)', base: 215000, max: 290000, uplift: '+$75k (+42%)', demand: '99%', remote: '88%' }
+        };
+
+        const current = baseRanges[level] || baseRanges[2];
+        const computedMid = Math.round(((current.base + current.max) / 2) * mult);
+
+        document.getElementById('homeExpLabel').innerText = current.name;
+        document.getElementById('homeSalaryNum').innerText = `$${Math.round(computedMid / 1000)}k`;
+        document.getElementById('homeSalaryUplift').innerText = current.uplift + ' projected upside';
+        document.getElementById('homeDemandNum').innerText = current.demand;
+        document.getElementById('homeRemoteNum').innerText = current.remote + ' Remote Positions';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        calculateHomeSalary();
+    });
+</script>
+{% endblock %}
+

@@ -3,18 +3,19 @@
    Modern Dark Luxury & Glassmorphism UI
    ========================================================================== */
 
-:root {
-    --bg-main: #090d16;
-    --bg-surface-1: #0f1526;
-    --bg-surface-2: #151d33;
-    --bg-surface-3: #1c2540;
-    --bg-glass: rgba(15, 21, 38, 0.78);
-    --bg-glass-card: rgba(21, 29, 51, 0.65);
+/* Multi-Theme Palette Engine */
+:root, html[data-theme="aurora"] {
+    --bg-main: #0a0e1a;
+    --bg-surface-1: #0f1629;
+    --bg-surface-2: #151f38;
+    --bg-surface-3: #1c2a4b;
+    --bg-glass: rgba(15, 22, 41, 0.82);
+    --bg-glass-card: rgba(21, 31, 56, 0.68);
     
-    --border-subtle: rgba(255, 255, 255, 0.07);
-    --border-card: rgba(255, 255, 255, 0.12);
-    --border-accent: rgba(139, 92, 246, 0.4);
-    --border-cyan: rgba(6, 182, 212, 0.4);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-card: rgba(255, 255, 255, 0.14);
+    --border-accent: rgba(139, 92, 246, 0.45);
+    --border-cyan: rgba(6, 182, 212, 0.45);
 
     --primary-indigo: #6366f1;
     --primary-violet: #8b5cf6;
@@ -25,10 +26,12 @@
     --accent-amber: #f59e0b;
     --accent-rose: #f43f5e;
 
-    --gradient-hero: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
-    --gradient-accent: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-    --gradient-card: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0) 100%);
-    --gradient-glow: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.18) 0%, transparent 70%);
+    --gradient-hero: linear-gradient(135deg, #7c3aed 0%, #06b6d4 50%, #f43f5e 100%);
+    --gradient-accent: linear-gradient(135deg, #06b6d4 0%, #8b5cf6 100%);
+    --gradient-card: linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+    --gradient-glow: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.22) 0%, transparent 70%);
+    --shadow-glow: 0 0 25px rgba(139, 92, 246, 0.35);
+    --brand-accent: #8b5cf6;
 
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
@@ -42,9 +45,102 @@
     --radius-full: 9999px;
 
     --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-    --shadow-glow: 0 0 25px rgba(139, 92, 246, 0.35);
     --shadow-cyan-glow: 0 0 25px rgba(6, 182, 212, 0.35);
 }
+
+/* Cyberpunk Sunset Theme */
+html[data-theme="sunset"] {
+    --bg-main: #0f0a15;
+    --bg-surface-1: #180f22;
+    --bg-surface-2: #241433;
+    --bg-surface-3: #301a45;
+    --bg-glass: rgba(24, 15, 34, 0.85);
+    --bg-glass-card: rgba(36, 20, 51, 0.72);
+
+    --border-subtle: rgba(244, 63, 94, 0.12);
+    --border-card: rgba(244, 63, 94, 0.22);
+    --border-accent: rgba(244, 63, 94, 0.55);
+    --border-cyan: rgba(245, 158, 11, 0.55);
+
+    --primary-indigo: #f43f5e;
+    --primary-violet: #e11d48;
+    --primary-fuchsia: #f59e0b;
+    --primary-pink: #fb7185;
+    --accent-cyan: #f59e0b;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-rose: #f43f5e;
+
+    --gradient-hero: linear-gradient(135deg, #f43f5e 0%, #f59e0b 50%, #c084fc 100%);
+    --gradient-accent: linear-gradient(135deg, #f43f5e 0%, #f59e0b 100%);
+    --gradient-card: linear-gradient(180deg, rgba(244, 63, 94, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+    --gradient-glow: radial-gradient(circle at 50% 0%, rgba(244, 63, 94, 0.25) 0%, transparent 70%);
+    --shadow-glow: 0 0 25px rgba(244, 63, 94, 0.4);
+    --brand-accent: #f43f5e;
+}
+
+/* Emerald Matrix Theme */
+html[data-theme="emerald"] {
+    --bg-main: #061210;
+    --bg-surface-1: #0a1f1b;
+    --bg-surface-2: #102e29;
+    --bg-surface-3: #173d36;
+    --bg-glass: rgba(10, 31, 27, 0.85);
+    --bg-glass-card: rgba(16, 46, 41, 0.72);
+
+    --border-subtle: rgba(16, 185, 129, 0.12);
+    --border-card: rgba(16, 185, 129, 0.22);
+    --border-accent: rgba(16, 185, 129, 0.55);
+    --border-cyan: rgba(20, 184, 166, 0.55);
+
+    --primary-indigo: #10b981;
+    --primary-violet: #059669;
+    --primary-fuchsia: #14b8a6;
+    --primary-pink: #34d399;
+    --accent-cyan: #06b6d4;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-rose: #84cc16;
+
+    --gradient-hero: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #84cc16 100%);
+    --gradient-accent: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+    --gradient-card: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+    --gradient-glow: radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.25) 0%, transparent 70%);
+    --shadow-glow: 0 0 25px rgba(16, 185, 129, 0.4);
+    --brand-accent: #10b981;
+}
+
+/* Midnight Sapphire Theme */
+html[data-theme="sapphire"] {
+    --bg-main: #060e1d;
+    --bg-surface-1: #0a172e;
+    --bg-surface-2: #102344;
+    --bg-surface-3: #18315c;
+    --bg-glass: rgba(10, 23, 46, 0.85);
+    --bg-glass-card: rgba(16, 35, 68, 0.72);
+
+    --border-subtle: rgba(59, 130, 246, 0.12);
+    --border-card: rgba(59, 130, 246, 0.22);
+    --border-accent: rgba(59, 130, 246, 0.55);
+    --border-cyan: rgba(56, 189, 248, 0.55);
+
+    --primary-indigo: #3b82f6;
+    --primary-violet: #2563eb;
+    --primary-fuchsia: #60a5fa;
+    --primary-pink: #93c5fd;
+    --accent-cyan: #38bdf8;
+    --accent-emerald: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-rose: #f43f5e;
+
+    --gradient-hero: linear-gradient(135deg, #2563eb 0%, #38bdf8 50%, #818cf8 100%);
+    --gradient-accent: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%);
+    --gradient-card: linear-gradient(180deg, rgba(59, 130, 246, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+    --gradient-glow: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.25) 0%, transparent 70%);
+    --shadow-glow: 0 0 25px rgba(59, 130, 246, 0.4);
+    --brand-accent: #3b82f6;
+}
+
 
 /* Base Styles */
 * {
@@ -517,3 +613,232 @@ h1, h2, h3, h4, h5, h6 {
 .animate-glow {
     animation: pulseGlow 3s ease-in-out infinite;
 }
+
+/* ==========================================================================
+   THEME SWITCHER WIDGET
+   ========================================================================== */
+.theme-picker-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-full);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.theme-picker-btn:hover {
+    border-color: var(--brand-accent);
+    box-shadow: 0 0 12px var(--shadow-glow);
+}
+
+.theme-color-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.theme-opt-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.85rem;
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.theme-opt-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.theme-opt-item.active {
+    background: rgba(255, 255, 255, 0.12);
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   INTERACTIVE SALARY & CAREER VALUE ESTIMATOR
+   ========================================================================== */
+.salary-card {
+    background: var(--bg-surface-1);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-lg);
+    padding: 1.75rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.salary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gradient-hero);
+}
+
+.salary-display-number {
+    font-size: 2.25rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: var(--gradient-hero);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+}
+
+.salary-slider-track {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--bg-surface-3);
+    outline: none;
+}
+
+.salary-slider-track::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--brand-accent);
+    cursor: pointer;
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 10px var(--shadow-glow);
+    transition: transform 0.15s ease;
+}
+
+.salary-slider-track::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+/* ==========================================================================
+   AI INTERVIEW SIMULATOR & FLASHCARD WIDGET
+   ========================================================================== */
+.interview-flashcard {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.interview-flashcard:hover {
+    border-color: var(--brand-accent);
+    box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.4);
+}
+
+.interview-rubric-box {
+    background: rgba(0, 0, 0, 0.25);
+    border-left: 3px solid var(--accent-emerald);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    margin-top: 1rem;
+    display: none;
+}
+
+.interview-rubric-box.show {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   ROADMAP EXPORT & SEARCH STYLING
+   ========================================================================== */
+.export-dropdown-menu {
+    background: var(--bg-surface-2) !important;
+    border: 1px solid var(--border-card) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
+}
+
+.search-input-glass {
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border-card);
+    color: var(--text-primary);
+    border-radius: var(--radius-full);
+    padding: 0.6rem 1.25rem 0.6rem 2.5rem;
+    font-size: 0.9rem;
+    width: 100%;
+    transition: all 0.25s ease;
+}
+
+.search-input-glass:focus {
+    outline: none;
+    background: var(--bg-surface-3);
+    border-color: var(--brand-accent);
+    box-shadow: 0 0 15px var(--shadow-glow);
+    color: var(--text-primary);
+}
+
+.search-icon-wrapper {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+/* Confetti effect */
+.confetti-particle {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 9999;
+    animation: fallParticle 2.5s ease-out forwards;
+}
+
+@keyframes fallParticle {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(80vh) rotate(720deg); opacity: 0; }
+}
+
+/* ==========================================================================
+   PRINT STYLESHEET (CLEAN PDF EXPORT)
+   ========================================================================== */
+@media print {
+    body {
+        background: #ffffff !important;
+        color: #0f172a !important;
+    }
+    .main-navbar, .main-footer, .theme-picker-btn, .btn, form, #exportDropdownBtn, #recControlsPanel {
+        display: none !important;
+    }
+    .glass-card, .glass-panel, .salary-card {
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+        box-shadow: none !important;
+    }
+    .text-gradient {
+        background: none !important;
+        -webkit-text-fill-color: #4338ca !important;
+        color: #4338ca !important;
+    }
+    .text-muted, .text-secondary {
+        color: #475569 !important;
+    }
+}
+
