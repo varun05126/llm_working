@@ -1000,6 +1000,7 @@ def contact(request):
     return render(request, 'recommender/contact.html', context)
 
 
+@csrf_exempt
 @require_POST
 def api_contact(request):
     """

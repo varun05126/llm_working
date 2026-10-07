@@ -10,6 +10,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-here')
 DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 't')
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.vercel.app', 'skillrecommender.vercel.app', '*']
+CSRF_TRUSTED_ORIGINS = [
+    'https://skillrecommender.vercel.app',
+    'https://*.vercel.app',
+    'http://localhost',
+    'http://127.0.0.1',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
