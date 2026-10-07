@@ -23,6 +23,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -30,6 +31,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = 'skill_recommender.urls'
 
@@ -54,6 +56,9 @@ WSGI_APPLICATION = 'skill_recommender.wsgi.application'
 # Production-grade Relational Database Configuration:
 # Defaults to robust persistent SQLite for zero-config local development,
 # and switches to PostgreSQL automatically when DATABASE_URL or DB_NAME is set.
+# In serverless environments (e.g. Vercel), writable directory is /tmp.
+is_serverless = bool(os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME') or os.environ.get('LAMBDA_TASK_ROOT'))
+
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {
@@ -75,12 +80,14 @@ elif os.environ.get('DB_NAME'):
         }
     }
 else:
+    db_path = Path('/tmp') / 'db.sqlite3' if is_serverless else BASE_DIR / 'db.sqlite3'
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': str(db_path),
         }
     }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -111,6 +118,9 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+WHITENOISE_USE_FINDERS = True
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

@@ -7,14 +7,15 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'skill_recommender.settings')
 # Setup Django
 django.setup()
 
-# Run migrations - important for serverless where tmp directory may be wiped
-# Note: In production with external DB, ensure MIGRATIONS_RUN is managed properly
+# Run migrations and auto-seed if needed (essential for serverless where /tmp is initialized fresh)
 try:
     execute_from_command_line(['manage.py', 'migrate', '--noinput'])
-    # Note: We don't set MIGRATIONS_RUN env var as it doesn't persist between processes
-    # Migrations are idempotent and safe to run on each startup in this context
+    from recommender.models import Skill
+    if Skill.objects.count() == 0:
+        execute_from_command_line(['manage.py', 'seed_data'])
 except Exception as e:
     # Log the error but don't break the application
-    print(f"Error running migrations: {e}")
+    print(f"Database initialization notice: {e}")
 
 application = get_wsgi_application()
+app = application
