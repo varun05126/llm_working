@@ -842,3 +842,212 @@ h1, h2, h3, h4, h5, h6 {
     }
 }
 
+/* ==========================================================================
+   MOBILE & RESPONSIVE DESIGN SYSTEM
+   ========================================================================== */
+
+/* Tablet & Mobile Breakpoints (< 992px) */
+@media (max-width: 991.98px) {
+    .main-navbar {
+        padding: 0.65rem 0;
+    }
+    .brand-link {
+        font-size: 1.2rem;
+        gap: 0.5rem;
+    }
+    .brand-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+    }
+    
+    /* Unstick metrics column so it flows smoothly after roadmap on mobile */
+    .sticky-top {
+        position: static !important;
+        top: auto !important;
+    }
+
+    .glass-panel {
+        padding: 1.25rem !important;
+    }
+
+    #heroPreviewCard {
+        margin-top: 1rem;
+    }
+}
+
+/* Mobile Devices (< 768px) */
+@media (max-width: 767.98px) {
+    /* Fluid Responsive Typography */
+    .display-4 {
+        font-size: clamp(1.85rem, 5.5vw, 2.5rem) !important;
+        line-height: 1.2 !important;
+    }
+    .display-6 {
+        font-size: clamp(1.4rem, 4.5vw, 1.85rem) !important;
+    }
+    h1, .h1 {
+        font-size: clamp(1.5rem, 5vw, 2rem) !important;
+    }
+    h2, .h2 {
+        font-size: clamp(1.3rem, 4vw, 1.65rem) !important;
+    }
+
+    /* Container side gutters */
+    .container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    /* Touch-Friendly Inputs: Prevent iOS zoom on focus with 16px font */
+    input, select, textarea,
+    .form-control-custom,
+    .form-select-custom,
+    .search-input-glass {
+        font-size: 16px !important;
+        min-height: 46px;
+    }
+
+    /* Touch-Friendly Buttons: minimum tap target 44px */
+    .btn, .btn-primary-gradient, .btn-outline-glass, .btn-cyan-gradient {
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #heroBadge {
+        font-size: 0.78rem;
+        padding: 0.35rem 0.75rem;
+    }
+    
+    #heroStatsRow .col-4 {
+        padding-left: 0.3rem;
+        padding-right: 0.3rem;
+    }
+    #heroStatsRow h3 {
+        font-size: 1.3rem;
+    }
+    #heroStatsRow .small {
+        font-size: 0.72rem;
+    }
+
+    /* Track pills: smooth horizontal touch swipe on mobile */
+    .track-pill-grid {
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding-bottom: 0.65rem !important;
+        margin-bottom: 1.25rem !important;
+        gap: 0.5rem !important;
+        scrollbar-width: none !important;
+    }
+    .track-pill-grid::-webkit-scrollbar {
+        display: none !important;
+    }
+    .track-pill-item {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        padding: 0.5rem 0.95rem !important;
+        font-size: 0.82rem !important;
+    }
+
+    /* Assessment navigation tabs stack nicely */
+    #assessmentTabs {
+        flex-direction: column !important;
+        width: 100% !important;
+        gap: 0.5rem !important;
+    }
+    #assessmentTabs .nav-item {
+        width: 100% !important;
+    }
+    #assessmentTabs .nav-link-custom {
+        width: 100% !important;
+        text-align: center !important;
+        padding: 0.65rem 1rem !important;
+    }
+
+    /* Recommendations header controls */
+    #exportDropdownBtn,
+    #btnSyncRealtime {
+        width: 100% !important;
+    }
+
+    /* Timeline step items in recommendations */
+    .timeline-step {
+        padding-left: 0 !important;
+    }
+    .timeline-step::before {
+        display: none !important;
+    }
+    .timeline-step .glass-panel {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.75rem !important;
+    }
+    .timeline-step [id^="statusBtn_"] {
+        width: 100% !important;
+        min-height: 44px !important;
+        justify-content: center !important;
+        margin-top: 0.5rem !important;
+    }
+
+    /* Salary card mobile adjustments */
+    .salary-card {
+        padding: 1.25rem !important;
+    }
+    .salary-display-number {
+        font-size: 1.85rem !important;
+    }
+    .salary-slider-track {
+        height: 10px !important;
+    }
+    .salary-slider-track::-webkit-slider-thumb {
+        width: 24px !important;
+        height: 24px !important;
+    }
+
+    /* AI Interview Simulator mobile adjustments */
+    #iqQuestionText {
+        font-size: 0.98rem !important;
+        line-height: 1.5 !important;
+    }
+    #iqRevealBtn {
+        width: 100% !important;
+    }
+
+    /* Resources library mobile adjustments */
+    .resource-item-card {
+        margin-bottom: 0.75rem;
+    }
+
+    /* Footer on mobile */
+    .main-footer {
+        padding: 2rem 0 1.5rem !important;
+    }
+}
+
+/* Small Smart Phones (< 480px / iPhone SE / 375px) */
+@media (max-width: 479.98px) {
+    .brand-link span {
+        font-size: 1.1rem !important;
+    }
+    .theme-picker-btn {
+        padding: 0.3rem 0.5rem !important;
+        font-size: 0.78rem !important;
+    }
+    
+    #heroStatsRow .col-4 {
+        text-align: center;
+    }
+    #heroStatsRow h3 {
+        font-size: 1.15rem !important;
+    }
+
+    .badge-pill {
+        font-size: 0.72rem !important;
+        padding: 0.25rem 0.6rem !important;
+    }
+}
+
+
