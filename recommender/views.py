@@ -463,8 +463,18 @@ def generate_hybrid_recommendation(user_profile, domain=None, desired_skills=Non
     # Parse specifically desired skills
     requested_names = [s.strip() for s in desired_skills.split(',') if s.strip()]
 
-    # Archive previous recommendations of same type for cleanliness
-    Recommendation.objects.filter(user_profile=user_profile, is_active=True).update(is_active=False)
+    # Collect user's existing skill completion statuses to preserve their progress across adjustments
+    existing_statuses = dict(
+        RecommendationSkill.objects.filter(
+            recommendation__user_profile=user_profile
+        ).values_list('skill_id', 'status')
+    )
+
+    # Clean up older realtime roadmaps to avoid orphaned records in the database
+    Recommendation.objects.filter(
+        user_profile=user_profile,
+        recommendation_type='realtime_roadmap'
+    ).delete()
 
     target_role = user_profile.target_role or benchmark['target_roles'][0]
 
@@ -501,13 +511,14 @@ def generate_hybrid_recommendation(user_profile, domain=None, desired_skills=Non
                 icon='fas fa-bullseye'
             )
         
+        rs_status = existing_statuses.get(matching_skill.id, 'todo')
         rs = RecommendationSkill.objects.create(
             recommendation=recommendation,
             skill=matching_skill,
             priority=p_counter,
             timeline=f'Month 1 (Target Choice: {matching_skill.name})',
             reasoning=f"🎯 Learner Priority: Specifically requested by you for focused mastery. Directly bridges your path toward {target_role}.",
-            status='todo'
+            status=rs_status
         )
         prioritized_skills_records.append(matching_skill.id)
         p_counter += 1
@@ -541,13 +552,14 @@ def generate_hybrid_recommendation(user_profile, domain=None, desired_skills=Non
             f"Focusing on {sk.name} unlocks pivotal competencies for career progression."
         )
 
+        sk_status = existing_statuses.get(sk.id, 'todo')
         RecommendationSkill.objects.create(
             recommendation=recommendation,
             skill=sk,
             priority=p_counter,
             timeline=timeline,
             reasoning=reasoning,
-            status='todo'
+            status=sk_status
         )
         prioritized_skills_records.append(sk.id)
         p_counter += 1

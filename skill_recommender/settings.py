@@ -67,11 +67,13 @@ is_serverless = bool(os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNC
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
+    ssl_req = 'localhost' not in DATABASE_URL and '127.0.0.1' not in DATABASE_URL
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
             conn_max_age=600,
             conn_health_checks=True,
+            ssl_require=ssl_req,
         )
     }
 elif os.environ.get('DB_NAME'):

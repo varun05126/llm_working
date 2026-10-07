@@ -656,4 +656,27 @@ class Command(BaseCommand):
             )
 
         self.stdout.write(self.style.SUCCESS(f"Populated {len(questions_data)} scenario assessment questions."))
+
+        # ==========================================
+        # 4. DEFAULT DEMO ACCOUNT (Guarantees immediate login on fresh DB)
+        # ==========================================
+        from django.contrib.auth.models import User
+        from recommender.models import UserProfile
+        if not User.objects.filter(username='demo_user').exists():
+            demo = User.objects.create_user(
+                username='demo_user',
+                email='demo@skillher.com',
+                password='Password@123'
+            )
+            UserProfile.objects.get_or_create(
+                user=demo,
+                defaults={
+                    'target_role': 'Full-Stack Web Developer',
+                    'primary_interest': 'web_dev',
+                    'weekly_hours': 15,
+                    'experience_level': 'intermediate'
+                }
+            )
+            self.stdout.write(self.style.SUCCESS("Created demo user: demo_user (password: Password@123)"))
+
         self.stdout.write(self.style.SUCCESS("Database seeding complete!"))

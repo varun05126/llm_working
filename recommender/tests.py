@@ -181,5 +181,29 @@ class ContactAndMailerTestCase(TestCase):
         allowed, remaining = check_rate_limit(ip)
         self.assertTrue(allowed)
 
+    def test_recommendation_updates_preserve_skill_status(self):
+        from django.contrib.auth.models import User
+        from recommender.models import Skill, RecommendationSkill, UserProfile
+        from recommender.views import generate_hybrid_recommendation
+        test_skill = Skill.objects.create(name='Python & Django Framework', domain='web_dev', category='technical', market_demand='Very High')
+        user = User.objects.create_user(username='status_test_user', password='password123')
+        profile = UserProfile.objects.create(user=user, target_role='Backend Engineer', primary_interest='web_dev')
+        
+        # Initial generation
+        rec1 = generate_hybrid_recommendation(profile, 'web_dev')
+        skill1 = rec1.skills.first()
+        self.assertIsNotNone(skill1)
+        
+        # Mark as completed
+        skill1.status = 'completed'
+        skill1.save()
+        
+        # Re-generate recommendations after user changes inputs (e.g. desired skills)
+        rec2 = generate_hybrid_recommendation(profile, 'web_dev', desired_skills='Docker')
+        updated_skill = rec2.skills.filter(skill_id=skill1.skill_id).first()
+        if updated_skill:
+            self.assertEqual(updated_skill.status, 'completed')
+
+
 
 
