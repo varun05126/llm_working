@@ -98,3 +98,40 @@ class ContactAndMailerTestCase(TestCase):
             self.assertFalse(ok)
             self.assertIn('SMTP credentials not configured', info.get('error', ''))
 
+    def test_api_chatbot_returns_reply(self):
+        payload = {'message': 'How do I start Month 1 in Docker?'}
+        response = self.client.post(
+            reverse('api_chatbot'),
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        res_json = response.json()
+        self.assertEqual(res_json.get('status'), 'success')
+        self.assertTrue(len(res_json.get('reply', '')) > 10)
+
+    def test_realtime_recommendations_with_desired_skills(self):
+        from django.contrib.auth.models import User
+        user = User.objects.create_user(username='skilllearner', password='password123')
+        self.client.login(username='skilllearner', password='password123')
+        
+        payload = {
+            'domain': 'web_dev',
+            'target_role': 'Full-Stack Lead',
+            'weekly_hours': 15,
+            'desired_skills': 'Docker, GraphQL, Kubernetes'
+        }
+        response = self.client.post(
+            reverse('api_realtime_recommendations'),
+            data=json.dumps(payload),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        res_json = response.json()
+        self.assertEqual(res_json.get('status'), 'success')
+        self.assertEqual(res_json.get('desired_skills'), 'Docker, GraphQL, Kubernetes')
+        # Check that requested skills are present in skills payload
+        skill_names = [s['name'].lower() for s in res_json.get('skills', [])]
+        self.assertTrue('docker' in skill_names or 'graphql' in skill_names or 'kubernetes' in skill_names)
+
+

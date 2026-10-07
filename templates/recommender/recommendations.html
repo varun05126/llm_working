@@ -22,13 +22,23 @@
         </div>
 
         <div class="d-flex align-items-center gap-2 flex-wrap">
-            <!-- Roadmap Exporter -->
+            <!-- Dedicated Download PDF Button -->
+            <button class="btn btn-outline-glass btn-sm py-2 px-3 text-white" onclick="downloadRoadmapPDF()" title="Download as clean styled PDF">
+                <i class="fas fa-file-pdf text-danger me-1"></i> Download PDF
+            </button>
+
+            <!-- Roadmap Exporter Dropdown -->
             <div class="dropdown">
                 <button class="btn btn-outline-glass btn-sm py-2 px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown" id="exportDropdownBtn">
-                    <i class="fas fa-file-export me-1"></i> Export Roadmap
+                    <i class="fas fa-file-export me-1"></i> Export
                 </button>
                 <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg export-dropdown-menu p-2">
                     <li><h6 class="dropdown-header text-uppercase text-secondary small px-2 py-1">Export Options</h6></li>
+                    <li>
+                        <a class="dropdown-item py-2 rounded-2 small" href="javascript:void(0)" onclick="downloadRoadmapPDF()">
+                            <i class="fas fa-file-pdf me-2 text-danger"></i> Download Roadmap (.pdf)
+                        </a>
+                    </li>
                     <li>
                         <a class="dropdown-item py-2 rounded-2 small" href="javascript:void(0)" onclick="downloadRoadmapMarkdown()">
                             <i class="fas fa-download me-2 text-info"></i> Download Markdown (.md)
@@ -41,7 +51,7 @@
                     </li>
                     <li>
                         <a class="dropdown-item py-2 rounded-2 small" href="javascript:void(0)" onclick="window.print()">
-                            <i class="fas fa-print me-2 text-success"></i> Print / Save as PDF
+                            <i class="fas fa-print me-2 text-success"></i> Print Preview
                         </a>
                     </li>
                 </ul>
@@ -92,6 +102,35 @@
                     <option value="20" {% if user_profile.weekly_hours == 20 %}selected{% endif %}>20+ hrs/week (Sprint)</option>
                 </select>
             </div>
+
+            <!-- Targeted Desired Skills Input (Learner Preferences) -->
+            <div class="col-12 pt-3 mt-2 border-top border-secondary border-opacity-25">
+                <div class="row g-2 align-items-center">
+                    <div class="col-lg-8">
+                        <label class="form-label-custom small mb-1 fw-bold text-gradient">
+                            <i class="fas fa-bullseye me-1"></i> What Specific Skills Do You Want to Learn? (Optional):
+                        </label>
+                        <input type="text" class="form-control-custom" id="liveDesiredSkillsInput" 
+                               value="{{ user_profile.interests|default:'' }}" 
+                               placeholder="e.g. Next.js, Docker, Kubernetes, React, System Design, GraphQL">
+                        <div class="d-flex align-items-center gap-1 mt-2 flex-wrap">
+                            <span class="small text-muted me-1">Quick Add:</span>
+                            <button type="button" class="btn btn-xs btn-outline-glass py-0 px-2 rounded-pill small" onclick="addSkillChip('Docker')">+ Docker</button>
+                            <button type="button" class="btn btn-xs btn-outline-glass py-0 px-2 rounded-pill small" onclick="addSkillChip('React')">+ React</button>
+                            <button type="button" class="btn btn-xs btn-outline-glass py-0 px-2 rounded-pill small" onclick="addSkillChip('Kubernetes')">+ Kubernetes</button>
+                            <button type="button" class="btn btn-xs btn-outline-glass py-0 px-2 rounded-pill small" onclick="addSkillChip('System Design')">+ System Design</button>
+                            <button type="button" class="btn btn-xs btn-outline-glass py-0 px-2 rounded-pill small" onclick="addSkillChip('Python')">+ Python</button>
+                            <button type="button" class="btn btn-xs btn-outline-glass py-0 px-2 rounded-pill small" onclick="addSkillChip('TypeScript')">+ TypeScript</button>
+                            <button type="button" class="btn btn-xs btn-outline-glass py-0 px-2 rounded-pill small" onclick="addSkillChip('Machine Learning')">+ ML</button>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 text-lg-end pt-2 pt-lg-0">
+                        <button class="btn btn-primary-gradient w-100 py-2 fs-6 shadow-sm" onclick="triggerRealtimeUpdate()">
+                            <i class="fas fa-wand-magic-sparkles me-1"></i> Update Recommendations
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -109,18 +148,18 @@
                         <h5 class="fw-bold mb-0">Strategic Career Blueprint</h5>
                     </div>
                     {% if recommendation.generated_by_llm %}
-                    <span class="badge-pill badge-pink small">
+                    <span class="badge-pill badge-pink small" id="blueprintBadge">
                         <i class="fas fa-robot"></i> {{ recommendation.groq_model_used }}
                     </span>
                     {% else %}
-                    <span class="badge-pill badge-cyan small">
+                    <span class="badge-pill badge-cyan small" id="blueprintBadge">
                         <i class="fas fa-bolt"></i> Real-Time Heuristic Engine
                     </span>
                     {% endif %}
                 </div>
-                <div class="text-secondary small" style="line-height: 1.65; white-space: pre-line;" id="recommendationDescription">
-                    {{ recommendation.description }}
-                </div>
+                <!-- Rendered Markdown Blueprint Container -->
+                <div class="markdown-blueprint-content" id="recommendationDescription"></div>
+                <div id="rawRecommendationDescription" style="display: none;">{{ recommendation.description|escapejs }}</div>
             </div>
 
             <!-- 3-Month Priority Skills Roadmap -->
@@ -377,6 +416,75 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<!-- External Markdown and PDF Engines -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<!-- ==========================================
+     FLOATING AI CAREER MENTOR CHATBOT WIDGET
+     ========================================== -->
+<button class="chatbot-floating-trigger" id="chatbotTrigger" onclick="toggleChatbot()" title="Chat with SkillHer AI Career Mentor">
+    <span class="online-indicator"></span>
+    <i class="fas fa-comment-dots fs-5"></i>
+    <span>Ask AI Mentor</span>
+</button>
+
+<div class="chatbot-modal" id="chatbotModal">
+    <div class="chatbot-header">
+        <div class="d-flex align-items-center gap-2">
+            <div class="brand-icon" style="width: 32px; height: 32px; font-size: 0.9rem;">
+                <i class="fas fa-sparkles"></i>
+            </div>
+            <div>
+                <h6 class="fw-bold text-white mb-0" style="font-size: 0.95rem;">Aria • AI Career Mentor</h6>
+                <span class="small text-muted" style="font-size: 0.72rem;">
+                    <span class="text-success">&bull;</span> Powered by Groq AI Intelligence
+                </span>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-1">
+            <button class="btn btn-sm btn-link text-secondary p-1" onclick="clearChatHistory()" title="Clear Chat">
+                <i class="fas fa-rotate-left"></i>
+            </button>
+            <button class="btn btn-sm btn-link text-white p-1" onclick="toggleChatbot()" title="Minimize">
+                <i class="fas fa-xmark fs-6"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="chatbot-body" id="chatMessagesContainer">
+        <!-- Initial Welcome Message -->
+        <div class="chat-bubble assistant">
+            <p class="mb-1 fw-bold text-white"><i class="fas fa-hand-wave text-warning me-1"></i> Hi! I'm Aria, your SkillHer AI Mentor.</p>
+            <p class="mb-2">I have loaded your career roadmap for <strong>{{ recommendation.target_role|default:"Technology Professional" }}</strong>. How can I assist your learning today?</p>
+            <div class="d-flex flex-column gap-1 pt-1 border-top border-secondary border-opacity-25">
+                <span class="small text-muted" style="font-size: 0.72rem;">Suggested prompts:</span>
+                <button class="chat-chip-btn" onclick="askPresetQuestion('How should I structure my Month 1 study plan?')">
+                    🚀 How to structure Month 1 study plan?
+                </button>
+                <button class="chat-chip-btn" onclick="askPresetQuestion('What projects will impress recruiters for my target role?')">
+                    💡 Standout projects for my portfolio
+                </button>
+                <button class="chat-chip-btn" onclick="askPresetQuestion('What are top technical interview questions for this role?')">
+                    🎯 Key technical interview questions
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="chatbot-footer">
+        <form id="chatbotForm" onsubmit="handleChatSubmit(event)" class="m-0">
+            <div class="input-group">
+                <input type="text" class="form-control-custom form-control-sm" id="chatInputText" 
+                       placeholder="Ask about skills, roadmaps, interview prep..." autocomplete="off">
+                <button type="submit" class="btn btn-primary-gradient btn-sm px-3" id="chatSendBtn">
+                    <i class="fas fa-paper-plane" id="chatSendIcon"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     // CSRF helper for AJAX requests
     function getCookie(name) {
@@ -394,6 +502,66 @@
         return cookieValue;
     }
 
+    // ==========================================
+    // 1. MARKDOWN BLUEPRINT BEAUTIFIER ENGINE
+    // ==========================================
+    function parseMarkdownToHtml(mdText) {
+        if (!mdText) return '<p class="text-secondary">No career blueprint generated yet.</p>';
+        
+        // Use marked.js if available
+        if (typeof marked !== 'undefined' && marked.parse) {
+            try {
+                return marked.parse(mdText);
+            } catch (e) {
+                console.warn("marked.parse error, using fallback:", e);
+            }
+        }
+
+        // Lightweight safe regex markdown parser fallback
+        let html = mdText
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/^#### (.*$)/gim, '<h6 class="text-white fw-bold mt-3 mb-1"><i class="fas fa-caret-right text-info me-1"></i>$1</h6>')
+            .replace(/^### (.*$)/gim, '<h5 class="text-gradient fw-bold mt-3 mb-2"><i class="fas fa-layer-group me-1"></i>$1</h5>')
+            .replace(/^## (.*$)/gim, '<h4 class="text-white fw-bold mt-4 mb-2">$1</h4>')
+            .replace(/\*\*(.*?)\*\*/gim, '<strong class="text-white">$1</strong>')
+            .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+            .replace(/`([^`]+)`/gim, '<code>$1</code>')
+            .replace(/^\s*[-*]\s+(.*$)/gim, '<li class="mb-1 text-secondary">$1</li>')
+            .replace(/^\s*\d+\.\s+(.*$)/gim, '<li class="mb-1 text-secondary">$1</li>');
+
+        // Wrap list items
+        html = html.replace(/(<li.*<\/li>\n?)+/gim, '<ul class="ps-3 my-2">$&</ul>');
+        // Wrap paragraphs
+        const paras = html.split(/\n\s*\n/);
+        return paras.map(p => {
+            p = p.trim();
+            if (!p) return '';
+            if (p.startsWith('<h') || p.startsWith('<ul') || p.startsWith('<ol')) return p;
+            return `<p class="mb-2 text-secondary">${p}</p>`;
+        }).join('');
+    }
+
+    function renderInitialBlueprint() {
+        const rawEl = document.getElementById('rawRecommendationDescription');
+        const targetEl = document.getElementById('recommendationDescription');
+        if (rawEl && targetEl) {
+            targetEl.innerHTML = parseMarkdownToHtml(rawEl.innerText.trim());
+        }
+    }
+
+    // Quick add skill chip
+    function addSkillChip(skillName) {
+        const input = document.getElementById('liveDesiredSkillsInput');
+        if (!input) return;
+        const current = input.value.trim();
+        const parts = current ? current.split(',').map(s => s.trim().toLowerCase()) : [];
+        if (!parts.includes(skillName.toLowerCase())) {
+            input.value = current ? `${current}, ${skillName}` : skillName;
+        }
+    }
+
     // Trigger Real-Time Instant Synthesis via API without reloading
     async function triggerRealtimeUpdate() {
         const spinner = document.getElementById('syncSpinner');
@@ -402,6 +570,7 @@
         const domain = document.getElementById('liveDomainSelect').value;
         const targetRole = document.getElementById('liveTargetRoleInput').value;
         const weeklyHours = document.getElementById('liveWeeklyHoursSelect').value;
+        const desiredSkills = document.getElementById('liveDesiredSkillsInput') ? document.getElementById('liveDesiredSkillsInput').value : '';
 
         try {
             const response = await fetch("{% url 'api_realtime_recommendations' %}", {
@@ -413,7 +582,8 @@
                 body: JSON.stringify({
                     domain: domain,
                     target_role: targetRole,
-                    weekly_hours: weeklyHours
+                    weekly_hours: weeklyHours,
+                    desired_skills: desiredSkills
                 })
             });
 
@@ -421,7 +591,14 @@
             if (data.status === 'success') {
                 // Update header and description
                 document.getElementById('displayTargetRole').innerText = data.target_role;
-                document.getElementById('recommendationDescription').innerText = data.description;
+                
+                // Parse markdown description into beautiful HTML
+                const descEl = document.getElementById('recommendationDescription');
+                if (descEl) {
+                    descEl.innerHTML = parseMarkdownToHtml(data.description);
+                }
+                const rawEl = document.getElementById('rawRecommendationDescription');
+                if (rawEl) rawEl.innerText = data.description;
                 
                 // Update match score & gauge
                 const roundedScore = Math.round(data.match_score);
@@ -430,7 +607,7 @@
                 document.getElementById('matchScoreText').innerHTML = 
                     `Your current assessed skill profile covers <strong>${roundedScore}%</strong> of market requirements for this position.`;
 
-                // Re-render skills dynamically
+                // Re-render skills dynamically with "Your Choice" badges
                 const skillsContainer = document.getElementById('roadmapSkillsContainer');
                 if (skillsContainer && data.skills) {
                     skillsContainer.innerHTML = data.skills.map(s => `
@@ -441,9 +618,10 @@
                                         <i class="${s.icon}"></i>
                                     </div>
                                     <div>
-                                        <div class="d-flex align-items-center gap-2 mb-1">
+                                        <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
                                             <h6 class="fw-bold mb-0">${s.name}</h6>
                                             <span class="badge-pill badge-purple small py-0 px-2">${s.timeline}</span>
+                                            ${s.is_user_choice ? '<span class="badge-pill badge-pink small py-0 px-2"><i class="fas fa-heart me-1"></i> Your Choice</span>' : ''}
                                         </div>
                                         <p class="text-secondary small mb-0">${s.reasoning}</p>
                                     </div>
@@ -516,9 +694,6 @@
                         btn.className = "btn btn-sm btn-cyan-gradient py-1 px-3 text-capitalize";
                         btn.innerHTML = '<i class="fas fa-check-double me-1"></i> Mastered';
                         btn.setAttribute('onclick', `toggleSkillStatus(${recSkillId}, 'todo')`);
-                        if (typeof triggerConfetti === 'function') {
-                            triggerConfetti();
-                        }
                     } else if (newStatus === 'in_progress') {
                         btn.className = "btn btn-sm btn-primary-gradient py-1 px-3 text-capitalize";
                         btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> In Progress';
@@ -536,7 +711,238 @@
     }
 
     // ==========================================
-    // USEFUL FEATURES: INTERVIEW SIMULATOR, SALARY & EXPORT
+    // 2. PROPER HIGH-QUALITY PDF GENERATION ENGINE
+    // ==========================================
+    function downloadRoadmapPDF() {
+        const targetRole = document.getElementById('displayTargetRole').innerText.trim();
+        const score = document.getElementById('gaugeScoreVal').innerText.trim();
+        const rawDesc = document.getElementById('rawRecommendationDescription') ? 
+                        document.getElementById('rawRecommendationDescription').innerText : 
+                        document.getElementById('recommendationDescription').innerText;
+        const parsedDescHtml = parseMarkdownToHtml(rawDesc);
+
+        // Collect skills
+        let skillsHtml = '';
+        document.querySelectorAll('#roadmapSkillsContainer .timeline-step').forEach((el, idx) => {
+            const name = el.querySelector('h6') ? el.querySelector('h6').innerText.trim() : `Skill ${idx+1}`;
+            const timeline = el.querySelector('.badge-purple') ? el.querySelector('.badge-purple').innerText.trim() : 'Month 1';
+            const reason = el.querySelector('p') ? el.querySelector('p').innerText.trim() : '';
+            const status = el.querySelector('button') ? el.querySelector('button').innerText.trim() : 'To Do';
+            skillsHtml += `
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 10px; font-weight: 600; color: #1e293b;">${name}</td>
+                    <td style="padding: 10px; color: #6366f1; font-weight: 600;">${timeline}</td>
+                    <td style="padding: 10px; color: #475569; font-size: 13px;">${reason}</td>
+                    <td style="padding: 10px; color: #059669; font-weight: 600;">${status}</td>
+                </tr>
+            `;
+        });
+
+        // Collect resources
+        let resourcesHtml = '';
+        document.querySelectorAll('#roadmapResourcesContainer .glass-panel').forEach(el => {
+            const title = el.querySelector('h6') ? el.querySelector('h6').innerText.trim() : '';
+            const type = el.querySelector('.badge-pill') ? el.querySelector('.badge-pill').innerText.trim() : 'Course';
+            const provider = el.querySelector('.border-top span') ? el.querySelector('.border-top span').innerText.trim() : '';
+            if (title) {
+                resourcesHtml += `
+                    <li style="margin-bottom: 6px; color: #334155; font-size: 13px;">
+                        <strong>${title}</strong> (${type}) &bull; <span style="color: #64748b;">${provider}</span>
+                    </li>
+                `;
+            }
+        });
+
+        // Build standalone clean printable DOM element
+        const container = document.createElement('div');
+        container.style.width = '750px';
+        container.style.padding = '30px';
+        container.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+        container.style.color = '#1e293b';
+        container.style.backgroundColor = '#ffffff';
+
+        container.innerHTML = `
+            <div style="border-bottom: 3px solid #6366f1; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1 style="margin: 0; color: #4f46e5; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">SkillHer &bull; Career Acceleration Roadmap</h1>
+                    <p style="margin: 4px 0 0; color: #64748b; font-size: 13px;">Personalized AI Career Development Plan</p>
+                </div>
+                <div style="text-align: right;">
+                    <span style="display: inline-block; background: #ede9fe; color: #6b21a8; padding: 6px 14px; border-radius: 9999px; font-weight: 700; font-size: 14px;">
+                        Match Readiness: ${score}
+                    </span>
+                    <div style="color: #94a3b8; font-size: 11px; margin-top: 4px;">Date: ${new Date().toLocaleDateString()}</div>
+                </div>
+            </div>
+
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 18px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 4px; color: #0f172a; font-size: 18px;">Target Role: ${targetRole}</h3>
+                <p style="margin: 0; color: #64748b; font-size: 13px;">Synthesized based on your market benchmarks, weekly commitment, and requested target skills.</p>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <h4 style="color: #4338ca; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 12px; font-size: 16px;">
+                    Strategic AI Career Guidance
+                </h4>
+                <div style="font-size: 13px; line-height: 1.6; color: #334155;">
+                    ${parsedDescHtml}
+                </div>
+            </div>
+
+            <div style="margin-bottom: 25px; page-break-inside: avoid;">
+                <h4 style="color: #4338ca; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 12px; font-size: 16px;">
+                    3-Month Prioritized Skills Roadmap
+                </h4>
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="background: #f1f5f9; text-align: left;">
+                            <th style="padding: 8px 10px; color: #475569;">Competency</th>
+                            <th style="padding: 8px 10px; color: #475569;">Timeline</th>
+                            <th style="padding: 8px 10px; color: #475569;">Strategic Reasoning</th>
+                            <th style="padding: 8px 10px; color: #475569;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${skillsHtml}
+                    </tbody>
+                </table>
+            </div>
+
+            ${resourcesHtml ? `
+            <div style="margin-bottom: 20px; page-break-inside: avoid;">
+                <h4 style="color: #4338ca; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 12px; font-size: 16px;">
+                    Recommended High-Impact Resources
+                </h4>
+                <ul style="padding-left: 18px; margin: 0;">
+                    ${resourcesHtml}
+                </ul>
+            </div>
+            ` : ''}
+
+            <div style="border-top: 1px solid #e2e8f0; padding-top: 12px; margin-top: 25px; text-align: center; color: #94a3b8; font-size: 11px;">
+                Generated by SkillHer Intelligence Platform &bull; https://skillrecommender.vercel.app
+            </div>
+        `;
+
+        if (typeof html2pdf !== 'undefined') {
+            const opt = {
+                margin: 10,
+                filename: `SkillHer_Career_Roadmap_${targetRole.replace(/\s+/g, '_')}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(container).save();
+        } else {
+            // Fallback: print window
+            window.print();
+        }
+    }
+
+    // ==========================================
+    // 3. AI CAREER MENTOR CHATBOT LOGIC
+    // ==========================================
+    function toggleChatbot() {
+        const modal = document.getElementById('chatbotModal');
+        if (modal) {
+            modal.classList.toggle('active');
+            if (modal.classList.contains('active')) {
+                const input = document.getElementById('chatInputText');
+                if (input) setTimeout(() => input.focus(), 150);
+            }
+        }
+    }
+
+    function clearChatHistory() {
+        const container = document.getElementById('chatMessagesContainer');
+        if (container) {
+            container.innerHTML = `
+                <div class="chat-bubble assistant">
+                    <p class="mb-1 fw-bold text-white"><i class="fas fa-hand-wave text-warning me-1"></i> Chat reset!</p>
+                    <p class="mb-0">How can I help you with your roadmap or career goals?</p>
+                </div>
+            `;
+        }
+    }
+
+    function askPresetQuestion(text) {
+        document.getElementById('chatInputText').value = text;
+        sendChatMessage(text);
+    }
+
+    function handleChatSubmit(e) {
+        e.preventDefault();
+        const input = document.getElementById('chatInputText');
+        const text = input ? input.value.trim() : '';
+        if (text) {
+            input.value = '';
+            sendChatMessage(text);
+        }
+    }
+
+    async function sendChatMessage(message) {
+        const container = document.getElementById('chatMessagesContainer');
+        const sendIcon = document.getElementById('chatSendIcon');
+        const sendBtn = document.getElementById('chatSendBtn');
+
+        // Append user bubble
+        const userDiv = document.createElement('div');
+        userDiv.className = 'chat-bubble user';
+        userDiv.innerText = message;
+        container.appendChild(userDiv);
+        container.scrollTop = container.scrollHeight;
+
+        // Append thinking placeholder
+        const thinkingDiv = document.createElement('div');
+        thinkingDiv.className = 'chat-bubble assistant';
+        thinkingDiv.id = 'aiThinkingBubble';
+        thinkingDiv.innerHTML = '<i class="fas fa-spinner fa-spin me-2 text-primary"></i> <em>Aria is crafting guidance...</em>';
+        container.appendChild(thinkingDiv);
+        container.scrollTop = container.scrollHeight;
+
+        if (sendIcon) sendIcon.className = 'fas fa-spinner fa-spin';
+        if (sendBtn) sendBtn.disabled = true;
+
+        try {
+            const response = await fetch("{% url 'api_chatbot' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                body: JSON.stringify({ message: message })
+            });
+
+            const data = await response.json();
+            thinkingDiv.remove();
+
+            const assistantDiv = document.createElement('div');
+            assistantDiv.className = 'chat-bubble assistant';
+            if (data.status === 'success' && data.reply) {
+                assistantDiv.innerHTML = parseMarkdownToHtml(data.reply);
+                if (data.model) {
+                    assistantDiv.innerHTML += `<div class="small text-muted pt-1 border-top border-secondary border-opacity-25 mt-2" style="font-size: 0.68rem;"><i class="fas fa-robot text-primary me-1"></i>${data.model}</div>`;
+                }
+            } else {
+                assistantDiv.innerHTML = `<p class="text-warning mb-0">${data.message || 'Unable to connect with AI mentor. Please try again.'}</p>`;
+            }
+            container.appendChild(assistantDiv);
+            container.scrollTop = container.scrollHeight;
+        } catch (err) {
+            thinkingDiv.remove();
+            const errDiv = document.createElement('div');
+            errDiv.className = 'chat-bubble assistant';
+            errDiv.innerHTML = '<p class="text-danger mb-0"><i class="fas fa-triangle-exclamation me-1"></i> Network connection issue. Please retry.</p>';
+            container.appendChild(errDiv);
+            container.scrollTop = container.scrollHeight;
+        } finally {
+            if (sendIcon) sendIcon.className = 'fas fa-paper-plane';
+            if (sendBtn) sendBtn.disabled = false;
+        }
+    }
+
+    // ==========================================
+    // 4. INTERVIEW SIMULATOR & SALARY BENCHMARK
     // ==========================================
     const interviewQuestions = [
         {
@@ -613,6 +1019,7 @@
 
     function calculateLiveSalary() {
         const slider = document.getElementById('expSlider');
+        if (!slider) return;
         const level = parseInt(slider.value, 10);
         const weeklyHours = parseInt(document.getElementById('liveWeeklyHoursSelect').value, 10) || 10;
         
@@ -694,6 +1101,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        renderInitialBlueprint();
         calculateLiveSalary();
     });
 </script>

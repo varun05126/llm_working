@@ -20,4 +20,5 @@ urlpatterns = [
     path('api/contact/', views.api_contact, name='api_contact'),
     path('api/recommendations/realtime/', views.realtime_recommendations_api, name='api_realtime_recommendations'),
     path('api/recommendations/toggle-status/', views.toggle_skill_status_api, name='api_toggle_skill_status'),
+    path('api/chatbot/', views.api_chatbot, name='api_chatbot'),
 ]

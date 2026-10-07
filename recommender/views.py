@@ -440,15 +440,25 @@ def calculate_realtime_metrics(user_profile, domain=None):
     }
 
 
-def generate_hybrid_recommendation(user_profile, domain=None):
+def generate_hybrid_recommendation(user_profile, domain=None, desired_skills=None):
     """
     Creates or updates the active recommendation with real-time gap analysis and learning path.
-    Integrates Groq LLM when available, and provides instant deterministic AI synthesis.
+    Prioritizes skills the learner explicitly wants to learn (desired_skills).
+    Integrates Groq LLM (qwen/qwen3.8-27b, gpt-oss-120b) and provides instant deterministic AI synthesis.
     """
     domain = domain or user_profile.primary_interest or 'web_dev'
+    if desired_skills is not None:
+        user_profile.interests = desired_skills.strip()
+        user_profile.save(update_fields=['interests'])
+    else:
+        desired_skills = user_profile.interests or ''
+
     metrics = calculate_realtime_metrics(user_profile, domain)
     benchmark = metrics['benchmark']
     scored_skills = metrics['scored_skills']
+
+    # Parse specifically desired skills
+    requested_names = [s.strip() for s in desired_skills.split(',') if s.strip()]
 
     # Archive previous recommendations of same type for cleanliness
     Recommendation.objects.filter(user_profile=user_profile, is_active=True).update(is_active=False)
@@ -457,7 +467,8 @@ def generate_hybrid_recommendation(user_profile, domain=None):
 
     # Create recommendation record
     rec_title = f"{target_role} Acceleration Roadmap"
-    rec_desc = f"Tailored skill development strategy designed for {target_role} in {dict(Skill.DOMAIN_CHOICES).get(domain, domain)}. Calculated based on your current assessment, availability of {user_profile.weekly_hours} hrs/week, and high-demand market competencies."
+    desired_note = f" with focused mastery in {', '.join(requested_names)}" if requested_names else ""
+    rec_desc = f"Tailored skill development strategy designed for {target_role} in {dict(Skill.DOMAIN_CHOICES).get(domain, domain)}{desired_note}. Calculated based on your current assessment, availability of {user_profile.weekly_hours} hrs/week, and high-demand market competencies."
 
     recommendation = Recommendation.objects.create(
         user_profile=user_profile,
@@ -470,14 +481,57 @@ def generate_hybrid_recommendation(user_profile, domain=None):
         groq_model_used='Real-Time Engine'
     )
 
-    # Top 3-5 skill gaps to bridge
-    top_gaps = scored_skills[:5]
-    timelines = ['Month 1 (Core Foundations)', 'Month 1 (Tooling)', 'Month 2 (Applied Frameworks)', 'Month 2 (Integration)', 'Month 3 (Mastery & Portfolio)']
+    # 1. First, insert any specifically requested skills at top priority!
+    prioritized_skills_records = []
+    p_counter = 1
 
-    for i, item in enumerate(top_gaps):
-        sk = item['skill']
-        timeline = timelines[i] if i < len(timelines) else 'Month 3'
+    for s_name in requested_names:
+        matching_skill = Skill.objects.filter(name__iexact=s_name).first()
+        if not matching_skill:
+            matching_skill = Skill.objects.create(
+                name=s_name.title(),
+                domain=domain,
+                category='technical',
+                description=f'Target competency in {s_name.title()} specifically selected for career acceleration.',
+                difficulty_level='intermediate',
+                market_demand='Very High',
+                icon='fas fa-bullseye'
+            )
         
+        rs = RecommendationSkill.objects.create(
+            recommendation=recommendation,
+            skill=matching_skill,
+            priority=p_counter,
+            timeline=f'Month 1 (Target Choice: {matching_skill.name})',
+            reasoning=f"🎯 Learner Priority: Specifically requested by you for focused mastery. Directly bridges your path toward {target_role}.",
+            status='todo'
+        )
+        prioritized_skills_records.append(matching_skill.id)
+        p_counter += 1
+
+        # Attach resources for requested skill
+        resources = LearningResource.objects.filter(skill=matching_skill)[:2]
+        if not resources.exists():
+            resources = LearningResource.objects.filter(skill__domain=domain)[:1]
+        for res in resources:
+            RecommendationResource.objects.get_or_create(
+                recommendation=recommendation,
+                resource=res,
+                defaults={'relevance_score': 0.98}
+            )
+
+    # 2. Add top remaining gap skills from domain benchmark
+    timelines = ['Month 1 (Core Foundations)', 'Month 2 (Applied Frameworks)', 'Month 2 (System Integration)', 'Month 3 (Mastery & Capstone)']
+    gap_idx = 0
+
+    for item in scored_skills:
+        sk = item['skill']
+        if sk.id in prioritized_skills_records:
+            continue
+        if p_counter > 6:
+            break
+
+        timeline = timelines[gap_idx] if gap_idx < len(timelines) else 'Month 3 (Capstone)'
         reasoning = (
             f"High market demand skill for {target_role}. "
             f"Your current level is {item['current_proficiency'].title()}. "
@@ -487,26 +541,40 @@ def generate_hybrid_recommendation(user_profile, domain=None):
         RecommendationSkill.objects.create(
             recommendation=recommendation,
             skill=sk,
-            priority=i + 1,
+            priority=p_counter,
             timeline=timeline,
             reasoning=reasoning,
             status='todo'
         )
+        prioritized_skills_records.append(sk.id)
+        p_counter += 1
+        gap_idx += 1
 
-        # Attach top learning resources for this skill
+        # Attach top learning resources
         resources = LearningResource.objects.filter(skill=sk)[:2]
         for res in resources:
             RecommendationResource.objects.get_or_create(
                 recommendation=recommendation,
                 resource=res,
-                defaults={'relevance_score': 0.95 - (i * 0.05)}
+                defaults={'relevance_score': 0.95 - (gap_idx * 0.05)}
             )
 
-    # Live Real-Time Groq LLM Generation
-    groq_api_key = getattr(settings, 'GROQ_API_KEY', None)
+    # 3. Live Groq LLM Generation
+    groq_api_key = getattr(settings, 'GROQ_API_KEY', None) or os.getenv('GROQ_API_KEY')
+    llm_text = None
+    model_used_name = None
+
     if groq_api_key:
         try:
             current_skills_summary = [f"{item['skill'].name} ({item['current_proficiency']})" for item in scored_skills[:6]]
+            desired_prompt_fragment = ""
+            if requested_names:
+                desired_prompt_fragment = f"""
+                - SPECIFIC SKILLS LEARNER WANTS TO LEARN: {', '.join(requested_names)}
+                CRITICAL INSTRUCTION: The learner specifically wants to master: {', '.join(requested_names)}.
+                Make sure your roadmap, 3-month milestones, and recommended projects directly feature and center around these skills!
+                """
+
             prompt = f"""
             You are a real-time AI career intelligence mentor specializing in women's technical career advancement.
             Analyze this live profile:
@@ -514,18 +582,20 @@ def generate_hybrid_recommendation(user_profile, domain=None):
             - Focus Domain: {dict(Skill.DOMAIN_CHOICES).get(domain, domain)}
             - Weekly Study Hours: {user_profile.weekly_hours} hours/week
             - Assessed Competencies: {current_skills_summary}
-            
-            Provide tailored real-time career advice for women in technology pursuing {target_role}:
+            {desired_prompt_fragment}
+
+            Provide tailored real-time career advice for {target_role}:
             1. Executive summary of immediate competitive advantages and high-leverage growth areas.
-            2. Strategic career guidance covering portfolio visibility, technical credibility, and compensation advocacy.
-            3. Recommended focus for the next 90 days.
-            Keep the advice inspiring, highly specific, and actionable.
+            2. 3-Month Actionable Roadmap:
+               - Month 1: Core Foundations & Target Choice (how to begin mastering {', '.join(requested_names) if requested_names else 'core skills'}).
+               - Month 2: Applied Architecture & Production Integration.
+               - Month 3: Portfolio Capstone, Interview Storytelling, and Compensation Advocacy.
+            3. Recommended capstone project idea that proves capability to senior engineering leaders.
+
+            Format cleanly with markdown headings (###, ####), bullet points, and bold terms.
             """
 
-            # Active supported models on Groq
-            models_to_try = ['openai/gpt-oss-20b', 'openai/gpt-oss-120b', 'qwen/qwen3.8-27b']
-            llm_text = None
-            model_used_name = None
+            models_to_try = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b']
 
             for model_candidate in models_to_try:
                 try:
@@ -538,10 +608,10 @@ def generate_hybrid_recommendation(user_profile, domain=None):
                                 {'role': 'system', 'content': 'You are an inspiring, authoritative AI career advisor for women in technology.'},
                                 {'role': 'user', 'content': prompt}
                             ],
-                            'max_tokens': 700,
+                            'max_tokens': 750,
                             'temperature': 0.6
                         },
-                        timeout=10
+                        timeout=12
                     )
                     if response.status_code == 200:
                         res_json = response.json()
@@ -557,8 +627,32 @@ def generate_hybrid_recommendation(user_profile, domain=None):
                 recommendation.groq_model_used = f"Groq / {model_used_name.split('/')[-1].upper()} (Live)"
                 recommendation.save(update_fields=['description', 'generated_by_llm', 'groq_model_used'])
         except Exception:
-            # Graceful fallback: maintain fast response without failing
             pass
+
+    if not llm_text:
+        desired_str = f"with a customized track in **{', '.join(requested_names)}**" if requested_names else "accelerating core market proficiencies"
+        recommendation.description = f"""{rec_desc}
+
+### Strategic AI Career Guidance:
+**Executive Roadmap for {target_role} ({desired_str}):**
+Designed to maximize your weekly commitment of {user_profile.weekly_hours} hrs/week with hands-on technical depth.
+
+#### Month 1: Core Competency & Fast-Track Implementation
+- **Focus:** {', '.join(requested_names) if requested_names else benchmark['month_1']}
+- Establish dedicated sandbox repositories, configure linting/formatting, and practice writing clean, modular code daily.
+- Build your first functional mini-module showcasing core inputs, data flow, and error handling.
+
+#### Month 2: Applied Architecture & Production Integration
+- **Focus:** {benchmark['month_2']}
+- Implement automated testing, containerized environments, and cloud deployment pipelines.
+- Integrate relational database schemas and cache layers for high throughput.
+
+#### Month 3: Capstone Portfolio & Strategic Interview Readiness
+- **Focus:** {benchmark['month_3']}
+- Deploy an end-to-end capstone application addressing a realistic domain problem.
+- Practice technical architectural walk-throughs, system design tradeoffs, and compensation negotiation narratives.
+"""
+        recommendation.save(update_fields=['description'])
 
     return recommendation
 
@@ -568,7 +662,8 @@ def get_recommendations(request):
     """Regenerate recommendations and redirect to view"""
     user_profile = get_or_create_user_profile(request.user)
     selected_domain = request.GET.get('domain', user_profile.primary_interest)
-    generate_hybrid_recommendation(user_profile, selected_domain)
+    desired_skills = request.GET.get('desired_skills', user_profile.interests)
+    generate_hybrid_recommendation(user_profile, selected_domain, desired_skills)
     messages.success(request, 'Recommendations freshly synthesized with real-time data!')
     return redirect('view_recommendations')
 
@@ -633,6 +728,7 @@ def realtime_recommendations_api(request):
     No page reload required!
     """
     user_profile = get_or_create_user_profile(request.user)
+    desired_skills = None
 
     if request.method == 'POST':
         try:
@@ -643,6 +739,7 @@ def realtime_recommendations_api(request):
         domain = data.get('domain', user_profile.primary_interest)
         target_role = data.get('target_role', user_profile.target_role)
         weekly_hours = data.get('weekly_hours')
+        desired_skills = data.get('desired_skills')
 
         if target_role:
             user_profile.target_role = target_role
@@ -653,12 +750,16 @@ def realtime_recommendations_api(request):
                 user_profile.weekly_hours = int(weekly_hours)
             except (ValueError, TypeError):
                 pass
+        if desired_skills is not None:
+            user_profile.interests = desired_skills.strip()
+
         user_profile.save()
     else:
         domain = request.GET.get('domain', user_profile.primary_interest)
+        desired_skills = request.GET.get('desired_skills', user_profile.interests)
 
     # Compute instant metrics and regenerate
-    rec = generate_hybrid_recommendation(user_profile, domain)
+    rec = generate_hybrid_recommendation(user_profile, domain, desired_skills)
     rec_skills = RecommendationSkill.objects.filter(recommendation=rec).select_related('skill')
     rec_resources = RecommendationResource.objects.filter(recommendation=rec).select_related('resource__skill')
 
@@ -676,6 +777,7 @@ def realtime_recommendations_api(request):
             'timeline': rs.timeline,
             'reasoning': rs.reasoning,
             'status': rs.status,
+            'is_user_choice': 'Learner' in rs.timeline or 'Choice' in rs.reasoning or 'requested' in rs.reasoning.lower(),
         })
 
     resources_payload = []
@@ -699,8 +801,104 @@ def realtime_recommendations_api(request):
         'match_score': rec.match_score,
         'domain': domain,
         'domain_label': dict(Skill.DOMAIN_CHOICES).get(domain, domain),
+        'desired_skills': user_profile.interests,
         'skills': skills_payload,
         'resources': resources_payload,
+    })
+
+
+@csrf_exempt
+@require_POST
+def api_chatbot(request):
+    """
+    AI Career Mentor Chatbot Endpoint:
+    Accepts user questions and returns empowering, contextual guidance based on the user's career roadmap.
+    """
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        data = request.POST
+
+    user_message = data.get('message', '').strip()
+    if not user_message:
+        return JsonResponse({'status': 'error', 'message': 'Message is required.'}, status=400)
+
+    # Contextual user data
+    target_role = "Technology Professional"
+    domain = "Full-Stack Web Development"
+    weekly_hours = 10
+    desired_skills = ""
+    
+    if request.user.is_authenticated:
+        user_profile = get_or_create_user_profile(request.user)
+        target_role = user_profile.target_role or target_role
+        domain = dict(Skill.DOMAIN_CHOICES).get(user_profile.primary_interest, domain)
+        weekly_hours = user_profile.weekly_hours
+        desired_skills = user_profile.interests or ""
+
+    groq_api_key = getattr(settings, 'GROQ_API_KEY', None) or os.getenv('GROQ_API_KEY')
+    reply_text = None
+    model_name = "SkillHer AI Mentor"
+
+    if groq_api_key:
+        system_prompt = f"""
+        You are 'Aria', the SkillHer AI Career Mentor — an empathetic, world-class career strategist, executive coach, and technical mentor dedicated to helping women accelerate their careers in technology, engineering, and leadership.
+        
+        Learner Context:
+        - Target Role: {target_role}
+        - Focus Domain: {domain}
+        - Weekly Study Time: {weekly_hours} hours/week
+        - Target Skills Learner Wants to Learn: {desired_skills or 'Standard domain track'}
+
+        Style Guidelines:
+        1. Be empowering, clear, highly practical, and actionable.
+        2. Give concrete steps, recommended tools, project ideas, or interview tips.
+        3. Format responses using clean markdown (bolding, concise bullet points, brief sections).
+        4. Keep answers focused (2-4 concise paragraphs or bulleted actionable advice).
+        """
+
+        models_to_try = ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b']
+
+        for model_cand in models_to_try:
+            try:
+                response = requests.post(
+                    'https://api.groq.com/openai/v1/chat/completions',
+                    headers={'Authorization': f'Bearer {groq_api_key}', 'Content-Type': 'application/json'},
+                    json={
+                        'model': model_cand,
+                        'messages': [
+                            {'role': 'system', 'content': system_prompt},
+                            {'role': 'user', 'content': user_message}
+                        ],
+                        'max_tokens': 600,
+                        'temperature': 0.7
+                    },
+                    timeout=10
+                )
+                if response.status_code == 200:
+                    res_json = response.json()
+                    reply_text = res_json['choices'][0]['message']['content'].strip()
+                    model_name = f"Groq / {model_cand.split('/')[-1].upper()}"
+                    break
+            except Exception:
+                continue
+
+    if not reply_text:
+        # Smart contextual fallback generator
+        msg_lower = user_message.lower()
+        if 'month 1' in msg_lower or 'start' in msg_lower or 'begin' in msg_lower:
+            reply_text = f"**Getting Started in Month 1 for {target_role}:**\n\n1. **Core Fundamentals First**: Dedicate your {weekly_hours} weekly hours to foundational building blocks in {desired_skills or domain}.\n2. **Hands-On Daily Practice**: Spend 60% of your time coding small proofs-of-concept rather than passive watching.\n3. **GitHub Documentation**: Commit your daily learnings with clean markdown notes to showcase consistency."
+        elif 'interview' in msg_lower or 'question' in msg_lower:
+            reply_text = f"**Interview Strategy for {target_role}:**\n\n- **System Design & Tradeoffs**: Interviewers look for how you evaluate alternatives (latency vs. complexity, SQL vs. NoSQL).\n- **The STAR Method for Behavioral Questions**: Structure your leadership stories around Situation, Task, Action, and Measurable Result.\n- **Ask Strategic Questions**: End interviews by asking about engineering culture and psychological safety."
+        elif 'project' in msg_lower or 'portfolio' in msg_lower:
+            reply_text = f"**Standout Project Ideas for {target_role}:**\n\n- Build an end-to-end full-stack app featuring {desired_skills or 'modern API architectures'}.\n- Include robust authentication, database indexing, automated tests, and Docker deployment.\n- Write an in-depth README with architectural diagrams, API docs, and performance benchmarks."
+        else:
+            reply_text = f"Hello! As your AI Career Mentor for **{target_role}** ({domain}), I'm excited to support your journey. Focus on consistent incremental progress with your {weekly_hours} hrs/week.\n\nTry asking me about:\n- 🚀 *Step-by-step learning breakdown for {desired_skills or 'your target role'}*\n- 💼 *How to showcase your projects on LinkedIn/GitHub*\n- 🎯 *Mock interview questions and system design tips*"
+
+    return JsonResponse({
+        'status': 'success',
+        'reply': reply_text,
+        'model': model_name
     })
 
 
