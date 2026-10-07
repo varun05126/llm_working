@@ -58,8 +58,9 @@ async function main() {
 
     const mailOptions = {
         from: `"${name}" <${email}>`,
-        to: process.env.CONTACT_EMAIL || 'support@skillher.org',
+        to: process.env.CONTACT_EMAIL || 'malthumkarvarun@gmail.com',
         replyTo: email,
+
         subject: `[SkillHer Contact - ${category || 'General'}] ${subject}`,
         text: `From: ${name} (${email})\nCategory: ${category}\n\nMessage:\n${message}`,
         html: `
