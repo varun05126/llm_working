@@ -56,9 +56,11 @@
                 <a href="{% url 'profile' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" id="navProfile">
                     <i class="fas fa-user-circle"></i> Profile
                 </a>
-                {% else %}
                 <a href="{% url 'about' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'about' %}active{% endif %}" id="navAbout">
                     <i class="fas fa-circle-info"></i> About
+                </a>
+                <a href="{% url 'contact' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'contact' %}active{% endif %}" id="navContact">
+                    <i class="fas fa-envelope"></i> Contact
                 </a>
                 {% endif %}
             </div>
@@ -216,6 +218,7 @@
                         <a href="{% url 'skill_assessment' %}" class="footer-link">Skill Assessment</a>
                         <a href="{% url 'view_recommendations' %}" class="footer-link">Recommendations</a>
                         <a href="{% url 'resources' %}" class="footer-link">Curated Resources</a>
+                        <a href="{% url 'contact' %}" class="footer-link">Contact Us</a>
                     </div>
                 </div>
 

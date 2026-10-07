@@ -1,0 +1,133 @@
+{% extends 'recommender/base.html' %}
+{% load static %}
+
+{% block title %}Contact Us - SkillHer{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <!-- Title Header -->
+            <div class="text-center mb-5">
+                <span class="badge-pill badge-purple mb-2">
+                    <i class="fas fa-envelope-open-text"></i> Get In Touch
+                </span>
+                <h1 class="display-6 fw-bold">Contact the SkillHer Team</h1>
+                <p class="text-secondary mx-auto" style="max-width: 600px;">
+                    Have questions about our career intelligence platform, mentorship partnerships, or need assistance? Send us a message and our team will get back to you promptly.
+                </p>
+            </div>
+
+            <div class="row g-4 align-items-stretch">
+                <!-- Left Column: Form -->
+                <div class="col-lg-7">
+                    <div class="glass-panel p-4 p-md-5 h-100 glow-purple">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h4 class="fw-bold mb-0">Send a Message</h4>
+                            <span class="badge-pill badge-cyan small">
+                                <i class="fab fa-node-js"></i> Powered by Nodemailer
+                            </span>
+                        </div>
+
+                        <form method="post" id="contactForm">
+                            {% csrf_token %}
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label-custom" for="contact_name">Full Name *</label>
+                                    <input type="text" name="name" id="contact_name" class="form-control-custom" 
+                                           placeholder="Your name" value="{{ form_data.name|default:'' }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom" for="contact_email">Email Address *</label>
+                                    <input type="email" name="email" id="contact_email" class="form-control-custom" 
+                                           placeholder="you@domain.com" value="{{ form_data.email|default:'' }}" required>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label-custom" for="contact_category">Inquiry Category</label>
+                                    <select name="category" id="contact_category" class="form-select-custom">
+                                        {% for code, label in categories %}
+                                        <option value="{{ code }}">{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-custom" for="contact_subject">Subject *</label>
+                                    <input type="text" name="subject" id="contact_subject" class="form-control-custom" 
+                                           placeholder="Brief topic summary" value="{{ form_data.subject|default:'' }}" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label-custom" for="contact_message">Your Message *</label>
+                                <textarea name="message" id="contact_message" rows="5" class="form-control-custom" 
+                                          placeholder="How can we assist you with your career goals, mentorship, or questions?" required>{{ form_data.message|default:'' }}</textarea>
+                            </div>
+
+                            <button type="submit" class="btn-primary-gradient w-100 py-3 fs-6" id="btnSubmitContact">
+                                <i class="fas fa-paper-plane me-2"></i> Send Message via Nodemailer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Right Column: Info & Office Hours -->
+                <div class="col-lg-5">
+                    <div class="d-flex flex-column gap-4 h-100">
+                        <!-- Direct Info Card -->
+                        <div class="glass-panel p-4 flex-grow-1">
+                            <h5 class="fw-bold mb-3">Platform Information</h5>
+                            
+                            <div class="d-flex align-items-start gap-3 mb-3">
+                                <div class="brand-icon flex-shrink-0" style="width: 38px; height: 38px;">
+                                    <i class="fas fa-envelope"></i>
+                                </div>
+                                <div>
+                                    <strong class="small text-white d-block">Official Email</strong>
+                                    <a href="mailto:support@skillher.org" class="small text-secondary text-decoration-none">support@skillher.org</a>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-start gap-3 mb-3">
+                                <div class="brand-icon flex-shrink-0" style="width: 38px; height: 38px; background: var(--gradient-accent);">
+                                    <i class="fas fa-location-dot"></i>
+                                </div>
+                                <div>
+                                    <strong class="small text-white d-block">Global Community</strong>
+                                    <span class="small text-secondary">Remote & Global Chapter Networks</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="brand-icon flex-shrink-0" style="width: 38px; height: 38px; background: linear-gradient(135deg, #10b981, #06b6d4);">
+                                    <i class="fas fa-handshake"></i>
+                                </div>
+                                <div>
+                                    <strong class="small text-white d-block">Mentorship Partnerships</strong>
+                                    <span class="small text-secondary">Open for corporate & university chapters</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Service Reliability Card -->
+                        <div class="glass-panel p-4">
+                            <h6 class="fw-bold mb-2">Automated Email Dispatch</h6>
+                            <p class="small text-secondary mb-3">
+                                All contact inquiries are processed through our configured Node.js Nodemailer engine with instant delivery confirmation and ticket logging.
+                            </p>
+                            <span class="badge-pill badge-emerald small">
+                                <i class="fas fa-circle-check"></i> Nodemailer Engine Ready
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

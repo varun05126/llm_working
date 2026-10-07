@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 import requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout as auth_logout
@@ -15,7 +16,7 @@ from django.db.models import Avg, Count, Q
 from .models import (
     UserProfile, Skill, UserSkill, AssessmentQuestion,
     AssessmentResult, LearningResource, Recommendation,
-    RecommendationSkill, RecommendationResource
+    RecommendationSkill, RecommendationResource, ContactMessage
 )
 
 
@@ -713,3 +714,130 @@ def logout_view(request):
     if request.user.is_authenticated:
         auth_logout(request)
     return render(request, 'recommender/logout.html')
+
+
+def send_email_via_nodemailer(payload):
+    """
+    Invokes the Node.js Nodemailer script (mailer.js) to dispatch email.
+    Returns (success: bool, info: dict)
+    """
+    mailer_script = os.path.join(settings.BASE_DIR, 'mailer.js')
+    if not os.path.exists(mailer_script):
+        return False, {'message': 'mailer.js script not found'}
+
+    try:
+        proc = subprocess.run(
+            ['node', mailer_script, json.dumps(payload)],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            cwd=settings.BASE_DIR
+        )
+        if proc.returncode == 0:
+            try:
+                res_data = json.loads(proc.stdout.strip())
+                return True, res_data
+            except json.JSONDecodeError:
+                return True, {'raw_output': proc.stdout}
+        else:
+            return False, {'error': proc.stderr or proc.stdout}
+    except Exception as e:
+        return False, {'error': str(e)}
+
+
+def contact(request):
+    """
+    Contact Us page view supporting both standard POST and AJAX submissions via Nodemailer.
+    """
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        email = request.POST.get('email', '').strip()
+        category = request.POST.get('category', 'general')
+        subject = request.POST.get('subject', '').strip()
+        message_text = request.POST.get('message', '').strip()
+
+        if not name or not email or not subject or not message_text:
+            messages.error(request, 'Please fill in all required fields.')
+            return render(request, 'recommender/contact.html', {
+                'categories': ContactMessage.CATEGORY_CHOICES,
+                'form_data': request.POST
+            })
+
+        payload = {
+            'name': name,
+            'email': email,
+            'category': dict(ContactMessage.CATEGORY_CHOICES).get(category, category),
+            'subject': subject,
+            'message': message_text,
+        }
+
+        # Dispatch email via Nodemailer
+        success, info = send_email_via_nodemailer(payload)
+        msg_id = info.get('messageId', '') if success else ''
+
+        # Save to database
+        ContactMessage.objects.create(
+            name=name,
+            email=email,
+            category=category,
+            subject=subject,
+            message=message_text,
+            sent_via_nodemailer=success,
+            nodemailer_message_id=msg_id
+        )
+
+        messages.success(request, 'Your message has been sent successfully via Nodemailer! Our team will get back to you shortly.')
+        return redirect('contact')
+
+    context = {
+        'categories': ContactMessage.CATEGORY_CHOICES,
+    }
+    return render(request, 'recommender/contact.html', context)
+
+
+@require_POST
+def api_contact(request):
+    """
+    JSON API endpoint for instant AJAX contact form submissions via Nodemailer.
+    """
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        data = request.POST
+
+    name = data.get('name', '').strip()
+    email = data.get('email', '').strip()
+    category = data.get('category', 'general')
+    subject = data.get('subject', '').strip()
+    message_text = data.get('message', '').strip()
+
+    if not name or not email or not subject or not message_text:
+        return JsonResponse({'status': 'error', 'message': 'All fields are required.'}, status=400)
+
+    payload = {
+        'name': name,
+        'email': email,
+        'category': dict(ContactMessage.CATEGORY_CHOICES).get(category, category),
+        'subject': subject,
+        'message': message_text,
+    }
+
+    success, info = send_email_via_nodemailer(payload)
+    msg_id = info.get('messageId', '') if success else ''
+
+    ContactMessage.objects.create(
+        name=name,
+        email=email,
+        category=category,
+        subject=subject,
+        message=message_text,
+        sent_via_nodemailer=success,
+        nodemailer_message_id=msg_id
+    )
+
+    return JsonResponse({
+        'status': 'success',
+        'message': 'Message sent successfully via Nodemailer!',
+        'messageId': msg_id,
+        'preview': info.get('preview', '')
+    })

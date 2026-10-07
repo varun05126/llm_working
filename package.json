@@ -1,0 +1,24 @@
+{
+  "name": "skill_recommender",
+  "version": "1.0.0",
+  "description": "An AI-powered skill development recommendation system specifically designed for women's career growth. Built with Django and integrated with Groq API for personalized recommendations.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/varun05126/llm_working.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/varun05126/llm_working/issues"
+  },
+  "homepage": "https://github.com/varun05126/llm_working#readme",
+  "dependencies": {
+    "nodemailer": "^10.0.15"
+  }
+}

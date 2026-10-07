@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     UserProfile, Skill, UserSkill, AssessmentQuestion,
     AssessmentResult, LearningResource, Recommendation,
-    RecommendationSkill, RecommendationResource
+    RecommendationSkill, RecommendationResource, ContactMessage
 )
 
 @admin.register(UserProfile)
@@ -57,3 +57,10 @@ class RecommendationAdmin(admin.ModelAdmin):
     list_filter = ('recommendation_type', 'generated_by_llm', 'is_active', 'created_at')
     search_fields = ('user_profile__user__username', 'title', 'description', 'target_role')
     inlines = [RecommendationSkillInline, RecommendationResourceInline]
+
+@admin.register(ContactMessage)
+class ContactMessageAdmin(admin.ModelAdmin):
+    list_display = ('name', 'email', 'category', 'subject', 'sent_via_nodemailer', 'created_at')
+    list_filter = ('category', 'sent_via_nodemailer', 'created_at')
+    search_fields = ('name', 'email', 'subject', 'message')
+    readonly_fields = ('sent_via_nodemailer', 'nodemailer_message_id', 'created_at')

@@ -250,3 +250,27 @@ class RecommendationResource(models.Model):
 
     def __str__(self):
         return f"{self.recommendation.title} - {self.resource.title}"
+
+
+class ContactMessage(models.Model):
+    CATEGORY_CHOICES = [
+        ('general', 'General Inquiry'),
+        ('technical', 'Technical Support'),
+        ('mentorship', 'Career Mentorship & Partnerships'),
+        ('feedback', 'Platform Feedback & Suggestions'),
+    ]
+
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='general')
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    sent_via_nodemailer = models.BooleanField(default=True)
+    nodemailer_message_id = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.name} - {self.subject}"
