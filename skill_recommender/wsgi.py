@@ -7,15 +7,15 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'skill_recommender.settings')
 # Setup Django
 django.setup()
 
-# Run migrations and auto-seed if needed (essential for serverless where /tmp is initialized fresh)
-try:
-    execute_from_command_line(['manage.py', 'migrate', '--noinput'])
-    from recommender.models import Skill
-    if Skill.objects.count() == 0:
-        execute_from_command_line(['manage.py', 'seed_data'])
-except Exception as e:
-    # Log the error but don't break the application
-    print(f"Database initialization notice: {e}")
+# In ephemeral serverless environments without persistent DB, initialize local SQLite
+if not os.environ.get('DATABASE_URL'):
+    try:
+        execute_from_command_line(['manage.py', 'migrate', '--noinput'])
+        from recommender.models import Skill
+        if Skill.objects.count() == 0:
+            execute_from_command_line(['manage.py', 'seed_data'])
+    except Exception as e:
+        print(f"Ephemeral database initialization notice: {e}")
 
 application = get_wsgi_application()
 app = application
