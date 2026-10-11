@@ -3,11 +3,14 @@
 {% block title %}Logged Out{% endblock %}
 
 {% block content %}
-<h1>You have been logged out</h1>
-<p class="lead">Thank you for visiting SkillHer. Your progress and assessments are safely stored.</p>
-
-<div class="btn-group">
-  <a href="{% url 'login' %}" class="btn btn-primary">Log in again</a>
-  <a href="{% url 'home' %}" class="btn btn-secondary">Return home</a>
+<div class="auth-container">
+  <div class="card-soft text-center" style="padding: clamp(2rem, 4vw, 3.5rem) 2rem;">
+    <h1 class="display-serif">You have been logged out</h1>
+    <p class="lead" style="margin-inline: auto;">Thank you for using SkillHer. Your progress and learning assessments are safely saved.</p>
+    <div class="btn-group" style="justify-content: center; margin-top: 1.5rem;">
+      <a href="{% url 'login' %}" class="btn btn-primary btn-pill">Log in again</a>
+      <a href="{% url 'home' %}" class="btn btn-secondary btn-pill">Return home</a>
+    </div>
+  </div>
 </div>
 {% endblock %}
