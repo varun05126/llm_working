@@ -4,33 +4,38 @@
 {% block title %}Your Learning Roadmaps{% endblock %}
 
 {% block content %}
-<h1>Your Learning Roadmaps</h1>
-<p class="lead">Personalized learning blueprints generated from your skill assessments.</p>
+<div class="results-header" style="margin-bottom: 2rem;">
+  <span class="badge" style="margin-bottom: 0.5rem;">Curated Blueprints</span>
+  <h1 class="display-serif">Your Learning Roadmaps</h1>
+  <p class="lead">Personalized learning blueprints generated from your skill assessments.</p>
 
-<div class="btn-group" style="margin-bottom: 2rem;">
-  <a href="{% url 'skill_assessment' %}" class="btn btn-primary">Start new assessment</a>
+  <div class="btn-group" style="margin-top: 1.25rem;">
+    <a href="{% url 'skill_assessment' %}" class="btn btn-primary btn-pill">Start new assessment</a>
+  </div>
 </div>
 
-<h2>Generated Roadmaps</h2>
-<ul class="plain-list">
+<div class="recommendations-list">
   {% for rec in recommendations %}
-    <li>
+    <div class="card-soft recommendation-item-card" style="margin-bottom: 1.5rem; padding: 1.75rem;">
       <div class="resource-row">
-        <a href="{% url 'recommendation_detail' rec.id %}" class="resource-title">
+        <a href="{% url 'recommendation_detail' rec.id %}" class="resource-title display-serif" style="font-size: 1.35rem; color: var(--fg);">
           {{ rec.title }}
         </a>
-        <span class="resource-meta">{{ rec.weekly_hours }} hrs/week · {{ rec.created_at|date:"M j, Y" }}</span>
+        <span class="badge">{{ rec.weekly_hours }} hrs/week · {{ rec.created_at|date:"M j, Y" }}</span>
       </div>
-      <div class="resource-desc prose" style="margin-bottom: 0.5rem;">{{ rec.description|truncatewords:30|render_md }}</div>
-      <div class="btn-group" style="margin-top: 0.25rem;">
-        <a href="{% url 'recommendation_detail' rec.id %}" class="btn btn-secondary btn-sm">View full roadmap</a>
-        <a href="{% url 'skill_assessment' %}?reassess={{ rec.skill_name|urlencode }}" class="btn btn-secondary btn-sm">Re-assess skill</a>
+      <div class="resource-desc prose" style="margin: 0.75rem 0 1.25rem;">{{ rec.description|truncatewords:35|render_md }}</div>
+      <div class="btn-group" style="margin-top: 0.5rem;">
+        <a href="{% url 'recommendation_detail' rec.id %}" class="btn btn-primary btn-sm btn-pill">View full roadmap</a>
+        <a href="{% url 'skill_assessment' %}?reassess={{ rec.skill_name|urlencode }}" class="btn btn-secondary btn-sm btn-pill">Re-assess skill</a>
       </div>
-    </li>
+    </div>
   {% empty %}
-    <li>
-      <span class="muted-text">Your first roadmap is one assessment away. Complete a skill check to begin your learning path.</span>
-    </li>
+    <div class="card-soft text-center" style="padding: 3rem 1.5rem;">
+      <p class="lead" style="margin-inline: auto; margin-bottom: 1.5rem;">
+        Your first roadmap is one assessment away. Complete a skill check to begin your learning path.
+      </p>
+      <a href="{% url 'skill_assessment' %}" class="btn btn-primary btn-pill">Assess your skill</a>
+    </div>
   {% endfor %}
-</ul>
+</div>
 {% endblock %}
