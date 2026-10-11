@@ -199,6 +199,27 @@ class AssessmentResult(models.Model):
         return f"{self.user_profile.user.username} - {self.domain} ({self.score_percentage:.1f}%)"
 
 
+class AssessmentQuestionCache(models.Model):
+    """
+    Database cache for LLM-generated assessment questions by normalized skill name and goal.
+    Valid for 7 days to eliminate redundant Groq API requests for duplicate skills.
+    """
+    normalized_skill = models.CharField(max_length=150, db_index=True)
+    normalized_goal = models.CharField(max_length=150, db_index=True)
+    questions_data = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['normalized_skill', 'normalized_goal']),
+        ]
+
+    def __str__(self):
+        return f"Cache: {self.normalized_skill} | {self.normalized_goal} ({self.created_at})"
+
+
+
 class LearningResource(models.Model):
     RESOURCE_TYPES = [
         ('course', 'Course'),
