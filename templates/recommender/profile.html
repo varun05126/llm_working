@@ -1,4 +1,5 @@
 {% extends 'recommender/base.html' %}
+{% load markdown_tags %}
 
 {% block title %}Profile{% endblock %}
 
@@ -44,6 +45,11 @@
         <div class="resource-desc">
           Goal: {{ a.goal }} · Completed on {{ a.created_at|date:"M j, Y" }}
         </div>
+        {% if a.summary %}
+          <div class="resource-desc prose" style="margin-top: 0.35rem;">
+            {{ a.summary|render_md }}
+          </div>
+        {% endif %}
         <div class="btn-group" style="margin-top: 0.5rem;">
           {% if a.recommendation %}
             <a href="{% url 'recommendation_detail' a.recommendation.id %}" class="btn btn-secondary btn-sm">View Roadmap</a>
