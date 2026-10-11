@@ -3,32 +3,40 @@
 {% block title %}About{% endblock %}
 
 {% block content %}
-<h1>About SkillHer</h1>
-<p class="lead">AI-powered skill assessment and personalized learning paths designed for women in technology and leadership.</p>
+<div style="max-width: 960px; margin: 0 auto;">
+  <span class="badge" style="margin-bottom: 0.75rem;">Our Mission</span>
+  <h1 style="margin-bottom: 0.75rem;">About SkillHer</h1>
+  <p class="lead" style="margin-bottom: 2.5rem;">AI-powered skill assessment and personalized learning paths designed for women in technology and leadership.</p>
 
-<h2>Our Mission</h2>
-<p>
-  SkillHer bridges the confidence and opportunity gap by providing objective skill benchmarking, realistic gap analyses, and actionable weekly roadmaps tailored to individual schedules and goals.
-</p>
+  <div class="card" style="padding: 2rem; margin-bottom: 2rem;">
+    <h2 style="font-size: 1.5rem; margin-top: 0; margin-bottom: 0.75rem;">Closing the Opportunity Gap</h2>
+    <p style="font-size: 1.05rem; line-height: 1.6; margin: 0;">
+      SkillHer bridges the confidence and opportunity gap by providing objective skill benchmarking, realistic gap analyses, and actionable weekly roadmaps tailored to individual schedules and goals. Every roadmap blends core computer science fundamentals, hands-on portfolio projects, curated open-source resources, and active community networks for women in tech.
+    </p>
+  </div>
 
-<h2>How It Works</h2>
-<ol class="plain-list">
-  <li>
-    <strong>1. Dynamic Skill Assessment:</strong>
-    <span class="resource-desc">Specify any domain or specialized skill to generate adaptive concept and practical scenario evaluations.</span>
-  </li>
-  <li>
-    <strong>2. Realistic Gap Identification:</strong>
-    <span class="resource-desc">Pinpoint exact topic strengths and missing fundamentals scored deterministically on the server.</span>
-  </li>
-  <li>
-    <strong>3. Actionable Weekly Roadmap:</strong>
-    <span class="resource-desc">Receive structured 4-week or 12-week milestones with project ideas, free docs, vetted YouTube topics, and entry internship opportunities.</span>
-  </li>
-</ol>
+  <h2 style="font-size: 1.5rem; margin-bottom: 1.25rem;">How It Works</h2>
+  <div class="features-grid" style="margin-bottom: 2.5rem;">
+    <div class="card" style="padding: 1.5rem;">
+      <span class="badge" style="margin-bottom: 0.75rem;">Step 1</span>
+      <h3 style="font-size: 1.2rem; margin: 0 0 0.5rem;">Dynamic Assessment</h3>
+      <p class="muted-text" style="font-size: 0.95rem; margin: 0;">Specify any domain or specialized skill to generate adaptive concept and practical scenario evaluations tailored to your level.</p>
+    </div>
+    <div class="card" style="padding: 1.5rem;">
+      <span class="badge" style="margin-bottom: 0.75rem;">Step 2</span>
+      <h3 style="font-size: 1.2rem; margin: 0 0 0.5rem;">Deterministic Analysis</h3>
+      <p class="muted-text" style="font-size: 0.95rem; margin: 0;">Pinpoint exact topic strengths and missing fundamentals scored deterministically on the server with constructive feedback.</p>
+    </div>
+    <div class="card" style="padding: 1.5rem;">
+      <span class="badge" style="margin-bottom: 0.75rem;">Step 3</span>
+      <h3 style="font-size: 1.2rem; margin: 0 0 0.5rem;">Actionable Roadmap</h3>
+      <p class="muted-text" style="font-size: 0.95rem; margin: 0;">Receive structured 4-week or 12-week milestones with project ideas, free docs, vetted YouTube topics, and entry internship opportunities.</p>
+    </div>
+  </div>
 
-<div class="btn-group">
-  <a href="{% url 'skill_assessment' %}" class="btn btn-primary">Start assessment</a>
-  <a href="{% url 'home' %}" class="btn btn-secondary">Back to home</a>
+  <div class="btn-group">
+    <a href="{% url 'skill_assessment' %}" class="btn btn-primary">Start assessment</a>
+    <a href="{% url 'home' %}" class="btn btn-secondary">Back to home</a>
+  </div>
 </div>
 {% endblock %}
