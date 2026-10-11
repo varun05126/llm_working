@@ -43,6 +43,11 @@ Configure these variables in your `.env` file locally or in **Vercel Project Set
 
 See [.env.example](file:///.env.example) for a ready-to-use template.
 
+### Secrets & Security
+- **Never Commit Secrets**: Real `.env` and `.env.local` files must never be tracked or committed to version control.
+- **Use Placeholders in Examples**: `.env.example` must contain purely illustrative placeholders (e.g. `your_groq_api_key_here`).
+- **Secret Rotation**: If any credential is ever exposed or leaked into a public or shared space, rotate and invalidate it immediately at the respective provider console (Groq, Google Cloud, GitHub, Google App Passwords, Neon). Update the rotated secret in your local `.env` and in Vercel Project Settings.
+
 ---
 
 ## Local Development Setup
