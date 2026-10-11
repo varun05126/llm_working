@@ -7,6 +7,38 @@
 
 ---
 
+## HERO SCENE RETROFIT: ISOMETRIC SVG & ULTRA-WIDE VIEWPORT HARDENING
+
+**Date**: October 11, 2026  
+**Auditor**: Antigravity Assistant  
+**Repository**: `https://github.com/varun05126/llm_working` (Branch: `main`)  
+**Product**: **SkillHer**
+
+### 1. Overview & Root Cause Resolution
+- **Replaced CSS-3D with Pure Inline Isometric SVG**:
+  - Replaced the fragile CSS 3D transform stage (`.scene3d`) with the dedicated, high-fidelity inline SVG component (`.hero-scene`).
+  - Staircase is rendered with 5 crisp isometric blocks (`step-1` to `step-5`) where top, left, and right polygon faces align seamlessly at all zoom levels and viewports.
+  - Stylized duotone woman figure with upright posture, smooth bezier-curved arms, bun, waistline belt, and ground drop-shadow.
+  - Golden summit star with radiant radial glow and 3 twinkling sparkles.
+  - 4 floating pill-shaped tags (*Code, Data, Design, Lead*) with subtle drop shadows and gentle floating keyframe animations.
+- **Ultra-Wide Viewport Hardening (Zero Overflow across 360px – 2560px)**:
+  - Fixed hero grid template columns to `grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);` with `overflow: clip` and `min-width: 0` constraints.
+  - Verified `scrollWidth <= clientWidth` (`overflow=False`) across 360, 768, 1280, 1920, 2380, and 2560 px viewports.
+  - Eliminated left-edge text clipping on hero title, rotating word, and tech badge at wide aspect ratios.
+- **Interactive Scroll Story Synchronization ("Learn → Build → Lead")**:
+  - Wired `templates/recommender/partials/hero_scene.html` into both the hero and scroll story columns.
+  - Synchronized `data-stage-panel="learn|build|lead"` scroll intersection observers with `[data-scene][data-story]`.
+  - Dynamically updates figure positioning:
+    - **Learn**: Figure walks to base step 1 holding an open book (`pose-learn`, `translate(-260px, 240px)`). Upper steps fade to 0.35 opacity.
+    - **Build**: Figure steps to step 3 pointing up (`pose-build`, `translate(-130px, 120px)`). Upper steps fade to 0.6 opacity.
+    - **Lead**: Figure reaches the summit step with arms raised triumphantly toward the glowing gold star (`pose-lead`, origin position).
+- **Performance & Asset Budget**:
+  - `static/css/app.css`: 38,173 bytes (Strict limit: < 45 KB).
+  - `static/js/app.js`: 9,690 bytes (Strict limit: < 12 KB).
+  - Test Suite: 21/21 Django unit tests passing.
+
+---
+
 ## VISUAL IDENTITY & 3D "WOMEN EMPOWERMENT" HERO REDESIGN PASS
 
 **Date**: October 11, 2026  
