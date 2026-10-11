@@ -1,68 +1,80 @@
 {% extends 'recommender/base.html' %}
 {% load markdown_tags %}
 
-{% block title %}Profile{% endblock %}
+{% block title %}Learner Profile{% endblock %}
 
 {% block content %}
-<h1>Learner Profile</h1>
-<p class="lead">{{ user.username }} · {{ profile.target_role|default:"Learner" }}</p>
-
-<h2>Your Learning Preferences</h2>
-<form method="post" action="{% url 'profile' %}">
-  {% csrf_token %}
-
-  <div class="form-group">
-    <label for="id_target_role">Target Role or Career Goal</label>
-    <input type="text" name="target_role" id="id_target_role" value="{{ profile.target_role|default:'Software Engineer' }}">
+<div class="profile-layout">
+  <div class="profile-header" style="margin-bottom: 2rem;">
+    <h1 class="display-serif">Learner Profile</h1>
+    <p class="lead">{{ user.username }} · {{ profile.target_role|default:"Learner" }}</p>
   </div>
 
-  <div class="form-group">
-    <label for="id_weekly_hours">Available Hours Per Week</label>
-    <input type="number" name="weekly_hours" id="id_weekly_hours" min="1" max="60" value="{{ profile.weekly_hours|default:10 }}">
-    <p class="help-text">Used to calibrate realistic weekly roadmaps (4-week intensive or 12-week comprehensive).</p>
-  </div>
+  <div class="profile-grid">
+    <!-- Left Column: Preferences Form -->
+    <div class="card-soft profile-card">
+      <h2 class="display-serif" style="margin-top: 0;">Learning Preferences</h2>
+      <form method="post" action="{% url 'profile' %}">
+        {% csrf_token %}
 
-  <div class="form-group">
-    <label for="id_location">Location or Remote Preference</label>
-    <input type="text" name="location" id="id_location" value="{{ profile.location|default:'' }}" placeholder="e.g. Remote, New York, Bengaluru, London">
-    <p class="help-text">Used for tailoring internship and job search queries.</p>
-  </div>
-
-  <div class="btn-group">
-    <button type="submit" class="btn btn-primary">Save profile</button>
-  </div>
-</form>
-
-<h2>Assessment &amp; Level History</h2>
-{% if assessments %}
-  <ul class="plain-list">
-    {% for a in assessments %}
-      <li>
-        <div class="resource-row">
-          <span class="resource-title">{{ a.skill_name }}</span>
-          <span class="resource-meta"><strong>{{ a.level }}</strong> ({{ a.score_percentage|floatformat:0 }}%)</span>
+        <div class="form-group">
+          <label for="id_target_role">Target Role or Career Goal</label>
+          <input type="text" name="target_role" id="id_target_role" value="{{ profile.target_role|default:'Software Engineer' }}">
         </div>
-        <div class="resource-desc">
-          Goal: {{ a.goal }} · Completed on {{ a.created_at|date:"M j, Y" }}
+
+        <div class="form-group">
+          <label for="id_weekly_hours">Available Hours Per Week</label>
+          <input type="number" name="weekly_hours" id="id_weekly_hours" min="1" max="60" value="{{ profile.weekly_hours|default:10 }}">
+          <p class="help-text">Used to calibrate realistic weekly roadmaps (4-week intensive or 12-week comprehensive).</p>
         </div>
-        {% if a.summary %}
-          <div class="resource-desc prose" style="margin-top: 0.35rem;">
-            {{ a.summary|render_md }}
-          </div>
-        {% endif %}
-        <div class="btn-group" style="margin-top: 0.5rem;">
-          {% if a.recommendation %}
-            <a href="{% url 'recommendation_detail' a.recommendation.id %}" class="btn btn-secondary btn-sm">View Roadmap</a>
-          {% endif %}
-          <a href="{% url 'skill_assessment' %}?reassess={{ a.skill_name|urlencode }}" class="btn btn-secondary btn-sm">Re-assess Skill</a>
+
+        <div class="form-group">
+          <label for="id_location">Location or Remote Preference</label>
+          <input type="text" name="location" id="id_location" value="{{ profile.location|default:'' }}" placeholder="e.g. Remote, New York, Bengaluru, London">
+          <p class="help-text">Used for tailoring internship and job search queries.</p>
         </div>
-      </li>
-    {% endfor %}
-  </ul>
-{% else %}
-  <p class="muted-text">You haven't completed any assessments yet.</p>
-  <div class="btn-group">
-    <a href="{% url 'skill_assessment' %}" class="btn btn-primary">Take your first assessment</a>
+
+        <div class="btn-group" style="margin-top: 1.5rem;">
+          <button type="submit" class="btn btn-primary btn-pill">Save profile</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Right Column: History -->
+    <div class="card-soft profile-card">
+      <h2 class="display-serif" style="margin-top: 0;">Assessment History</h2>
+      {% if assessments %}
+        <ul class="plain-list">
+          {% for a in assessments %}
+            <li>
+              <div class="resource-row">
+                <span class="resource-title" style="font-weight: 600;">{{ a.skill_name }}</span>
+                <span class="badge">{{ a.level }} ({{ a.score_percentage|floatformat:0 }}%)</span>
+              </div>
+              <div class="resource-desc" style="margin-top: 0.25rem;">
+                Goal: {{ a.goal }} · Completed on {{ a.created_at|date:"M j, Y" }}
+              </div>
+              {% if a.summary %}
+                <div class="resource-desc prose" style="margin-top: 0.35rem;">
+                  {{ a.summary|render_md }}
+                </div>
+              {% endif %}
+              <div class="btn-group" style="margin-top: 0.65rem;">
+                {% if a.recommendation %}
+                  <a href="{% url 'recommendation_detail' a.recommendation.id %}" class="btn btn-secondary btn-sm btn-pill">View Roadmap</a>
+                {% endif %}
+                <a href="{% url 'skill_assessment' %}?reassess={{ a.skill_name|urlencode }}" class="btn btn-secondary btn-sm btn-pill">Re-assess Skill</a>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="muted-text">You haven't completed any assessments yet.</p>
+        <div class="btn-group" style="margin-top: 1rem;">
+          <a href="{% url 'skill_assessment' %}" class="btn btn-primary btn-pill">Take your first assessment</a>
+        </div>
+      {% endif %}
+    </div>
   </div>
-{% endif %}
+</div>
 {% endblock %}
