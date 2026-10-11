@@ -1,166 +1,62 @@
 {% extends 'recommender/base.html' %}
-{% load static %}
 
-{% block title %}My Profile & Career Goals - SkillHer{% endblock %}
+{% block title %}Profile{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<h1>Learner Profile</h1>
+<p class="lead">{{ user.username }} · {{ profile.target_role|default:"Learner" }}</p>
 
-    <!-- Profile Header Banner -->
-    <div class="glass-panel p-4 mb-4 glow-purple">
-        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-            <div class="d-flex align-items-center gap-3">
-                <div class="brand-icon" style="width: 58px; height: 58px; font-size: 1.6rem;">
-                    {{ user.username|slice:":1"|upper }}
-                </div>
-                <div>
-                    <span class="badge-pill badge-purple small mb-1">Professional Profile</span>
-                    <h2 class="fw-bold mb-1">{{ user.username }}</h2>
-                    <p class="text-secondary small mb-0">
-                        <i class="fas fa-briefcase text-gradient me-1"></i> {{ user_profile.target_role }} &bull; 
-                        <i class="fas fa-clock text-gradient ms-2 me-1"></i> {{ user_profile.weekly_hours }} hrs/week available
-                    </p>
-                </div>
-            </div>
+<h2>Your Learning Preferences</h2>
+<form method="post" action="{% url 'profile' %}">
+  {% csrf_token %}
 
-            <div class="d-flex gap-2">
-                <a href="{% url 'view_recommendations' %}" class="btn-primary-gradient py-2 px-3 small">
-                    <i class="fas fa-wand-magic-sparkles"></i> Recommendations
-                </a>
-                <a href="{% url 'skill_assessment' %}" class="btn-outline-glass py-2 px-3 small">
-                    <i class="fas fa-bullseye"></i> Skill Assessment
-                </a>
-            </div>
+  <div class="form-group">
+    <label for="id_target_role">Target Role or Career Goal</label>
+    <input type="text" name="target_role" id="id_target_role" value="{{ profile.target_role|default:'Software Engineer' }}">
+  </div>
+
+  <div class="form-group">
+    <label for="id_weekly_hours">Available Hours Per Week</label>
+    <input type="number" name="weekly_hours" id="id_weekly_hours" min="1" max="60" value="{{ profile.weekly_hours|default:10 }}">
+    <p class="help-text">Used to calibrate realistic weekly roadmaps (4-week intensive or 12-week comprehensive).</p>
+  </div>
+
+  <div class="form-group">
+    <label for="id_location">Location or Remote Preference</label>
+    <input type="text" name="location" id="id_location" value="{{ profile.location|default:'' }}" placeholder="e.g. Remote, New York, Bengaluru, London">
+    <p class="help-text">Used for tailoring internship and job search queries.</p>
+  </div>
+
+  <div class="btn-group">
+    <button type="submit" class="btn btn-primary">Save profile</button>
+  </div>
+</form>
+
+<h2>Assessment &amp; Level History</h2>
+{% if assessments %}
+  <ul class="plain-list">
+    {% for a in assessments %}
+      <li>
+        <div class="resource-row">
+          <span class="resource-title">{{ a.skill_name }}</span>
+          <span class="resource-meta"><strong>{{ a.level }}</strong> ({{ a.score_percentage|floatformat:0 }}%)</span>
         </div>
-    </div>
-
-    <div class="row g-4">
-        <!-- Profile Edit Form -->
-        <div class="col-lg-7">
-            <div class="glass-panel p-4">
-                <h5 class="fw-bold mb-3">Edit Career Profile & Preferences</h5>
-                <form method="post" id="profileForm">
-                    {% csrf_token %}
-
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label-custom" for="target_role">Target Role / Career Goal</label>
-                            <input type="text" name="target_role" id="target_role" class="form-control-custom" 
-                                   value="{{ user_profile.target_role }}" placeholder="e.g. Full-Stack Developer">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label-custom" for="primary_interest">Primary Interest Domain</label>
-                            <select name="primary_interest" id="primary_interest" class="form-select-custom">
-                                {% for code, label in domains %}
-                                    {% if code != 'general' %}
-                                    <option value="{{ code }}" {% if user_profile.primary_interest == code %}selected{% endif %}>
-                                        {{ label }}
-                                    </option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label-custom" for="experience_level">Current Experience Level</label>
-                            <select name="experience_level" id="experience_level" class="form-select-custom">
-                                {% for code, label in experience_levels %}
-                                <option value="{{ code }}" {% if user_profile.experience_level == code %}selected{% endif %}>
-                                    {{ label }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label-custom" for="weekly_hours">Weekly Study Hours</label>
-                            <input type="number" name="weekly_hours" id="weekly_hours" class="form-control-custom" 
-                                   value="{{ user_profile.weekly_hours }}" min="1" max="60">
-                        </div>
-                    </div>
-
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label-custom" for="current_occupation">Current Occupation</label>
-                            <input type="text" name="current_occupation" id="current_occupation" class="form-control-custom" 
-                                   value="{{ user_profile.current_occupation }}" placeholder="e.g. Junior Developer, Student, Analyst">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label-custom" for="location">Location</label>
-                            <input type="text" name="location" id="location" class="form-control-custom" 
-                                   value="{{ user_profile.location }}" placeholder="e.g. San Francisco, CA or Remote">
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label-custom" for="goals">Professional Goals & Milestones</label>
-                        <textarea name="goals" id="goals" rows="3" class="form-control-custom" 
-                                  placeholder="Describe what roles, projects, or leadership responsibilities you are pursuing...">{{ user_profile.goals }}</textarea>
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label-custom" for="interests">Additional Interests & Technologies</label>
-                        <input type="text" name="interests" id="interests" class="form-control-custom" 
-                               value="{{ user_profile.interests }}" placeholder="e.g. React, Next.js, LLMs, Cloud Security">
-                    </div>
-
-                    <button type="submit" class="btn-primary-gradient px-4 py-2 w-100 justify-content-center" id="btnSaveProfile">
-                        <i class="fas fa-save me-1"></i> Save Profile Changes
-                    </button>
-                </form>
-            </div>
+        <div class="resource-desc">
+          Goal: {{ a.goal }} · Completed on {{ a.created_at|date:"M j, Y" }}
         </div>
-
-        <!-- Skills Overview & Diagnostic History -->
-        <div class="col-lg-5">
-            <!-- Assessed Skills Snapshot -->
-            <div class="glass-panel p-4 mb-4">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <h5 class="fw-bold mb-0">Assessed Skills ({{ user_skills|length }})</h5>
-                    <a href="{% url 'skill_assessment' %}" class="small text-secondary text-decoration-none">Update &rarr;</a>
-                </div>
-
-                <div class="d-flex flex-column gap-2" style="max-height: 380px; overflow-y: auto;">
-                    {% for us in user_skills %}
-                    <div class="p-2 px-3 rounded-3 d-flex align-items-center justify-content-between" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="{{ us.skill.icon }} text-gradient small"></i>
-                            <span class="small fw-semibold">{{ us.skill.name }}</span>
-                        </div>
-                        <span class="badge-pill {% if us.proficiency_level == 'expert' or us.proficiency_level == 'advanced' %}badge-emerald{% elif us.proficiency_level == 'intermediate' %}badge-cyan{% elif us.proficiency_level == 'basic' %}badge-amber{% else %}badge-purple{% endif %} py-0 px-2" style="font-size: 0.72rem;">
-                            {{ us.get_proficiency_level_display }}
-                        </span>
-                    </div>
-                    {% empty %}
-                    <div class="text-center py-4 text-secondary">
-                        <i class="fas fa-chart-simple fa-2x mb-2 text-muted"></i>
-                        <p class="small mb-2">No skills assessed yet.</p>
-                        <a href="{% url 'skill_assessment' %}" class="btn-outline-glass btn-sm">Take Skill Assessment</a>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- Recent Diagnostics -->
-            {% if assessments %}
-            <div class="glass-panel p-4">
-                <h5 class="fw-bold mb-3">Recent Diagnostic Quizzes</h5>
-                <div class="d-flex flex-column gap-2">
-                    {% for a in assessments %}
-                    <div class="p-2 px-3 rounded-3 d-flex align-items-center justify-content-between" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
-                        <div>
-                            <strong class="small text-white d-block">{{ a.domain|title }} Diagnostic</strong>
-                            <span class="small text-muted">{{ a.created_at|date:"M d, Y" }} &bull; {{ a.assessed_level }}</span>
-                        </div>
-                        <span class="badge-pill badge-pink fw-bold">{{ a.score_percentage }}%</span>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
+        <div class="btn-group" style="margin-top: 0.5rem;">
+          {% if a.recommendation %}
+            <a href="{% url 'recommendation_detail' a.recommendation.id %}" class="btn btn-secondary btn-sm">View Roadmap</a>
+          {% endif %}
+          <a href="{% url 'skill_assessment' %}?reassess={{ a.skill_name|urlencode }}" class="btn btn-secondary btn-sm">Re-assess Skill</a>
         </div>
-    </div>
-
-</div>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="muted-text">You haven't completed any assessments yet.</p>
+  <div class="btn-group">
+    <a href="{% url 'skill_assessment' %}" class="btn btn-primary">Take your first assessment</a>
+  </div>
+{% endif %}
 {% endblock %}
