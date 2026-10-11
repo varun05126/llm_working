@@ -138,14 +138,12 @@ cython_debug/
 
 # Environment variables
 .env
-.env*
-!.env.example
+.env.*
+.env.local
 .neon
+!.env.example
+*.env.example
 
 plan.md
 CLAUDE.md
 CHANGELOG_SUMMARY.md
-
-.env.example
-*.env.example
-.gitignore
