@@ -28,106 +28,34 @@ document.addEventListener('DOMContentLoaded', function () {
     revealElements.forEach(function (el) { el.classList.add('revealed'); });
   }
 
-  // 2. 3D Scene Controller & Pointer Parallax (+-8deg)
-  var scenes = document.querySelectorAll('.scene3d');
-  if (scenes.length > 0 && !prefersReducedMotion) {
-    // Visibility & Off-screen pause
-    if ('IntersectionObserver' in window) {
-      var sceneObserver = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            entry.target.classList.remove('paused');
-          } else {
-            entry.target.classList.add('paused');
-          }
-        });
-      }, { threshold: 0.05 });
-
-      scenes.forEach(function (sc) { sceneObserver.observe(sc); });
-    }
-
+  // 2. Hero Scene Animation & Scroll Story Controller
+  var scenes = document.querySelectorAll('[data-scene]');
+  if (scenes.length && ('IntersectionObserver' in window)) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { e.target.classList.toggle('is-paused', !e.isIntersecting); });
+    }, { threshold: 0.05 });
+    scenes.forEach(function (s) { io.observe(s); });
     document.addEventListener('visibilitychange', function () {
-      scenes.forEach(function (sc) {
-        if (document.hidden) {
-          sc.classList.add('paused');
-        } else {
-          sc.classList.remove('paused');
-        }
-      });
+      scenes.forEach(function (s) { if (document.hidden) s.classList.add('is-paused'); });
     });
-
-    // Pointer Parallax (RAF driven)
-    if (isFinePointer) {
-      scenes.forEach(function (scene) {
-        var targetRx = 0;
-        var targetRy = 0;
-        var currentRx = 0;
-        var currentRy = 0;
-        var isRafActive = false;
-
-        function updateTilt() {
-          currentRx += (targetRx - currentRx) * 0.1;
-          currentRy += (targetRy - currentRy) * 0.1;
-
-          scene.style.setProperty('--rx', currentRx.toFixed(2) + 'deg');
-          scene.style.setProperty('--ry', currentRy.toFixed(2) + 'deg');
-
-          if (Math.abs(targetRx - currentRx) > 0.05 || Math.abs(targetRy - currentRy) > 0.05) {
-            requestAnimationFrame(updateTilt);
-          } else {
-            isRafActive = false;
-          }
-        }
-
-        scene.addEventListener('mousemove', function (e) {
-          var rect = scene.getBoundingClientRect();
-          var x = (e.clientX - rect.left) / rect.width - 0.5;
-          var y = (e.clientY - rect.top) / rect.height - 0.5;
-
-          // Parallax range: +-8 degrees
-          targetRx = -y * 16;
-          targetRy = x * 16;
-
-          if (!isRafActive) {
-            isRafActive = true;
-            requestAnimationFrame(updateTilt);
-          }
-        });
-
-        scene.addEventListener('mouseleave', function () {
-          targetRx = 0;
-          targetRy = 0;
-          if (!isRafActive) {
-            isRafActive = true;
-            requestAnimationFrame(updateTilt);
-          }
-        });
-      });
-    }
   }
 
-  // 3. Scroll Story Controller ("Learn → Build → Lead")
-  var storyPanels = document.querySelectorAll('.story-panel[data-story-stage]');
-  var storyScene = document.getElementById('storyScene');
-
-  if (storyPanels.length > 0 && storyScene && 'IntersectionObserver' in window) {
-    var storyObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          var stage = entry.target.getAttribute('data-story-stage');
-          if (stage) {
-            storyScene.setAttribute('data-stage', stage);
-            // Highlight active panel
-            storyPanels.forEach(function (p) { p.classList.remove('active'); });
-            entry.target.classList.add('active');
-          }
+  // Learn -> Build -> Lead: panels carry data-stage-panel="learn|build|lead".
+  // The scene that carries data-story switches pose when a panel crosses mid-screen.
+  var story = document.querySelector('[data-scene][data-story]');
+  var panels = document.querySelectorAll('[data-stage-panel]');
+  if (story && panels.length && ('IntersectionObserver' in window)) {
+    var po = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          var stage = e.target.getAttribute('data-stage-panel');
+          story.setAttribute('data-stage', stage);
+          panels.forEach(function (p) { p.classList.remove('active'); });
+          e.target.classList.add('active');
         }
       });
-    }, { rootMargin: '-25% 0px -25% 0px', threshold: 0.3 });
-
-    storyPanels.forEach(function (panel) {
-      storyObserver.observe(panel);
-    });
+    }, { rootMargin: '-45% 0px -45% 0px' });
+    panels.forEach(function (p) { po.observe(p); });
   }
 
   // 4. Form Loading States
