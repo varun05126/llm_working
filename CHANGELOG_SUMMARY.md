@@ -7,12 +7,72 @@
 
 ---
 
-## UI REBUILD & EMPOWERMENT ANIMATIONS PASS (Stage 1)
+## VISUAL IDENTITY & 3D "WOMEN EMPOWERMENT" HERO REDESIGN PASS
 
-**Pass Date**: October 11, 2026  
+**Date**: October 11, 2026  
 **Auditor**: Antigravity Assistant  
 **Repository**: `https://github.com/varun05126/llm_working` (Branch: `main`)  
 **Product**: **SkillHer**
+
+### 1. Overview & Visual Identity Transformation
+- **Soft-Modern Editorial Design Language**:
+  - Warm cream canvas (`#fff8f3`), pure white cards (`#ffffff`), deep plum typography (`#2a1630`), muted mauve (`#6f5b78`), vibrant magenta accent (`#b83280`), soft pink containers (`#fde4f1`), delicate borders (`#eadbe3`).
+  - Dark mode (`#170d1c` bg, `#22142a` surface, `#f6eefb` text, `#b9a6c4` muted, `#f472b6` accent, `#3a2645` border).
+  - Gold (`#f5a623`) reserved exclusively for decorative accents (summit stars, GitHub repo star counts). All combinations meet WCAG AA contrast standards.
+- **Editorial Typography**:
+  - System font stack only: Display serif headers using `ui-serif, "Iowan Old Style", "Palatino Linotype", Georgia, serif` (weights 600–700, tight line-height).
+  - Body in system sans stack (`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`) with fluid `clamp()` sizing.
+- **Header & Navigation**:
+  - Edge-to-edge header with left brand logo, centered navigation, and primary "Assess your skill" pill CTA button on the right.
+  - CSS-only collapsible hamburger menu (`#mobileNavToggle`) with animated bar transitions, zero JavaScript required.
+- **3-Column Edge-to-Edge Footer**:
+  - Brand identity + mission tagline column, structured platform navigation column, and legal/small print column with placeholder "Privacy · Terms" link row (`#`).
+- **Eliminated Grid Orphans**:
+  - "Women Who Led the Way": 5-column layout at &ge;1280px, centered 3+2 layout at medium tablet widths (`flex-wrap` with centered justification), 2 columns on small tablets, 1 column on phones.
+  - "Supported Learning Domains": Centered flex wrap (`justify-content: center`) ensuring no single leftover orphan chip.
+
+### 2. Pure CSS 3D "Women Empowerment" Scene (`.scene3d`)
+- **Isometric 3D Stage**:
+  - Container with `perspective: 1400px` and inner `.stage` using `transform-style: preserve-3d; transform: rotateX(55deg) rotateZ(-35deg);`.
+  - 5 extruded staircase blocks rising in height with shaded faces (`face-top`, `face-left`, `face-right`) styled via pink-to-plum CSS gradient tokens.
+  - Stylized 3D geometric woman figure: duotone head with highlight, hair bun, capsule torso, rotating segmented arms, and tapered legs. Clean, modern, respectful, without stick figures or stereotypes.
+  - Floating Props: Open book (two angled 3D planes), gold summit star with gentle continuous spin and twinkle particles, and 5 small labeled 3D skill cubes (Code, Data, Design, Lead, Build) orbiting around the stage.
+  - Ground shadow ellipse and subtle radial glow blob behind hero.
+  - Pointer Parallax: Stage tilts &plusmn;8deg following mouse coordinates via lightweight `requestAnimationFrame` handler updating `--rx` and `--ry` CSS variables. Disabled on touch and for reduced motion.
+  - Accessibility: Marked with `aria-hidden="true"` and paired with a `.sr-only` description ("An illustrated woman climbing steps toward a star").
+  - Performance: Transitions animate only `transform` and `opacity`. `IntersectionObserver` automatically pauses animations (`.paused`) when off-screen; `visibilitychange` pauses animations when tab is hidden.
+
+### 3. Scroll Story: "Learn &rarr; Build &rarr; Lead"
+- Two-column section with sticky `.scene3d` on the left and three tall step panels on the right:
+  1. **Learn**: Diagnostic adaptive assessment with objective server-side scoring. (Figure sits on step 1 with open book; steps 2–5 lowered).
+  2. **Build**: 4-week or 12-week roadmaps with weekly deliverables and projects. (Figure steps up to step 3; steps rise; orbiting cubes accelerate).
+  3. **Lead**: Land internships, showcase portfolio projects, master technical interviews. (Figure stands on step 5 summit with arms raised; star radiates).
+- Smooth 0.8s–1.2s ease-out transitions between stages controlled by `IntersectionObserver` setting `data-stage="learn|build|lead"`.
+- Clean fallback for no-JS and mobile viewports (static "Lead" pose and standard vertical stack).
+
+### 4. Interactive Touches & Polish
+- 3D perspective tilt on hover (&plusmn;2deg to &plusmn;4deg) on desktop cards.
+- Results/Roadmap page: 3D rotating level badge (`.badge-3d` cube displaying Beginner, Intermediate, or Advanced), animated milestone checkboxes, and celebration canvas burst.
+- Assessment wizard: question cards with 3D flip-in transition and smooth progress bar.
+
+### 5. File Sizes & Budget Verification
+- `static/css/app.css`: **42,610 bytes** (~42.6 KB) &mdash; **PASS** (Strict limit: < 45 KB).
+- `static/js/app.js`: **11,576 bytes** (~11.6 KB) &mdash; **PASS** (Strict limit: < 12 KB).
+- External Requests: **0** &mdash; `grep -E "http|https|url\(" static/css/app.css static/js/app.js` yielded 0 matches.
+
+### 6. Evidence & Test Results
+- **Templates Rebuilt**: `base.html`, `home.html`, `login.html`, `register.html`, `logout.html`, `profile.html`, `skill_assessment.html`, `recommendations.html`, `recommendation_detail.html`, `resources.html`, `about.html`, `contact.html`, `404.html`, `500.html`.
+- **Playwright Full Suite**: Captured 96 screenshots across viewports 360px, 768px, 1280px, 1920px, and 2560px in both Light and Dark modes.
+- **Horizontal Overflow**: `scrollWidth <= clientWidth` across all 8 pages and all 5 viewports (0 horizontal overflow).
+- **No-JS Compatibility**: Verified with `java_script_enabled=False`.
+- **Reduced Motion**: Verified with `prefers-reduced-motion: reduce`.
+- **System Check**: `python manage.py check` returned 0 issues.
+- **Django Tests**: `DATABASE_URL="" ./venv/bin/python manage.py test` passed 21/21 tests.
+- **Unverified Scope**: Physical tactile feel on physical mobile OLED screens and native mobile GPUs (simulated via Chromium emulation).
+
+---
+
+
 
 ### 1. Overview & Core Deliverables
 - **Truly Full-Width Responsive Layout**: Header and footer span the full viewport width (edge-to-edge on 2380px/2560px displays) with `padding-inline: var(--gutter)`. Page content expanded from narrow column to fluid container `width: min(100% - 2 * var(--gutter), 1600px)` with `--gutter: clamp(1rem, 4vw, 4rem)`.
