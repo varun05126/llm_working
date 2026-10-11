@@ -144,6 +144,7 @@ cython_debug/
 !.env.example
 *.env.example
 
+node_modules/
+screenshots/
 plan.md
 CLAUDE.md
-CHANGELOG_SUMMARY.md
