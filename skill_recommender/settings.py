@@ -10,8 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 is_serverless = bool(os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME') or os.environ.get('LAMBDA_TASK_ROOT'))
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-here')
-# Default DEBUG to False in serverless/production environments; True for local dev
-DEBUG = os.getenv('DEBUG', 'False' if is_serverless else 'True').lower() in ('true', '1', 't')
+# Default DEBUG to False; enabled only if DEBUG="True" is explicitly provided
+DEBUG = os.getenv("DEBUG", "False") == "True"
+APPEND_SLASH = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.vercel.app', 'skillrecommender.vercel.app', '*']
 CSRF_TRUSTED_ORIGINS = [
     'https://skillrecommender.vercel.app',
