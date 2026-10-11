@@ -7,8 +7,22 @@
 <div id="celebrationBurst" class="celebration-burst" data-celebrate="true" data-rec-id="{{ recommendation.id }}" aria-hidden="true"></div>
 <div class="no-print">
   <div class="blueprint-meta-bar">
-    <span class="progress-indicator">Learning Blueprint · {{ level }} Tier · {{ skill_name }}</span>
-    <span class="muted-text">Commitment: {{ weekly_hours }} hrs/week</span>
+    <div class="blueprint-badge-row">
+      <div class="badge-3d-wrap" aria-label="{{ level }} Level Badge">
+        <div class="badge-3d" data-level="{{ level|lower }}">
+          <div class="badge-face face-front">{{ level }}</div>
+          <div class="badge-face face-back">SkillHer</div>
+          <div class="badge-face face-top">★</div>
+          <div class="badge-face face-bottom"></div>
+          <div class="badge-face face-left"></div>
+          <div class="badge-face face-right"></div>
+        </div>
+      </div>
+      <div class="blueprint-badge-text">
+        <span class="progress-indicator">Learning Blueprint · {{ level }} Tier · {{ skill_name }}</span>
+        <span class="muted-text">Commitment: {{ weekly_hours }} hrs/week</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -34,7 +48,7 @@
 <div class="roadmap-grid-layout">
   <div class="roadmap-main-column">
     <!-- Safe Rendered AI Description -->
-    <div class="lead prose" style="margin-bottom: 2rem;">
+    <div class="lead prose card" style="margin-bottom: 2rem; padding: 1.5rem 1.75rem;">
       {{ recommendation.description|render_md }}
     </div>
 
@@ -48,9 +62,9 @@
     <h2>Weekly Milestones &amp; Outcomes</h2>
     {% csrf_token %}
     {% for week in weeks %}
-      <div class="roadmap-week">
+      <div class="roadmap-week card" style="margin-bottom: 1.5rem; padding: 1.5rem 1.75rem;">
         <div class="week-header">{{ week.title }}</div>
-        <p class="muted-text"><strong>Outcome:</strong> {{ week.concrete_outcome }}</p>
+        <p class="muted-text" style="margin: 0.25rem 0 1rem;"><strong>Outcome:</strong> {{ week.concrete_outcome }}</p>
 
         <!-- Checklist Items -->
         <div class="milestones-checklist">
@@ -66,12 +80,12 @@
 
         <!-- YouTube links for this topic -->
         {% if week.youtube_links %}
-          <div style="margin-top: 0.5rem;">
-            <span class="muted-text" style="font-size: 0.85rem;">Video Tutorials:</span>
-            <ul class="plain-list" style="margin: 0.25rem 0 0.5rem; border-top: none;">
+          <div style="margin-top: 1rem; padding-top: 0.75rem; border-top: 1px dashed var(--border);">
+            <span class="muted-text" style="font-size: 0.85rem; font-weight: 600;">Video Tutorials:</span>
+            <ul class="plain-list" style="margin: 0.35rem 0 0.5rem; border-top: none;">
               {% for yt in week.youtube_links %}
-                <li style="padding: 0.3rem 0; border-bottom: none;">
-                  <a href="{{ yt.url }}" target="_blank" rel="noopener noreferrer">
+                <li style="padding: 0.35rem 0; border-bottom: none;">
+                  <a href="{{ yt.url }}" target="_blank" rel="noopener noreferrer" style="font-weight: 500;">
                     {{ yt.title }}
                   </a>
                   <span class="resource-meta">({{ yt.channel }})</span>
@@ -86,12 +100,12 @@
     <h2>Portfolio Project Ideas</h2>
     <ul class="plain-list">
       {% for proj in projects %}
-        <li>
+        <li class="card" style="margin-bottom: 1rem; padding: 1.25rem 1.5rem;">
           <div class="resource-row">
             <span class="resource-title">{{ proj.title }}</span>
-            <span class="resource-meta">{{ proj.difficulty }} Tier</span>
+            <span class="badge">{{ proj.difficulty }} Tier</span>
           </div>
-          <div class="resource-desc prose" style="margin-bottom: 0.35rem;">{{ proj.description|render_md }}</div>
+          <div class="resource-desc prose" style="margin: 0.5rem 0;">{{ proj.description|render_md }}</div>
           <span class="resource-meta"><strong>Why recruiters care:</strong> {{ proj.portfolio_highlight }}</span>
         </li>
       {% endfor %}
@@ -104,7 +118,9 @@
         <h3>Resume &amp; Portfolio Advice</h3>
         <ul class="plain-list">
           {% for tip in resume_tips %}
-            <li><div class="resource-desc prose">{{ tip|render_md }}</div></li>
+            <li class="card" style="margin-bottom: 0.75rem; padding: 1rem 1.25rem;">
+              <div class="resource-desc prose">{{ tip|render_md }}</div>
+            </li>
           {% endfor %}
         </ul>
       {% endif %}
@@ -113,7 +129,9 @@
         <h3>Key Technical Interview Topics</h3>
         <ul class="plain-list">
           {% for topic in interview_topics %}
-            <li><div class="resource-desc prose">{{ topic|render_md }}</div></li>
+            <li class="card" style="margin-bottom: 0.75rem; padding: 1rem 1.25rem;">
+              <div class="resource-desc prose">{{ topic|render_md }}</div>
+            </li>
           {% endfor %}
         </ul>
       {% endif %}
@@ -128,8 +146,8 @@
   <!-- Sidebar Column: Sticky Progress & Curated Resources -->
   <aside class="roadmap-sidebar-column">
     <!-- Sticky Milestone Progress Card -->
-    <div class="sticky-progress-card no-print">
-      <div class="progress-label" style="font-weight: 600; margin-bottom: 0.5rem;">
+    <div class="sticky-progress-card card no-print" style="padding: 1.25rem 1.5rem; margin-bottom: 2rem;">
+      <div class="progress-label" style="font-weight: 600; margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
         <span>Milestone Progress</span>
         <span id="roadmapProgressText">{{ progress_pct }}% completed</span>
       </div>
@@ -141,82 +159,84 @@
       </p>
     </div>
 
-    <h2>Curated Resources</h2>
+    <div class="card" style="padding: 1.5rem 1.75rem; margin-bottom: 1.5rem;">
+      <h3 style="margin-top: 0;">Curated Resources</h3>
 
-    <h3>GitHub Starter Kits &amp; Repos</h3>
-    <ul class="plain-list">
-      {% for gh in resources.github_repos %}
-        <li>
-          <div class="resource-row">
-            <a href="{{ gh.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
-              {{ gh.title }}
-            </a>
-            {% if gh.stars %}
-              <span class="resource-meta">&#9733; {{ gh.stars }}</span>
-            {% endif %}
-          </div>
-          <span class="resource-desc">{{ gh.description }}</span>
-        </li>
-      {% endfor %}
-    </ul>
+      <h4 style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1rem;">GitHub Starter Kits &amp; Repos</h4>
+      <ul class="plain-list" style="border: none;">
+        {% for gh in resources.github_repos %}
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+            <div class="resource-row">
+              <a href="{{ gh.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
+                {{ gh.title }}
+              </a>
+              {% if gh.stars %}
+                <span class="resource-meta" style="color: var(--gold); font-weight: 600;">&#9733; {{ gh.stars }}</span>
+              {% endif %}
+            </div>
+            <span class="resource-desc">{{ gh.description }}</span>
+          </li>
+        {% endfor %}
+      </ul>
 
-    <h3>Internships &amp; Opportunities</h3>
-    <ul class="plain-list">
-      {% for job in resources.internships %}
-        <li>
-          <div class="resource-row">
-            <a href="{{ job.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
-              {{ job.title }}
-            </a>
-            <span class="resource-meta">{{ job.portal }}</span>
-          </div>
-          <span class="resource-desc">{{ job.note }}</span>
-        </li>
-      {% endfor %}
-    </ul>
+      <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1rem;">Internships &amp; Opportunities</h4>
+      <ul class="plain-list" style="border: none;">
+        {% for job in resources.internships %}
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+            <div class="resource-row">
+              <a href="{{ job.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
+                {{ job.title }}
+              </a>
+              <span class="badge">{{ job.portal }}</span>
+            </div>
+            <span class="resource-desc">{{ job.note }}</span>
+          </li>
+        {% endfor %}
+      </ul>
 
-    <h3>Documentation &amp; Free Courses</h3>
-    <ul class="plain-list">
-      {% for course in resources.courses_and_docs %}
-        <li>
-          <div class="resource-row">
-            <a href="{{ course.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
-              {{ course.title }}
-            </a>
-            <span class="resource-meta">{{ course.type }}</span>
-          </div>
-          <span class="resource-desc">Provider: {{ course.provider }}</span>
-        </li>
-      {% endfor %}
-    </ul>
+      <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1rem;">Documentation &amp; Free Courses</h4>
+      <ul class="plain-list" style="border: none;">
+        {% for course in resources.courses_and_docs %}
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+            <div class="resource-row">
+              <a href="{{ course.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
+                {{ course.title }}
+              </a>
+              <span class="resource-meta">{{ course.type }}</span>
+            </div>
+            <span class="resource-desc">Provider: {{ course.provider }}</span>
+          </li>
+        {% endfor %}
+      </ul>
 
-    <h3>Communities for Women in Tech</h3>
-    <ul class="plain-list">
-      {% for comm in resources.community_and_certs.communities %}
-        <li>
-          <div class="resource-row">
-            <a href="{{ comm.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
-              {{ comm.name }}
-            </a>
-          </div>
-          <span class="resource-desc">{{ comm.description }}</span>
-        </li>
-      {% endfor %}
-    </ul>
+      <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1rem;">Communities for Women in Tech</h4>
+      <ul class="plain-list" style="border: none;">
+        {% for comm in resources.community_and_certs.communities %}
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+            <div class="resource-row">
+              <a href="{{ comm.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
+                {{ comm.name }}
+              </a>
+            </div>
+            <span class="resource-desc">{{ comm.description }}</span>
+          </li>
+        {% endfor %}
+      </ul>
 
-    <h3>Recognized Certifications</h3>
-    <ul class="plain-list">
-      {% for cert in resources.community_and_certs.certifications %}
-        <li>
-          <div class="resource-row">
-            <a href="{{ cert.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
-              {{ cert.name }}
-            </a>
-            <span class="resource-meta">{{ cert.cost_type }}</span>
-          </div>
-        </li>
-      {% endfor %}
-    </ul>
+      <h4 style="margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1rem;">Recognized Certifications</h4>
+      <ul class="plain-list" style="border: none;">
+        {% for cert in resources.community_and_certs.certifications %}
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+            <div class="resource-row">
+              <a href="{{ cert.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
+                {{ cert.name }}
+              </a>
+              <span class="badge">{{ cert.cost_type }}</span>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
   </aside>
 </div>
 {% endblock %}
