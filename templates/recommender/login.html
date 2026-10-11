@@ -1,61 +1,41 @@
 {% extends 'recommender/base.html' %}
 {% load static %}
 
-{% block title %}Sign In - SkillHer{% endblock %}
+{% block title %}Log in{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="glass-panel p-5 glow-purple">
-                <div class="text-center mb-4">
-                    <div class="brand-icon mx-auto mb-3" style="width: 48px; height: 48px;">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <h3 class="fw-bold mb-1">Welcome Back</h3>
-                    <p class="text-secondary small mb-0">Sign in to your SkillHer account</p>
-                </div>
-
-                <form method="post" id="loginForm">
-                    {% csrf_token %}
-
-                    {% if form.non_field_errors %}
-                    <div class="alert alert-danger py-2 small mb-3">
-                        {{ form.non_field_errors }}
-                    </div>
-                    {% endif %}
-
-                    <div class="mb-3">
-                        <label for="{{ form.username.id_for_label }}" class="form-label-custom">
-                            Username
-                        </label>
-                        <input type="text" name="username" class="form-control-custom" id="id_username" placeholder="Enter your username" required autofocus>
-                        {% if form.username.errors %}
-                        <div class="text-danger small mt-1">{{ form.username.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-4">
-                        <label for="{{ form.password.id_for_label }}" class="form-label-custom">
-                            Password
-                        </label>
-                        <input type="password" name="password" class="form-control-custom" id="id_password" placeholder="Enter your password" required>
-                        {% if form.password.errors %}
-                        <div class="text-danger small mt-1">{{ form.password.errors }}</div>
-                        {% endif %}
-                    </div>
-
-                    <button type="submit" class="btn-primary-gradient w-100 py-2 fs-6 mb-3" id="btnLoginSubmit">
-                        Sign In <i class="fas fa-arrow-right ms-2"></i>
-                    </button>
-
-                    <div class="text-center small text-secondary">
-                        Don't have an account yet? 
-                        <a href="{% url 'register' %}" class="text-gradient fw-bold text-decoration-none">Create Account</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+<div class="auth-header">
+  <a href="{% url 'home' %}" class="auth-logo">
+    <img src="{% static 'img/skillher-logo.svg' %}" alt="SkillHer" height="48">
+  </a>
+  <h1>Log in to SkillHer</h1>
+  <p class="muted-text">Welcome back. Continue your learning assessment and roadmap.</p>
 </div>
+
+<form method="post" action="{% url 'login' %}">
+  {% csrf_token %}
+
+  {% if form.errors %}
+    <div class="alert" role="alert">
+      Please enter a correct username and password. Note that both fields may be case-sensitive.
+    </div>
+  {% endif %}
+
+  <div class="form-group">
+    <label for="id_username">Username</label>
+    <input type="text" name="username" id="id_username" required autofocus autocomplete="username">
+  </div>
+
+  <div class="form-group">
+    <label for="id_password">Password</label>
+    <input type="password" name="password" id="id_password" required autocomplete="current-password">
+  </div>
+
+  <input type="hidden" name="next" value="{{ next|default:'/profile/' }}">
+
+  <div class="btn-group">
+    <button type="submit" class="btn btn-primary">Log in</button>
+    <a href="{% url 'register' %}" class="btn btn-secondary">Create account</a>
+  </div>
+</form>
 {% endblock %}
