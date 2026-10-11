@@ -30,7 +30,7 @@
 
   <!-- Main Site Header -->
   <header class="site-header">
-    <div class="container header-inner">
+    <div class="header-inner">
       <a href="{% url 'home' %}" class="brand">
         <img src="{% static 'img/skillher-logo.svg' %}" alt="SkillHer" height="32">
       </a>
@@ -68,8 +68,12 @@
 
   <!-- Plain Single-Line Footer -->
   <footer class="site-footer">
-    <div class="container">
+    <div class="footer-inner">
       <p class="footer-text">SkillHer · Learn the skill. Land the opportunity.</p>
+      <div class="footer-links">
+        <a href="{% url 'about' %}">About</a> ·
+        <a href="{% url 'contact' %}">Contact</a>
+      </div>
     </div>
   </footer>
 
