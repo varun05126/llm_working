@@ -3,48 +3,51 @@
 {% block title %}Contact{% endblock %}
 
 {% block content %}
-<div class="contact-container">
-  <h1>Contact Us</h1>
-  <p class="lead">Have questions, feedback, or partnership inquiries? Get in touch with the SkillHer team.</p>
+<div class="contact-container" style="max-width: 680px; margin: 0 auto;">
+  <span class="badge" style="margin-bottom: 0.75rem;">Get In Touch</span>
+  <h1 style="margin-bottom: 0.75rem;">Contact Us</h1>
+  <p class="lead" style="margin-bottom: 1.5rem;">Have questions, feedback, or partnership inquiries? Get in touch with the SkillHer team.</p>
 
-  <p class="muted-text">Direct email: <a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>
+  <p class="muted-text" style="margin-bottom: 2rem;">Direct email: <a href="mailto:{{ contact_email }}">{{ contact_email }}</a></p>
 
-  <form method="post" action="{% url 'contact' %}">
-    {% csrf_token %}
+  <div class="card" style="padding: 2rem;">
+    <form method="post" action="{% url 'contact' %}">
+      {% csrf_token %}
 
-    <div class="form-group">
-      <label for="id_name">Full Name</label>
-      <input type="text" name="name" id="id_name" required value="{{ request.user.get_full_name|default:request.user.username }}">
-    </div>
+      <div class="form-group">
+        <label for="id_name">Full Name</label>
+        <input type="text" name="name" id="id_name" required value="{{ request.user.get_full_name|default:request.user.username }}">
+      </div>
 
-    <div class="form-group">
-      <label for="id_email">Email Address</label>
-      <input type="email" name="email" id="id_email" required value="{{ request.user.email }}">
-    </div>
+      <div class="form-group">
+        <label for="id_email">Email Address</label>
+        <input type="email" name="email" id="id_email" required value="{{ request.user.email }}">
+      </div>
 
-    <div class="form-group">
-      <label for="id_category">Category</label>
-      <select name="category" id="id_category">
-        <option value="general">General Inquiry</option>
-        <option value="technical">Technical Support</option>
-        <option value="mentorship">Career Mentorship &amp; Partnerships</option>
-        <option value="feedback">Platform Feedback &amp; Suggestions</option>
-      </select>
-    </div>
+      <div class="form-group">
+        <label for="id_category">Category</label>
+        <select name="category" id="id_category">
+          <option value="general">General Inquiry</option>
+          <option value="technical">Technical Support</option>
+          <option value="mentorship">Career Mentorship &amp; Partnerships</option>
+          <option value="feedback">Platform Feedback &amp; Suggestions</option>
+        </select>
+      </div>
 
-    <div class="form-group">
-      <label for="id_subject">Subject</label>
-      <input type="text" name="subject" id="id_subject" required placeholder="Brief description of your query">
-    </div>
+      <div class="form-group">
+        <label for="id_subject">Subject</label>
+        <input type="text" name="subject" id="id_subject" required placeholder="Brief description of your query">
+      </div>
 
-    <div class="form-group">
-      <label for="id_message">Message</label>
-      <textarea name="message" id="id_message" required rows="5" placeholder="How can we help?"></textarea>
-    </div>
+      <div class="form-group">
+        <label for="id_message">Message</label>
+        <textarea name="message" id="id_message" required rows="5" placeholder="How can we help?"></textarea>
+      </div>
 
-    <div class="btn-group">
-      <button type="submit" class="btn btn-primary">Send message</button>
-    </div>
-  </form>
+      <div class="btn-group" style="margin-top: 1.5rem;">
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Send message</button>
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}
