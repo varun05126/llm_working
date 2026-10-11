@@ -4,38 +4,40 @@
 {% block title %}Log in{% endblock %}
 
 {% block content %}
-<div class="auth-header">
-  <a href="{% url 'home' %}" class="auth-logo">
-    <img src="{% static 'img/skillher-logo.svg' %}" alt="SkillHer" height="48">
-  </a>
-  <h1>Log in to SkillHer</h1>
-  <p class="muted-text">Welcome back. Continue your learning assessment and roadmap.</p>
-</div>
+<div class="auth-container">
+  <div class="auth-header">
+    <a href="{% url 'home' %}" class="auth-logo">
+      <img src="{% static 'img/skillher-logo.svg' %}" alt="SkillHer" height="48">
+    </a>
+    <h1>Log in to SkillHer</h1>
+    <p class="muted-text">Welcome back. Continue your learning assessment and roadmap.</p>
+  </div>
 
-<form method="post" action="{% url 'login' %}">
-  {% csrf_token %}
+  <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
 
-  {% if form.errors %}
-    <div class="alert" role="alert">
-      Please enter a correct username and password. Note that both fields may be case-sensitive.
+    {% if form.errors %}
+      <div class="alert" role="alert">
+        Please enter a correct username and password. Note that both fields may be case-sensitive.
+      </div>
+    {% endif %}
+
+    <div class="form-group">
+      <label for="id_username">Username</label>
+      <input type="text" name="username" id="id_username" required autofocus autocomplete="username">
     </div>
-  {% endif %}
 
-  <div class="form-group">
-    <label for="id_username">Username</label>
-    <input type="text" name="username" id="id_username" required autofocus autocomplete="username">
-  </div>
+    <div class="form-group">
+      <label for="id_password">Password</label>
+      <input type="password" name="password" id="id_password" required autocomplete="current-password">
+    </div>
 
-  <div class="form-group">
-    <label for="id_password">Password</label>
-    <input type="password" name="password" id="id_password" required autocomplete="current-password">
-  </div>
+    <input type="hidden" name="next" value="{{ next|default:'/profile/' }}">
 
-  <input type="hidden" name="next" value="{{ next|default:'/profile/' }}">
-
-  <div class="btn-group">
-    <button type="submit" class="btn btn-primary">Log in</button>
-    <a href="{% url 'register' %}" class="btn btn-secondary">Create account</a>
-  </div>
-</form>
+    <div class="btn-group">
+      <button type="submit" class="btn btn-primary">Log in</button>
+      <a href="{% url 'register' %}" class="btn btn-secondary">Create account</a>
+    </div>
+  </form>
+</div>
 {% endblock %}
