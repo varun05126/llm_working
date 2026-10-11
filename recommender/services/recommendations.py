@@ -123,9 +123,11 @@ def generate_recommendation_plan(skill: str, level: str, weekly_hours: int, goal
     system_prompt = (
         "You are an expert curriculum designer and career mentor for SkillHer. "
         "Create an actionable, realistic learning roadmap. "
-        "CRITICAL: DO NOT OUTPUT ANY URLs OR LINKS! The backend server constructs deterministic links. "
-        "Only output keywords, titles, descriptions, and topics. "
-        "Output ONLY valid JSON matching the exact schema."
+        "CRITICAL RULES:\n"
+        "1. DO NOT OUTPUT ANY URLs OR LINKS! The backend server constructs deterministic links.\n"
+        "2. DO NOT include any document titles, model/service names, or meta headings like 'Strategic AI Career Guidance'.\n"
+        "3. Only output keywords, titles, descriptions, and topics.\n"
+        "4. Output ONLY valid JSON matching the exact schema."
     )
 
     user_prompt = f"""Design a {target_weeks}-week personalized roadmap for:
@@ -181,6 +183,12 @@ JSON Schema:
     else:
         logger.info(f"Successfully generated structured roadmap for '{skill}' via Groq.")
         plan_data = llm_output
+
+    # Strip any model names or meta titles from gap summary
+    from .markdown_render import sanitize_and_normalize_markdown
+    if plan_data.get('gap_summary'):
+        plan_data['gap_summary'] = sanitize_and_normalize_markdown(plan_data['gap_summary'])
+
 
     # Enrich each weekly topic with deterministic YouTube links
     for week in plan_data.get('roadmap', []):
