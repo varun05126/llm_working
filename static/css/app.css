@@ -691,7 +691,7 @@ ol.plain-list {
 
 @media (min-width: 1024px) {
   .hero-section {
-    grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
   }
 }
 
@@ -821,436 +821,133 @@ ol.plain-list {
 }
 
 /* ==================================================
-   THE PURE CSS 3D HERO SCENE (.scene3d)
-   Isometric Geometry, Extruded Cubes, Stylized Figure
+   SKILLHER HERO SCENE (.hero-scene)
+   Isometric Staircase & Stylized Figure
    ================================================== */
 .hero-visual {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   position: relative;
 }
 
-.scene3d {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  max-width: 580px;
-  perspective: 1400px;
-  position: relative;
+.story-sticky-col {
   display: flex;
   align-items: center;
   justify-content: center;
-  contain: layout style;
+  width: 100%;
+  min-width: 0;
 }
 
-.scene-ground-shadow {
-  position: absolute;
-  bottom: 8%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 72%;
-  height: 24%;
-  background: radial-gradient(ellipse at center, rgba(42, 22, 48, 0.22) 0%, rgba(42, 22, 48, 0.08) 45%, transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 1;
+.hero-scene {
+  --hs-surface: #fff;
+  --hs-fg: #2a1630;
+  --hs-accent: #b83280;
+  --hs-gold: #f5a623;
+  --hs-ink: #2a1630;
+  --c-t1: #fce7f3; --c-l1: #f472b6; --c-r1: #db2777;
+  --c-t2: #fbcfe8; --c-l2: #ec4899; --c-r2: #be185d;
+  --c-t3: #f9a8d4; --c-l3: #db2777; --c-r3: #9d174d;
+  --c-t4: #f472b6; --c-l4: #be185d; --c-r4: #831843;
+  --c-t5: #ec4899; --c-l5: #9d174d; --c-r5: #701a75;
+  --fig1: #701a75; --fig2: #db2777; --figh: #fdf2f8;
+  display: block;
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  overflow: visible;
+  margin: 0 auto;
 }
 
 @media (prefers-color-scheme: dark) {
-  .scene-ground-shadow {
-    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.25) 50%, transparent 70%);
+  .hero-scene {
+    --hs-surface: #22142a;
+    --hs-fg: #f6eefb;
+    --hs-accent: #f472b6;
+    --hs-ink: #000;
+    --c-t1: #fbcfe8; --c-l1: #ec4899; --c-r1: #be185d;
+    --c-t2: #f9a8d4; --c-l2: #db2777; --c-r2: #9d174d;
+    --c-t3: #f472b6; --c-l3: #be185d; --c-r3: #831843;
+    --c-t4: #ec4899; --c-l4: #9d174d; --c-r4: #701a75;
+    --c-t5: #db2777; --c-l5: #831843; --c-r5: #581c87;
+    --fig1: #e9b8f5; --fig2: #f472b6; --figh: #ffffff;
   }
 }
 
-.stage {
-  width: 320px;
-  height: 320px;
-  transform-style: preserve-3d;
-  transform: rotateX(calc(55deg + var(--rx, 0deg))) rotateZ(calc(-35deg + var(--ry, 0deg)));
-  position: relative;
-  transition: transform 0.15s ease-out;
-  will-change: transform;
+/* gradient stops */
+.hero-scene .gs-accent { stop-color: var(--hs-accent); }
+.hero-scene .gs-gold, .hero-scene .gs-star { stop-color: var(--hs-gold); }
+.hero-scene .gs-ink { stop-color: var(--hs-ink); }
+.hero-scene .gs-fig1 { stop-color: var(--fig1); }
+.hero-scene .gs-fig2 { stop-color: var(--fig2); }
+.hero-scene .gs-figh { stop-color: var(--figh); }
+
+/* blocks */
+.hero-scene .step-1 .l { fill: var(--c-l1); } .hero-scene .step-1 .r { fill: var(--c-r1); } .hero-scene .step-1 .t { fill: var(--c-t1); }
+.hero-scene .step-2 .l { fill: var(--c-l2); } .hero-scene .step-2 .r { fill: var(--c-r2); } .hero-scene .step-2 .t { fill: var(--c-t2); }
+.hero-scene .step-3 .l { fill: var(--c-l3); } .hero-scene .step-3 .r { fill: var(--c-r3); } .hero-scene .step-3 .t { fill: var(--c-t3); }
+.hero-scene .step-4 .l { fill: var(--c-l4); } .hero-scene .step-4 .r { fill: var(--c-r4); } .hero-scene .step-4 .t { fill: var(--c-t4); }
+.hero-scene .step-5 .l { fill: var(--c-l5); } .hero-scene .step-5 .r { fill: var(--c-r5); } .hero-scene .step-5 .t { fill: var(--c-t5); }
+
+/* figure */
+.hero-scene .fig-line { stroke: var(--fig1); }
+.hero-scene .fig-belt { stroke: var(--figh); }
+.hero-scene .fig-bun { fill: var(--fig1); }
+.hero-scene .fig-shadow { fill: var(--hs-ink); fill-opacity: 0.22; }
+.hero-scene .book { fill: #fff; stroke: var(--hs-accent); stroke-width: 1.5; stroke-linejoin: round; }
+.hero-scene .star { fill: var(--hs-gold); }
+.hero-scene .spark { fill: var(--hs-gold); }
+
+/* tags */
+.hero-scene .tag rect { fill: var(--hs-surface); stroke: var(--hs-accent); stroke-width: 1.5; }
+.hero-scene .tag text { fill: var(--hs-fg); font: 700 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+/* poses: default (no data-stage, no JS) = LEAD */
+.hero-scene .pose { opacity: 0; }
+.hero-scene .pose-lead { opacity: 1; }
+.hero-scene[data-stage="learn"] .pose-lead, .hero-scene[data-stage="build"] .pose-lead { opacity: 0; }
+.hero-scene[data-stage="learn"] .pose-learn { opacity: 1; }
+.hero-scene[data-stage="build"] .pose-build { opacity: 1; }
+
+/* stage positions: figure walks between block centres */
+.hero-scene[data-stage="build"] .hs-figure { transform: translate(-130px, 120px); }  /* step 3 */
+.hero-scene[data-stage="learn"] .hs-figure { transform: translate(-260px, 240px); }  /* step 1 */
+.hero-scene[data-stage="learn"] .step-3, .hero-scene[data-stage="learn"] .step-4, .hero-scene[data-stage="learn"] .step-5 { opacity: 0.35; }
+.hero-scene[data-stage="build"] .step-4, .hero-scene[data-stage="build"] .step-5 { opacity: 0.6; }
+.hero-scene[data-stage="learn"] .hs-summit, .hero-scene[data-stage="build"] .hs-summit { opacity: 0.4; }
+
+/* ---- motion: only when the user has no reduced-motion preference ---- */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-scene .pose, .hero-scene .step, .hero-scene .hs-summit { transition: opacity 0.6s ease; }
+  .hero-scene .hs-figure { transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .hero-scene .step { animation: hs-rise 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .hero-scene .step-1 { animation-delay: 0s; }
+  .hero-scene .step-2 { animation-delay: 0.12s; }
+  .hero-scene .step-3 { animation-delay: 0.24s; }
+  .hero-scene .step-4 { animation-delay: 0.36s; }
+  .hero-scene .step-5 { animation-delay: 0.48s; }
+  .hero-scene .hs-figure-inner { animation: hs-bob 3s ease-in-out 0.9s infinite alternate; }
+  .hero-scene .star { transform-box: fill-box; transform-origin: center; animation: hs-pulse 2.4s ease-in-out infinite; }
+  .hero-scene .spark { transform-box: fill-box; transform-origin: center; animation: hs-twinkle 2.2s ease-in-out infinite; }
+  .hero-scene .sp-2 { animation-delay: 0.7s; }
+  .hero-scene .sp-3 { animation-delay: 1.3s; }
+  .hero-scene .tag { animation: hs-float 5s ease-in-out infinite alternate; }
+  .hero-scene .tag-data { animation-duration: 6s; animation-delay: -1s; }
+  .hero-scene .tag-design { animation-duration: 5.5s; animation-delay: -2s; }
+  .hero-scene .tag-lead { animation-duration: 6.5s; animation-delay: -3s; }
+  .hero-scene.is-paused * { animation-play-state: paused !important; }
 }
 
-/* Pause animation when off-screen or tab hidden */
-.scene3d.paused * {
-  animation-play-state: paused !important;
-}
-
-/* 5 Rising Extruded Blocks (Staircase) */
-.staircase {
-  transform-style: preserve-3d;
-  position: absolute;
-  inset: 0;
-}
-
-.step-cube {
-  position: absolute;
-  width: 64px;
-  height: 64px;
-  transform-style: preserve-3d;
-  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.9s ease;
-  will-change: transform;
-}
-
-.cube-face {
-  position: absolute;
-  inset: 0;
-  backface-visibility: visible;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-/* Isometric Block Faces */
-.step-cube .face-top {
-  transform: translateZ(var(--cube-h, 40px));
-  border-radius: 6px;
-}
-
-.step-cube .face-left {
-  transform-origin: left center;
-  transform: rotateY(-90deg);
-  width: var(--cube-h, 40px);
-  border-radius: 0 0 0 6px;
-}
-
-.step-cube .face-right {
-  transform-origin: center bottom;
-  transform: rotateX(90deg);
-  height: var(--cube-h, 40px);
-  top: auto;
-  bottom: 0;
-  border-radius: 0 0 6px 0;
-}
-
-/* Individual Stair Step Coordinates & Height */
-.step-1 {
-  left: 20px;
-  top: 220px;
-  --cube-h: 30px;
-}
-.step-1 .face-top { background: var(--cube-top-1); }
-.step-1 .face-left { background: var(--cube-left-1); }
-.step-1 .face-right { background: var(--cube-right-1); }
-
-.step-2 {
-  left: 80px;
-  top: 175px;
-  --cube-h: 60px;
-}
-.step-2 .face-top { background: var(--cube-top-2); }
-.step-2 .face-left { background: var(--cube-left-2); }
-.step-2 .face-right { background: var(--cube-right-2); }
-
-.step-3 {
-  left: 140px;
-  top: 130px;
-  --cube-h: 90px;
-}
-.step-3 .face-top { background: var(--cube-top-3); }
-.step-3 .face-left { background: var(--cube-left-3); }
-.step-3 .face-right { background: var(--cube-right-3); }
-
-.step-4 {
-  left: 200px;
-  top: 85px;
-  --cube-h: 120px;
-}
-.step-4 .face-top { background: var(--cube-top-4); }
-.step-4 .face-left { background: var(--cube-left-4); }
-.step-4 .face-right { background: var(--cube-right-4); }
-
-.step-5 {
-  left: 250px;
-  top: 35px;
-  --cube-h: 155px;
-}
-.step-5 .face-top { background: var(--cube-top-5); box-shadow: 0 0 20px var(--accent); }
-.step-5 .face-left { background: var(--cube-left-5); }
-.step-5 .face-right { background: var(--cube-right-5); }
-
-/* ==================================================
-   STYLIZED GEOMETRIC 3D WOMAN FIGURE
-   Respectful, duotone, clean primitives
-   ================================================== */
-.figure3d {
-  position: absolute;
-  width: 36px;
-  height: 90px;
-  transform-style: preserve-3d;
-  transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
-}
-
-.fig-head-wrap {
-  position: absolute;
-  top: 0;
-  left: 5px;
-  width: 26px;
-  height: 26px;
-  transform-style: preserve-3d;
-}
-
-.fig-head {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, var(--fig-highlight) 0%, var(--fig-secondary) 55%, var(--fig-primary) 100%);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-}
-
-.fig-bun {
-  position: absolute;
-  top: -6px;
-  right: 2px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, var(--fig-secondary) 0%, var(--fig-primary) 100%);
-}
-
-.fig-torso {
-  position: absolute;
-  top: 26px;
-  left: 7px;
-  width: 22px;
-  height: 34px;
-  background: linear-gradient(135deg, var(--fig-secondary), var(--fig-primary));
-  border-radius: 10px 10px 6px 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.fig-arm {
-  position: absolute;
-  top: 30px;
-  width: 7px;
-  height: 28px;
-  background: linear-gradient(to bottom, var(--fig-secondary), var(--fig-primary));
-  border-radius: 4px;
-  transform-origin: top center;
-  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.fig-arm-l {
-  left: 1px;
-  transform: rotateZ(15deg);
-}
-
-.fig-arm-r {
-  right: 1px;
-  transform: rotateZ(-15deg);
-}
-
-.fig-leg {
-  position: absolute;
-  top: 58px;
-  width: 8px;
-  height: 32px;
-  background: linear-gradient(to bottom, var(--fig-primary), #3b0764);
-  border-radius: 4px;
-  transform-origin: top center;
-  transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.fig-leg-l {
-  left: 9px;
-  transform: rotateX(5deg);
-}
-
-.fig-leg-r {
-  left: 19px;
-  transform: rotateX(-5deg);
-}
-
-/* Floating Prop: Open Book */
-.prop-book {
-  position: absolute;
-  width: 28px;
-  height: 20px;
-  transform-style: preserve-3d;
-  transition: transform 0.9s ease, opacity 0.9s ease;
-}
-
-.book-page {
-  position: absolute;
-  width: 14px;
-  height: 20px;
-  background: #ffffff;
-  border: 1px solid var(--accent);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-}
-
-.book-l {
-  left: 0;
-  transform-origin: right center;
-  transform: rotateY(-25deg);
-  border-radius: 3px 0 0 3px;
-}
-
-.book-r {
-  left: 14px;
-  transform-origin: left center;
-  transform: rotateY(25deg);
-  border-radius: 0 3px 3px 0;
-}
-
-/* Floating Prop: Gold Star at Summit */
-.prop-star {
-  position: absolute;
-  left: 265px;
-  top: 15px;
-  transform: translateZ(195px);
-  transform-style: preserve-3d;
-  text-align: center;
-  width: 36px;
-  height: 36px;
-}
-
-.star-shape {
-  font-size: 32px;
-  color: var(--star-color);
-  text-shadow: 0 0 12px var(--star-glow), 0 0 24px var(--star-glow);
-  transform-origin: center;
-  animation: starSpin 6s linear infinite;
-}
-
-.star-aura {
-  position: absolute;
-  inset: -8px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--star-glow) 0%, transparent 70%);
-  animation: starPulse 2.5s ease-in-out infinite alternate;
-}
-
-.star-sparkle {
-  position: absolute;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background-color: var(--star-color);
-  box-shadow: 0 0 6px var(--star-color);
-}
-.sp-1 { top: -6px; left: 10px; animation: sparkleTwinkle 1.8s ease-in-out infinite; }
-.sp-2 { bottom: -4px; right: 6px; animation: sparkleTwinkle 2.2s ease-in-out 0.5s infinite; }
-.sp-3 { top: 12px; right: -8px; animation: sparkleTwinkle 2s ease-in-out 1s infinite; }
-
-@keyframes starSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes starPulse {
-  0% { transform: scale(0.9); opacity: 0.6; }
-  100% { transform: scale(1.2); opacity: 1; }
-}
-
-@keyframes sparkleTwinkle {
-  0%, 100% { opacity: 0.2; transform: scale(0.6); }
-  50% { opacity: 1; transform: scale(1.3); }
-}
-
-/* Orbiting Skill Cubes */
-.orbiting-skills {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  animation: orbitRotate 24s linear infinite;
-  pointer-events: none;
-}
-
-.orbit-item {
-  position: absolute;
-  width: 44px;
-  height: 24px;
-  transform-style: preserve-3d;
-}
-
-.orbit-badge {
-  display: block;
-  padding: 2px 8px;
-  background: var(--surface);
-  border: 1px solid var(--accent);
-  color: var(--fg);
-  font-size: 0.72rem;
-  font-weight: 700;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  text-align: center;
-}
-
-.orb-1 { left: 40px; top: 40px; transform: translateZ(90px); }
-.orb-2 { left: 240px; top: 80px; transform: translateZ(120px); }
-.orb-3 { left: 200px; top: 220px; transform: translateZ(60px); }
-.orb-4 { left: 80px; top: 240px; transform: translateZ(80px); }
-.orb-5 { left: 150px; top: 50px; transform: translateZ(150px); }
-
-@keyframes orbitRotate {
-  0% { transform: rotateZ(0deg); }
-  100% { transform: rotateZ(360deg); }
-}
-
-/* ==================================================
-   STAGE POSES (data-stage="learn" | "build" | "lead")
-   ================================================== */
-/* 1. LEARN STAGE: Sitting on step 1 with open book */
-[data-stage="learn"] .figure3d {
-  transform: translate3d(32px, 225px, 32px) rotateZ(-10deg);
-}
-[data-stage="learn"] .fig-arm-l { transform: rotateZ(45deg); }
-[data-stage="learn"] .fig-arm-r { transform: rotateZ(-40deg); }
-[data-stage="learn"] .fig-leg-l { transform: rotateX(60deg); }
-[data-stage="learn"] .fig-leg-r { transform: rotateX(55deg); }
-[data-stage="learn"] .prop-book {
-  transform: translate3d(42px, 230px, 45px) rotateZ(10deg);
-  opacity: 1;
-}
-[data-stage="learn"] .step-3 { transform: translateZ(-25px); opacity: 0.85; }
-[data-stage="learn"] .step-4 { transform: translateZ(-50px); opacity: 0.75; }
-[data-stage="learn"] .step-5 { transform: translateZ(-75px); opacity: 0.65; }
-
-/* 2. BUILD STAGE: Stepping up on step 3, blocks rising */
-[data-stage="build"] .figure3d {
-  transform: translate3d(150px, 135px, 95px) rotateZ(15deg);
-}
-[data-stage="build"] .fig-arm-l { transform: rotateZ(-30deg) rotateX(25deg); }
-[data-stage="build"] .fig-arm-r { transform: rotateZ(35deg); }
-[data-stage="build"] .fig-leg-l { transform: rotateX(20deg); }
-[data-stage="build"] .fig-leg-r { transform: rotateX(-10deg); }
-[data-stage="build"] .prop-book {
-  transform: translate3d(120px, 150px, 70px) scale(0.6);
-  opacity: 0.3;
-}
-[data-stage="build"] .orbiting-skills {
-  animation-duration: 14s;
-}
-
-/* 3. LEAD STAGE: Triumphant on summit step 5 with arms raised */
-[data-stage="lead"] .figure3d {
-  transform: translate3d(260px, 40px, 160px) rotateZ(20deg);
-}
-[data-stage="lead"] .fig-arm-l { transform: rotateZ(-125deg); }
-[data-stage="lead"] .fig-arm-r { transform: rotateZ(125deg); }
-[data-stage="lead"] .fig-leg-l { transform: rotateX(5deg); }
-[data-stage="lead"] .fig-leg-r { transform: rotateX(-5deg); }
-[data-stage="lead"] .prop-book {
-  transform: translate3d(240px, 70px, 100px) scale(0);
-  opacity: 0;
-}
-[data-stage="lead"] .prop-star .star-shape {
-  color: var(--gold);
-  transform: scale(1.25);
-  transition: transform 0.8s ease;
-}
-
-/* Mobile & Small Screens Optimization for 3D Scene */
-@media (max-width: 640px) {
-  .orbiting-skills {
-    display: none;
-  }
-  .stage {
-    transform: scale(0.85) rotateX(55deg) rotateZ(-35deg) !important;
-  }
-}
+@keyframes hs-rise { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: none; } }
+@keyframes hs-bob { to { transform: translateY(-4px); } }
+@keyframes hs-pulse { 50% { transform: scale(1.1); } }
+@keyframes hs-twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.6); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes hs-float { to { transform: translateY(-6px); } }
+@media print { .hero-scene { display: none; } }
 
 /* ==================================================
    SCROLL STORY SECTION ("LEARN → BUILD → LEAD")
