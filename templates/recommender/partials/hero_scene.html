@@ -1,0 +1,94 @@
+<svg class="hero-scene" data-scene {% if is_story %}data-story{% endif %} viewBox="0 0 640 640" role="img" aria-labelledby="hs-title" focusable="false">
+  <title id="hs-title">A woman climbing steps toward a star</title>
+  <defs>
+    <radialGradient id="hs-bg" cx="50%" cy="45%" r="50%">
+      <stop class="gs-accent" offset="0" stop-opacity=".16"/>
+      <stop class="gs-gold" offset=".6" stop-opacity=".05"/>
+      <stop class="gs-gold" offset="1" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="hs-ground" cx="50%" cy="50%" r="50%">
+      <stop class="gs-ink" offset="0" stop-opacity=".22"/>
+      <stop class="gs-ink" offset=".6" stop-opacity=".06"/>
+      <stop class="gs-ink" offset="1" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="hs-star" cx="50%" cy="50%" r="50%">
+      <stop class="gs-star" offset="0" stop-opacity=".6"/>
+      <stop class="gs-star" offset=".5" stop-opacity=".2"/>
+      <stop class="gs-star" offset="1" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="hs-dress" x1="0" y1="0" x2="1" y2="1">
+      <stop class="gs-fig2" offset="0"/>
+      <stop class="gs-fig1" offset="1"/>
+    </linearGradient>
+    <radialGradient id="hs-head" cx="35%" cy="30%" r="65%">
+      <stop class="gs-figh" offset="0"/>
+      <stop class="gs-fig2" offset=".55"/>
+      <stop class="gs-fig1" offset="1"/>
+    </radialGradient>
+    <filter id="hs-tag-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#2a1630" flood-opacity=".14"/>
+    </filter>
+  </defs>
+
+  <!-- glow + ground shadow -->
+  <g class="hs-glow" aria-hidden="true">
+    <circle cx="380" cy="280" r="260" fill="url(#hs-bg)"/>
+    <ellipse cx="320" cy="555" rx="230" ry="42" fill="url(#hs-ground)"/>
+  </g>
+
+  <!-- staircase: back (step 5) to front (step 1). Each block = left, right, top face -->
+  <g class="hs-stairs" aria-hidden="true">
+    <g class="step step-5"><polygon class="l" points="380,240 440,270 440,350 380,320"/><polygon class="r" points="440,270 500,240 500,320 440,350"/><polygon class="t" points="440,210 500,240 440,270 380,240"/></g>
+    <g class="step step-4"><polygon class="l" points="315,300 375,330 375,400 315,370"/><polygon class="r" points="375,330 435,300 435,370 375,400"/><polygon class="t" points="375,270 435,300 375,330 315,300"/></g>
+    <g class="step step-3"><polygon class="l" points="250,360 310,390 310,455 250,425"/><polygon class="r" points="310,390 370,360 370,425 310,455"/><polygon class="t" points="310,330 370,360 310,390 250,360"/></g>
+    <g class="step step-2"><polygon class="l" points="185,420 245,450 245,510 185,480"/><polygon class="r" points="245,450 305,420 305,480 245,510"/><polygon class="t" points="245,390 305,420 245,450 185,420"/></g>
+    <g class="step step-1"><polygon class="l" points="120,480 180,510 180,565 120,535"/><polygon class="r" points="180,510 240,480 240,535 180,565"/><polygon class="t" points="180,450 240,480 180,510 120,480"/></g>
+  </g>
+
+  <!-- figure: feet are at (440,240) = centre of the summit block. -->
+  <g class="hs-figure" aria-hidden="true">
+    <g class="hs-figure-inner">
+      <ellipse class="fig-shadow" cx="440" cy="242" rx="20" ry="8"/>
+      <line class="fig-line" x1="433" y1="202" x2="433" y2="240" stroke-width="5" stroke-linecap="round"/>
+      <line class="fig-line" x1="447" y1="202" x2="447" y2="240" stroke-width="5" stroke-linecap="round"/>
+      <path d="M431 148 L449 148 Q453 176 457 204 L423 204 Q427 176 431 148 Z" fill="url(#hs-dress)"/>
+      <line class="fig-belt" x1="428" y1="172" x2="452" y2="172" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="440" cy="126" r="14" fill="url(#hs-head)"/>
+      <circle class="fig-bun" cx="448" cy="118" r="7"/>
+      <!-- pose: LEAD (default) arms raised -->
+      <g class="pose pose-lead">
+        <path class="fig-line" d="M431 150 Q420 130 414 114" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path class="fig-line" d="M449 150 Q460 130 466 114" stroke-width="5" stroke-linecap="round" fill="none"/>
+      </g>
+      <!-- pose: LEARN holding an open book -->
+      <g class="pose pose-learn">
+        <path class="fig-line" d="M431 150 Q426 168 433 174" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+        <path class="fig-line" d="M449 150 Q454 168 447 174" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+        <path class="book" d="M440 176 L426 170 L426 184 L440 189 Z"/>
+        <path class="book" d="M440 176 L454 170 L454 184 L440 189 Z"/>
+      </g>
+      <!-- pose: BUILD one arm pointing up -->
+      <g class="pose pose-build">
+        <path class="fig-line" d="M431 150 Q420 136 412 124" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <path class="fig-line" d="M449 150 Q453 165 448 180" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- star + sparkles -->
+  <g class="hs-summit" aria-hidden="true">
+    <circle cx="440" cy="72" r="44" fill="url(#hs-star)"/>
+    <polygon class="star" points="440,50 446,64 461,65 449,75 453,90 440,81 427,90 431,75 419,65 434,64"/>
+    <polygon class="spark sp-1" points="405,48 408,52 412,55 408,58 405,62 402,58 398,55 402,52"/>
+    <polygon class="spark sp-2" points="475,60 478,64 482,67 478,70 475,74 472,70 468,67 472,64"/>
+    <polygon class="spark sp-3" points="440,28 442,32 446,34 442,36 440,40 438,36 434,34 438,32"/>
+  </g>
+
+  <!-- floating skill tags -->
+  <g class="hs-tags" aria-hidden="true">
+    <g class="tag tag-code"><rect x="75" y="325" width="80" height="32" rx="16" filter="url(#hs-tag-shadow)"/><text x="115" y="346" text-anchor="middle">Code</text></g>
+    <g class="tag tag-data"><rect x="195" y="165" width="80" height="32" rx="16" filter="url(#hs-tag-shadow)"/><text x="235" y="186" text-anchor="middle">Data</text></g>
+    <g class="tag tag-design"><rect x="460" y="345" width="90" height="32" rx="16" filter="url(#hs-tag-shadow)"/><text x="505" y="366" text-anchor="middle">Design</text></g>
+    <g class="tag tag-lead"><rect x="360" y="475" width="80" height="32" rx="16" filter="url(#hs-tag-shadow)"/><text x="400" y="496" text-anchor="middle">Lead</text></g>
+  </g>
+</svg>
