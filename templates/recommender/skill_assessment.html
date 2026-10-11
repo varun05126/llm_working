@@ -5,149 +5,166 @@
 {% block content %}
 <div class="assessment-container">
 {% if step == 'init' %}
-  <h1>Assess your skill</h1>
-  <p class="lead">
-    Benchmark your current proficiency against professional standards. SkillHer dynamically generates an adaptive evaluation for any skill you want to master.
-  </p>
-
-  <div id="formContent">
-    <form method="post" action="{% url 'skill_assessment' %}" data-loading>
-      {% csrf_token %}
-      <input type="hidden" name="action" value="start">
-
-      <div class="form-group">
-        <label for="id_skill_name">What skill do you want to learn or benchmark?</label>
-        <input type="text" name="skill_name" id="id_skill_name" required autofocus
-               placeholder="e.g. Data Analysis, React, UI Design, Python, Public Speaking"
-               value="{{ initial_skill }}">
-        <p class="help-text">Enter any technical, design, analytical, or leadership skill.</p>
-      </div>
-
-      <div class="form-group">
-        <label for="id_goal">Primary learning goal</label>
-        <select name="goal" id="id_goal">
-          <option value="First Tech Job / Internship">First Tech Job / Internship</option>
-          <option value="Career Transition / Switch">Career Transition / Switch</option>
-          <option value="Upskilling for Promotion / New Projects">Upskilling for Promotion / New Projects</option>
-          <option value="Independent Portfolio Development">Independent Portfolio Development</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="id_weekly_hours">How many hours can you commit per week?</label>
-        <input type="number" name="weekly_hours" id="id_weekly_hours" min="1" max="60" value="{{ default_hours }}">
-        <p class="help-text">Roadmaps calibrate automatically: &le; 8 hrs/week targets a focused 4-week sprint; 10+ hrs/week unlocks an in-depth 12-week blueprint.</p>
-      </div>
-
-      <div class="btn-group">
-        <button type="submit" class="btn btn-primary">Generate assessment</button>
-        <a href="{% url 'home' %}" class="btn btn-secondary">Cancel</a>
-      </div>
-    </form>
+  <div class="text-center" style="margin-bottom: 2rem;">
+    <span class="badge" style="margin-bottom: 0.5rem;">Diagnostic Engine</span>
+    <h1 class="display-serif">Assess your skill</h1>
+    <p class="lead" style="margin-inline: auto;">
+      Benchmark your current proficiency against professional standards. SkillHer dynamically generates an adaptive evaluation for any skill you want to master.
+    </p>
   </div>
 
-  <div class="loading-box" id="loadingState">
-    <div class="spinner"></div>
-    <p>Generating personalized assessment questions...</p>
-    <p class="muted-text">Analyzing syllabus, concepts, and industry scenarios.</p>
+  <div class="card-soft assessment-card">
+    <div id="formContent">
+      <form method="post" action="{% url 'skill_assessment' %}" data-loading>
+        {% csrf_token %}
+        <input type="hidden" name="action" value="start">
+
+        <div class="form-group">
+          <label for="id_skill_name">What skill do you want to learn or benchmark?</label>
+          <input type="text" name="skill_name" id="id_skill_name" required autofocus
+                 placeholder="e.g. Data Analysis, React, UI Design, Python, Public Speaking"
+                 value="{{ initial_skill }}">
+          <p class="help-text">Enter any technical, design, analytical, or leadership skill.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="id_goal">Primary learning goal</label>
+          <select name="goal" id="id_goal">
+            <option value="First Tech Job / Internship">First Tech Job / Internship</option>
+            <option value="Career Transition / Switch">Career Transition / Switch</option>
+            <option value="Upskilling for Promotion / New Projects">Upskilling for Promotion / New Projects</option>
+            <option value="Independent Portfolio Development">Independent Portfolio Development</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="id_weekly_hours">How many hours can you commit per week?</label>
+          <input type="number" name="weekly_hours" id="id_weekly_hours" min="1" max="60" value="{{ default_hours }}">
+          <p class="help-text">Roadmaps calibrate automatically: &le; 8 hrs/week targets a focused 4-week sprint; 10+ hrs/week unlocks an in-depth 12-week blueprint.</p>
+        </div>
+
+        <div class="btn-group" style="margin-top: 1.75rem;">
+          <button type="submit" class="btn btn-primary btn-pill">Generate assessment</button>
+          <a href="{% url 'home' %}" class="btn btn-secondary btn-pill">Cancel</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="loading-box" id="loadingState">
+      <div class="spinner"></div>
+      <p style="font-weight: 600;">Generating personalized assessment questions...</p>
+      <p class="muted-text">Analyzing concepts, real scenarios, and depth criteria.</p>
+    </div>
   </div>
 
 {% elif step == 'questions' %}
-  <h1>Assessment: {{ assessment.skill_name }}</h1>
-  
-  <div class="progress-indicator">
-    <span id="jsStepCounter">1 / {{ questions|length }}</span> · {{ assessment.goal }}
-  </div>
-
-  <div id="formContent">
-    <form method="post" action="{% url 'skill_assessment' %}" data-loading id="assessmentForm">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="submit_answers">
-      <input type="hidden" name="assessment_id" value="{{ assessment.id }}">
-
-      {% for q in questions %}
-        <div class="assessment-step-card" data-step="{{ forloop.counter }}" style="{% if not forloop.first %}display:none;{% endif %}">
-          <div class="question-card">
-            <p class="muted-text" style="margin-bottom: 0.35rem;">
-              Topic: <strong>{{ q.topic }}</strong> · Difficulty: {{ q.difficulty|capfirst }}
-            </p>
-            <div class="question-text">{{ q.question_text }}</div>
-
-            {% if q.question_type == 'rating' %}
-              <label>Select your proficiency on a scale of 1 to 5:</label>
-              <div class="rating-scale">
-                <label class="rating-btn" for="q_{{ q.id }}_1">
-                  <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_1" value="1">
-                  1<br><small class="muted-text">Novice</small>
-                </label>
-                <label class="rating-btn" for="q_{{ q.id }}_2">
-                  <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_2" value="2">
-                  2<br><small class="muted-text">Learning</small>
-                </label>
-                <label class="rating-btn selected" for="q_{{ q.id }}_3">
-                  <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_3" value="3" checked>
-                  3<br><small class="muted-text">Capable</small>
-                </label>
-                <label class="rating-btn" for="q_{{ q.id }}_4">
-                  <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_4" value="4">
-                  4<br><small class="muted-text">Strong</small>
-                </label>
-                <label class="rating-btn" for="q_{{ q.id }}_5">
-                  <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_5" value="5">
-                  5<br><small class="muted-text">Mastery</small>
-                </label>
-              </div>
-
-            {% else %}
-              <div class="options-list">
-                {% if q.option_a %}
-                  <label class="option-item" for="q_{{ q.id }}_a">
-                    <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_a" value="a" required>
-                    <span><strong>A.</strong> {{ q.option_a }}</span>
-                  </label>
-                {% endif %}
-                {% if q.option_b %}
-                  <label class="option-item" for="q_{{ q.id }}_b">
-                    <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_b" value="b">
-                    <span><strong>B.</strong> {{ q.option_b }}</span>
-                  </label>
-                {% endif %}
-                {% if q.option_c %}
-                  <label class="option-item" for="q_{{ q.id }}_c">
-                    <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_c" value="c">
-                    <span><strong>C.</strong> {{ q.option_c }}</span>
-                  </label>
-                {% endif %}
-                {% if q.option_d %}
-                  <label class="option-item" for="q_{{ q.id }}_d">
-                    <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_d" value="d">
-                    <span><strong>D.</strong> {{ q.option_d }}</span>
-                  </label>
-                {% endif %}
-              </div>
-            {% endif %}
-          </div>
-        </div>
-      {% endfor %}
-
-      <div class="btn-group">
-        <button type="button" class="btn btn-secondary" id="jsPrevStep" style="display:none;">Previous</button>
-        <button type="button" class="btn btn-primary" id="jsNextStep">Next question</button>
-        <button type="submit" class="btn btn-primary" id="jsSubmitAssessment" style="display:none;">Complete &amp; view roadmap</button>
+  <div class="assessment-header" style="margin-bottom: 1.5rem;">
+    <span class="badge" style="margin-bottom: 0.5rem;">Evaluation in Progress</span>
+    <h1 class="display-serif">{{ assessment.skill_name }} Assessment</h1>
+    
+    <div class="progress-bar-wrapper" style="margin: 1.25rem 0 0.5rem;">
+      <div class="progress-label">
+        <span id="jsStepCounter">1 / {{ questions|length }}</span>
+        <span>{{ assessment.goal }}</span>
       </div>
-
-      <noscript>
-        <div style="margin-top: 1.5rem;">
-          <button type="submit" class="btn btn-primary">Submit All Answers</button>
-        </div>
-      </noscript>
-    </form>
+      <div class="progress-track">
+        <div class="progress-fill" id="wizardProgressFill" style="width: {% widthratio 1 questions|length 100 %}%;"></div>
+      </div>
+    </div>
   </div>
 
-  <div class="loading-box" id="loadingState">
-    <div class="spinner"></div>
-    <p>Scoring assessment and generating personalized roadmap...</p>
-    <p class="muted-text">Synthesizing gap analysis, portfolio projects, and search links.</p>
+  <div class="card-soft assessment-card">
+    <div id="formContent">
+      <form method="post" action="{% url 'skill_assessment' %}" data-loading id="assessmentForm">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="submit_answers">
+        <input type="hidden" name="assessment_id" value="{{ assessment.id }}">
+
+        {% for q in questions %}
+          <div class="assessment-step-card" data-step="{{ forloop.counter }}" style="{% if not forloop.first %}display:none;{% endif %}">
+            <div class="question-card">
+              <div class="resource-row" style="margin-bottom: 0.75rem;">
+                <span class="badge">{{ q.topic }}</span>
+                <span class="resource-meta">{{ q.difficulty|capfirst }} difficulty</span>
+              </div>
+              <div class="question-text display-serif">{{ q.question_text }}</div>
+
+              {% if q.question_type == 'rating' %}
+                <label style="margin-bottom: 0.75rem;">Select your self-assessed depth (1 = Novice to 5 = Mastery):</label>
+                <div class="rating-scale">
+                  <label class="rating-btn" for="q_{{ q.id }}_1">
+                    <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_1" value="1">
+                    1<br><small class="muted-text">Novice</small>
+                  </label>
+                  <label class="rating-btn" for="q_{{ q.id }}_2">
+                    <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_2" value="2">
+                    2<br><small class="muted-text">Learning</small>
+                  </label>
+                  <label class="rating-btn selected" for="q_{{ q.id }}_3">
+                    <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_3" value="3" checked>
+                    3<br><small class="muted-text">Capable</small>
+                  </label>
+                  <label class="rating-btn" for="q_{{ q.id }}_4">
+                    <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_4" value="4">
+                    4<br><small class="muted-text">Strong</small>
+                  </label>
+                  <label class="rating-btn" for="q_{{ q.id }}_5">
+                    <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_5" value="5">
+                    5<br><small class="muted-text">Mastery</small>
+                  </label>
+                </div>
+
+              {% else %}
+                <div class="options-list">
+                  {% if q.option_a %}
+                    <label class="option-item" for="q_{{ q.id }}_a">
+                      <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_a" value="a" required>
+                      <span><strong>A.</strong> {{ q.option_a }}</span>
+                    </label>
+                  {% endif %}
+                  {% if q.option_b %}
+                    <label class="option-item" for="q_{{ q.id }}_b">
+                      <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_b" value="b">
+                      <span><strong>B.</strong> {{ q.option_b }}</span>
+                    </label>
+                  {% endif %}
+                  {% if q.option_c %}
+                    <label class="option-item" for="q_{{ q.id }}_c">
+                      <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_c" value="c">
+                      <span><strong>C.</strong> {{ q.option_c }}</span>
+                    </label>
+                  {% endif %}
+                  {% if q.option_d %}
+                    <label class="option-item" for="q_{{ q.id }}_d">
+                      <input type="radio" name="q_{{ q.id }}" id="q_{{ q.id }}_d" value="d">
+                      <span><strong>D.</strong> {{ q.option_d }}</span>
+                    </label>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+
+        <div class="btn-group" style="margin-top: 1.75rem;">
+          <button type="button" class="btn btn-secondary btn-pill" id="jsPrevStep" style="display:none;">Previous</button>
+          <button type="button" class="btn btn-primary btn-pill" id="jsNextStep">Next question</button>
+          <button type="submit" class="btn btn-primary btn-pill" id="jsSubmitAssessment" style="display:none;">Complete &amp; view roadmap</button>
+        </div>
+
+        <noscript>
+          <div style="margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary btn-pill">Submit All Answers</button>
+          </div>
+        </noscript>
+      </form>
+    </div>
+
+    <div class="loading-box" id="loadingState">
+      <div class="spinner"></div>
+      <p style="font-weight: 600;">Scoring assessment and generating personalized roadmap...</p>
+      <p class="muted-text">Synthesizing gap analysis, portfolio projects, and search links.</p>
+    </div>
   </div>
 {% endif %}
 </div>
