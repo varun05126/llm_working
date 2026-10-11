@@ -1,407 +1,80 @@
-{% load static %}
-<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}SkillHer - AI Career Acceleration & Skill Intelligence{% endblock %}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Home{% endblock %} · SkillHer</title>
 
-    <!-- Google Fonts: Plus Jakarta Sans -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Open Graph Meta Tags (No image dependency) -->
+  <meta property="og:title" content="{% block og_title %}{% block title_content %}SkillHer{% endblock %}{% endblock %} · SkillHer">
+  <meta property="og:description" content="{% block og_description %}AI-powered skill assessment and learning-path platform for women.{% endblock %}">
+  <meta property="og:type" content="website">
 
-    <!-- Bootstrap 5.3.3 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Theme Color Meta Tags -->
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
 
-    <!-- Font Awesome 6.5 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <!-- Favicon -->
+  <link rel="icon" href="{% static 'img/skillher-icon.svg' %}" type="image/svg+xml">
 
-    <!-- Custom Modern Design System -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <!-- Minimal Hand-Written Stylesheet (< 8 KB) -->
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
 
-    <!-- Instant Theme Initializer to prevent flicker -->
-    <script>
-        (function() {
-            var savedTheme = localStorage.getItem('skillher_theme') || 'aurora';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        })();
-    </script>
-
-    {% block extra_head %}{% endblock %}
+  {% block extra_head %}{% endblock %}
 </head>
-
 <body>
+  <!-- Print-Only Header -->
+  <div class="print-header container">
+    <img src="{% static 'img/skillher-logo.svg' %}" alt="SkillHer" height="36">
+  </div>
 
-    <!-- ==========================================
-         TOP NAVIGATION
-         ========================================== -->
-    <nav class="main-navbar" id="mainNavbar">
-        <div class="container d-flex align-items-center justify-content-between">
-            <!-- Brand -->
-            <a href="{% url 'home' %}" class="brand-link" id="brandLogo">
-                <div class="brand-icon">
-                    <i class="fas fa-sparkles"></i>
-                </div>
-                <span>Skill<span class="text-gradient">Her</span></span>
-            </a>
-
-            <!-- Navigation Links -->
-            <div class="d-none d-lg-flex align-items-center gap-2">
-                <a href="{% url 'home' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'home' %}active{% endif %}" id="navHome">
-                    <i class="fas fa-house-chimney"></i> Home
-                </a>
-                
-                {% if user.is_authenticated %}
-                <a href="{% url 'skill_assessment' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'skill_assessment' %}active{% endif %}" id="navAssessment">
-                    <i class="fas fa-bullseye"></i> Skill Assessment
-                </a>
-                <a href="{% url 'view_recommendations' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'view_recommendations' or request.resolver_match.url_name == 'recommendation_detail' %}active{% endif %}" id="navRecommendations">
-                    <i class="fas fa-wand-magic-sparkles"></i> AI Recommendations
-                </a>
-                <a href="{% url 'resources' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'resources' %}active{% endif %}" id="navResources">
-                    <i class="fas fa-layer-group"></i> Resources
-                </a>
-                <a href="{% url 'profile' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" id="navProfile">
-                    <i class="fas fa-user-circle"></i> Profile
-                </a>
-                <a href="{% url 'about' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'about' %}active{% endif %}" id="navAbout">
-                    <i class="fas fa-circle-info"></i> About
-                </a>
-                <a href="{% url 'contact' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'contact' %}active{% endif %}" id="navContact">
-                    <i class="fas fa-envelope"></i> Contact
-                </a>
-                {% endif %}
-            </div>
-
-            <!-- Auth & Theme Controls -->
-            <div class="d-flex align-items-center gap-2">
-                <!-- Theme Palette Switcher -->
-                <div class="dropdown me-1">
-                    <button class="theme-picker-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="themePickerBtn" title="Switch Theme Palette">
-                        <span class="theme-color-dot" id="activeThemeDot" style="background: #8b5cf6;"></span>
-                        <span class="d-none d-sm-inline" id="activeThemeLabel">Aurora</span>
-                        <i class="fas fa-palette ms-1 opacity-75"></i>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg p-2" style="background: var(--bg-surface-2); border: 1px solid var(--border-card); min-width: 190px;">
-                        <li><h6 class="dropdown-header text-uppercase text-secondary small px-2 py-1">Theme Palette</h6></li>
-                        <li>
-                            <a class="theme-opt-item" href="javascript:void(0)" onclick="setTheme('aurora')">
-                                <span class="theme-color-dot" style="background: #8b5cf6; box-shadow: 0 0 6px #8b5cf6;"></span>
-                                <span>Obsidian Aurora</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="theme-opt-item" href="javascript:void(0)" onclick="setTheme('sunset')">
-                                <span class="theme-color-dot" style="background: #f43f5e; box-shadow: 0 0 6px #f43f5e;"></span>
-                                <span>Cyberpunk Sunset</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="theme-opt-item" href="javascript:void(0)" onclick="setTheme('emerald')">
-                                <span class="theme-color-dot" style="background: #10b981; box-shadow: 0 0 6px #10b981;"></span>
-                                <span>Emerald Matrix</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="theme-opt-item" href="javascript:void(0)" onclick="setTheme('sapphire')">
-                                <span class="theme-color-dot" style="background: #3b82f6; box-shadow: 0 0 6px #3b82f6;"></span>
-                                <span>Midnight Sapphire</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-
-                {% if user.is_authenticated %}
-                <div class="dropdown">
-                    <button class="btn btn-outline-glass dropdown-toggle py-1 px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="userMenuBtn">
-                        <i class="fas fa-user-check text-gradient me-1"></i>
-                        <span>{{ user.username }}</span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg" style="background: var(--bg-surface-2); border-color: var(--border-card);">
-                        <li>
-                            <a class="dropdown-item py-2" href="{% url 'profile' %}">
-                                <i class="fas fa-id-card me-2 text-secondary"></i> My Profile
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item py-2" href="{% url 'view_recommendations' %}">
-                                <i class="fas fa-chart-line me-2 text-secondary"></i> My Recommendations
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item py-2" href="{% url 'skill_assessment' %}">
-                                <i class="fas fa-clipboard-check me-2 text-secondary"></i> Skill Assessment
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider border-secondary opacity-25"></li>
-                        <li>
-                            <a class="dropdown-item py-2 text-danger" href="{% url 'logout' %}">
-                                <i class="fas fa-sign-out-alt me-2"></i> Log Out
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                {% else %}
-                <a href="{% url 'login' %}" class="btn-outline-glass py-2 px-3 d-none d-md-inline-flex" id="btnLogin">
-                    <i class="fas fa-arrow-right-to-bracket"></i> Login
-                </a>
-                <a href="{% url 'register' %}" class="btn-primary-gradient py-2 px-3 d-none d-md-inline-flex" id="btnRegister">
-                    Get Started <i class="fas fa-arrow-right ms-1"></i>
-                </a>
-                {% endif %}
-
-                <!-- Mobile Menu Button -->
-                <button class="btn btn-outline-glass d-lg-none py-2 px-3 ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNav" aria-controls="mobileNav" aria-expanded="false" aria-label="Toggle navigation" id="mobileNavToggleBtn">
-                    <i class="fas fa-bars"></i>
-                </button>
-
-            </div>
-        </div>
-
-        <!-- Mobile Nav Collapse -->
-        <div class="collapse d-lg-none container mt-3" id="mobileNav">
-            <div class="glass-panel p-3 d-flex flex-column gap-2" style="background: var(--bg-surface-1); border: 1px solid var(--border-card); border-radius: var(--radius-lg); box-shadow: 0 16px 36px rgba(0,0,0,0.6);">
-                <!-- Mobile Navigation Links -->
-                <a href="{% url 'home' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-                    <i class="fas fa-house-chimney me-2"></i> Home
-                </a>
-                {% if user.is_authenticated %}
-                <a href="{% url 'skill_assessment' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'skill_assessment' %}active{% endif %}">
-                    <i class="fas fa-bullseye me-2"></i> Skill Assessment
-                </a>
-                <a href="{% url 'view_recommendations' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'view_recommendations' or request.resolver_match.url_name == 'recommendation_detail' %}active{% endif %}">
-                    <i class="fas fa-wand-magic-sparkles me-2 text-gradient"></i> AI Recommendations
-                </a>
-                <a href="{% url 'resources' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'resources' %}active{% endif %}">
-                    <i class="fas fa-layer-group me-2"></i> Curated Resources
-                </a>
-                <a href="{% url 'profile' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
-                    <i class="fas fa-user-circle me-2"></i> My Profile
-                </a>
-                <a href="{% url 'about' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
-                    <i class="fas fa-circle-info me-2"></i> About Platform
-                </a>
-                <a href="{% url 'contact' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">
-                    <i class="fas fa-envelope me-2"></i> Contact Us
-                </a>
-                <hr class="my-2 border-secondary border-opacity-25">
-                <a href="{% url 'logout' %}" class="nav-link-custom text-danger">
-                    <i class="fas fa-sign-out-alt me-2"></i> Logout ({{ user.username }})
-                </a>
-                {% else %}
-                <a href="{% url 'resources' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'resources' %}active{% endif %}">
-                    <i class="fas fa-layer-group me-2"></i> Curated Resources
-                </a>
-                <a href="{% url 'about' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'about' %}active{% endif %}">
-                    <i class="fas fa-circle-info me-2"></i> About Platform
-                </a>
-                <a href="{% url 'contact' %}" class="nav-link-custom {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">
-                    <i class="fas fa-envelope me-2"></i> Contact Us
-                </a>
-                <hr class="my-2 border-secondary border-opacity-25">
-                <div class="d-grid gap-2">
-                    <a href="{% url 'login' %}" class="btn btn-outline-glass py-2 justify-content-center">
-                        <i class="fas fa-arrow-right-to-bracket me-1"></i> Login
-                    </a>
-                    <a href="{% url 'register' %}" class="btn btn-primary-gradient py-2 justify-content-center">
-                        Get Started <i class="fas fa-arrow-right ms-1"></i>
-                    </a>
-                </div>
-                {% endif %}
-
-                <!-- Mobile Quick Theme Switcher Strip -->
-                <div class="pt-2 mt-2 border-top border-secondary border-opacity-25">
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="small text-secondary fw-semibold">Theme Palette</span>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline-glass flex-fill py-1 px-1 small" onclick="setTheme('aurora')" title="Aurora">
-                            <span class="theme-color-dot" style="background: #8b5cf6;"></span> Aurora
-                        </button>
-                        <button class="btn btn-sm btn-outline-glass flex-fill py-1 px-1 small" onclick="setTheme('sunset')" title="Sunset">
-                            <span class="theme-color-dot" style="background: #f43f5e;"></span> Sunset
-                        </button>
-                        <button class="btn btn-sm btn-outline-glass flex-fill py-1 px-1 small" onclick="setTheme('emerald')" title="Emerald">
-                            <span class="theme-color-dot" style="background: #10b981;"></span> Emerald
-                        </button>
-                        <button class="btn btn-sm btn-outline-glass flex-fill py-1 px-1 small" onclick="setTheme('sapphire')" title="Sapphire">
-                            <span class="theme-color-dot" style="background: #3b82f6;"></span> Sapphire
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    </nav>
-
-    <!-- ==========================================
-         FLASH MESSAGES
-         ========================================== -->
-    {% if messages %}
-    <div class="container mt-3" id="flashMessagesContainer">
-        {% for message in messages %}
-        <div class="alert alert-dismissible fade show d-flex align-items-center gap-3 border-0 py-3 px-4 shadow-lg"
-             style="background: var(--bg-surface-2); border-left: 4px solid {% if message.tags == 'error' %}#ef4444{% elif message.tags == 'success' %}#10b981{% elif message.tags == 'warning' %}#f59e0b{% else %}#8b5cf6{% endif %} !important; border-radius: var(--radius-md); color: var(--text-primary);"
-             role="alert">
-            <div style="font-size: 1.25rem;">
-                {% if message.tags == 'error' %}
-                <i class="fas fa-circle-xmark text-danger"></i>
-                {% elif message.tags == 'success' %}
-                <i class="fas fa-circle-check text-success"></i>
-                {% elif message.tags == 'warning' %}
-                <i class="fas fa-triangle-exclamation text-warning"></i>
-                {% else %}
-                <i class="fas fa-circle-info text-info"></i>
-                {% endif %}
-            </div>
-            <div class="flex-grow-1" style="font-size: 0.92rem; font-weight: 500;">
-                {{ message }}
-            </div>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        {% endfor %}
+  <!-- Main Site Header -->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a href="{% url 'home' %}" class="brand">
+        <img src="{% static 'img/skillher-logo.svg' %}" alt="SkillHer" height="32">
+      </a>
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li><a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a></li>
+          <li><a href="{% url 'skill_assessment' %}" class="{% if request.resolver_match.url_name == 'skill_assessment' %}active{% endif %}">Assess</a></li>
+          {% if user.is_authenticated %}
+            <li><a href="{% url 'view_recommendations' %}" class="{% if request.resolver_match.url_name == 'view_recommendations' or request.resolver_match.url_name == 'recommendation_detail' %}active{% endif %}">Results</a></li>
+            <li><a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Profile</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+          {% else %}
+            <li><a href="{% url 'login' %}" class="{% if request.resolver_match.url_name == 'login' %}active{% endif %}">Login</a></li>
+            <li><a href="{% url 'register' %}" class="{% if request.resolver_match.url_name == 'register' %}active{% endif %}">Register</a></li>
+          {% endif %}
+        </ul>
+      </nav>
     </div>
-    {% endif %}
+  </header>
 
-    <!-- ==========================================
-         MAIN PAGE CONTENT
-         ========================================== -->
-    <main class="flex-grow-1 py-4">
-        {% block content %}{% endblock %}
-    </main>
+  <!-- Main Body Content -->
+  <main class="main-content">
+    <div class="container">
+      {% if messages %}
+        <ul class="messages" role="alert">
+          {% for message in messages %}
+            <li class="alert">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
 
-    <!-- ==========================================
-         FOOTER
-         ========================================== -->
-    <footer class="main-footer" id="mainFooter">
-        <div class="container">
-            <div class="row g-4 justify-content-between">
-                <div class="col-lg-4">
-                    <div class="d-flex align-items-center gap-2 mb-3">
-                        <div class="brand-icon" style="width: 32px; height: 32px; font-size: 0.95rem;">
-                            <i class="fas fa-sparkles"></i>
-                        </div>
-                        <span class="fw-bold fs-5">Skill<span class="text-gradient">Her</span></span>
-                    </div>
-                    <p class="text-muted small mb-3">
-                        Empowering women in technology with dynamic skill assessments, real-time personalized career roadmaps, and high-impact learning intelligence.
-                    </p>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge-pill badge-emerald">
-                            <span class="spinner-grow spinner-grow-sm me-1" role="status" style="width: 8px; height: 8px;"></span>
-                            AI Engine Online
-                        </span>
-                        <span class="badge-pill badge-purple">PostgreSQL / SQL Ready</span>
-                    </div>
-                </div>
+      {% block content %}{% endblock %}
+    </div>
+  </main>
 
-                <div class="col-6 col-lg-2">
-                    <h6 class="text-uppercase fw-bold text-secondary mb-3 small" style="letter-spacing: 0.05em;">Platform</h6>
-                    <div class="d-flex flex-column gap-2">
-                        <a href="{% url 'home' %}" class="footer-link">Home</a>
-                        <a href="{% url 'skill_assessment' %}" class="footer-link">Skill Assessment</a>
-                        <a href="{% url 'view_recommendations' %}" class="footer-link">Recommendations</a>
-                        <a href="{% url 'resources' %}" class="footer-link">Curated Resources</a>
-                        <a href="{% url 'contact' %}" class="footer-link">Contact Us</a>
-                    </div>
-                </div>
+  <!-- Plain Single-Line Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <p class="footer-text">SkillHer · Learn the skill. Land the opportunity.</p>
+    </div>
+  </footer>
 
-                <div class="col-6 col-lg-2">
-                    <h6 class="text-uppercase fw-bold text-secondary mb-3 small" style="letter-spacing: 0.05em;">Domains</h6>
-                    <div class="d-flex flex-column gap-2">
-                        <a href="{% url 'skill_assessment' %}?domain=web_dev" class="footer-link">Full-Stack Web</a>
-                        <a href="{% url 'skill_assessment' %}?domain=ai_ml" class="footer-link">AI & Machine Learning</a>
-                        <a href="{% url 'skill_assessment' %}?domain=cloud_devops" class="footer-link">Cloud & DevOps</a>
-                        <a href="{% url 'skill_assessment' %}?domain=ui_ux" class="footer-link">UI/UX Design</a>
-                    </div>
-                </div>
-
-                <div class="col-lg-3">
-                    <h6 class="text-uppercase fw-bold text-secondary mb-3 small" style="letter-spacing: 0.05em;">Community</h6>
-                    <p class="text-muted small">
-                        Join ambitious women advancing into tech leadership, engineering roles, and AI specialization.
-                    </p>
-                    <div class="d-flex gap-2">
-                        <a href="https://github.com" target="_blank" class="btn btn-outline-glass btn-sm py-1 px-3">
-                            <i class="fab fa-github"></i>
-                        </a>
-                        <a href="https://linkedin.com" target="_blank" class="btn btn-outline-glass btn-sm py-1 px-3">
-                            <i class="fab fa-linkedin"></i>
-                        </a>
-                        <a href="https://x.com" target="_blank" class="btn btn-outline-glass btn-sm py-1 px-3">
-                            <i class="fab fa-x-twitter"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <hr class="my-4" style="border-color: var(--border-subtle);">
-
-            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 small text-muted">
-                <span>&copy; 2026 SkillHer. Dedicated to gender equity and leadership advancement in technology.</span>
-                <span>Fast Real-Time Recommendations &bull; Relational Database Architecture</span>
-            </div>
-        </div>
-    </footer>
-
-    <!-- Bootstrap 5.3 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- Global Theme Switcher & Utility Script -->
-    <script>
-        function setTheme(themeName) {
-            document.documentElement.setAttribute('data-theme', themeName);
-            localStorage.setItem('skillher_theme', themeName);
-            updateThemeUI(themeName);
-        }
-
-        function updateThemeUI(themeName) {
-            var labels = {
-                'aurora': { name: 'Aurora', color: '#8b5cf6' },
-                'sunset': { name: 'Sunset', color: '#f43f5e' },
-                'emerald': { name: 'Emerald', color: '#10b981' },
-                'sapphire': { name: 'Sapphire', color: '#3b82f6' }
-            };
-            var current = labels[themeName] || labels['aurora'];
-            var dot = document.getElementById('activeThemeDot');
-            var label = document.getElementById('activeThemeLabel');
-            if (dot) dot.style.background = current.color;
-            if (label) label.textContent = current.name;
-
-            document.querySelectorAll('.theme-opt-item').forEach(function(item) {
-                var isThis = item.getAttribute('onclick') && item.getAttribute('onclick').includes("'" + themeName + "'");
-                if (isThis) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
-        }
-
-        // Particle confetti utility for milestones
-        function triggerConfetti() {
-            var colors = ['#8b5cf6', '#06b6d4', '#10b981', '#f43f5e', '#f59e0b'];
-            for (var i = 0; i < 40; i++) {
-                var p = document.createElement('div');
-                p.className = 'confetti-particle';
-                p.style.left = Math.random() * 100 + 'vw';
-                p.style.top = (window.scrollY + Math.random() * 200) + 'px';
-                p.style.background = colors[Math.floor(Math.random() * colors.length)];
-                p.style.transform = 'scale(' + (Math.random() * 1.2 + 0.5) + ')';
-                document.body.appendChild(p);
-                (function(el) {
-                    setTimeout(function() { el.remove(); }, 2500);
-                })(p);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var currentTheme = localStorage.getItem('skillher_theme') || 'aurora';
-            updateThemeUI(currentTheme);
-        });
-    </script>
-
-    {% block extra_scripts %}{% endblock %}
+  <!-- Minimal Vanilla Progressive Enhancement (< 3 KB) -->
+  <script src="{% static 'js/app.js' %}"></script>
+  {% block extra_js %}{% endblock %}
 </body>
 </html>
