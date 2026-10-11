@@ -1,6 +1,5 @@
 # OS metadata
 .DS_Store
-node_modules/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -140,4 +139,9 @@ cython_debug/
 # Environment variables
 .env
 .env*
+!.env.example
 .neon
+
+plan.md
+CLAUDE.md
+CHANGELOG_SUMMARY.md
