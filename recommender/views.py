@@ -320,9 +320,26 @@ def recommendation_detail(request, rec_id):
 
     progress_pct = round((done_items / total_items * 100)) if total_items > 0 else 0
 
+    # Determine assessed level gracefully
+    level = 'Intermediate'
+    if rec.assessment and rec.assessment.level:
+        level = rec.assessment.level
+    elif rec.match_score >= 75:
+        level = 'Advanced'
+    elif rec.match_score <= 45:
+        level = 'Beginner'
+
+    skill_name = rec.skill_name or (rec.assessment.skill_name if rec.assessment else '') or rec.target_role or 'Core Skills'
+    goal = (rec.assessment.goal if rec.assessment and rec.assessment.goal else '') or user_profile.target_role or 'Career Growth'
+    weekly_hours = rec.weekly_hours or (rec.assessment.weekly_hours if rec.assessment else 10) or user_profile.weekly_hours or 10
+
     return render(request, 'recommender/recommendation_detail.html', {
         'recommendation': rec,
         'assessment': rec.assessment,
+        'level': level,
+        'skill_name': skill_name,
+        'goal': goal,
+        'weekly_hours': weekly_hours,
         'weeks': weeks,
         'completed_milestones': completed_milestones,
         'progress_pct': progress_pct,
@@ -447,7 +464,8 @@ def contact(request):
         messages.success(request, "Thank you! Your message has been received and our team will get back to you shortly.")
         return redirect('contact')
 
-    return render(request, 'recommender/contact.html')
+    contact_email = os.getenv('CONTACT_EMAIL', 'contact@skillher.org')
+    return render(request, 'recommender/contact.html', {'contact_email': contact_email})
 
 
 @require_POST
