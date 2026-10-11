@@ -9,51 +9,53 @@
     <a href="{% url 'home' %}" class="auth-logo">
       <img src="{% static 'img/skillher-logo.svg' %}" alt="SkillHer" height="48">
     </a>
-    <h1>Create your SkillHer account</h1>
+    <h1 class="display-serif">Create your SkillHer account</h1>
     <p class="muted-text">Join SkillHer to benchmark your skills and unlock tailored career roadmaps.</p>
   </div>
 
-  <form method="post" action="{% url 'register' %}">
-    {% csrf_token %}
+  <div class="card-soft auth-card">
+    <form method="post" action="{% url 'register' %}">
+      {% csrf_token %}
 
-    {% if form.errors %}
-      <div class="alert" role="alert">
-        {% for field in form %}
-          {% for error in field.errors %}
+      {% if form.errors %}
+        <div class="alert" role="alert">
+          {% for field in form %}
+            {% for error in field.errors %}
+              <p>{{ error }}</p>
+            {% endfor %}
+          {% endfor %}
+          {% for error in form.non_field_errors %}
             <p>{{ error }}</p>
           {% endfor %}
-        {% endfor %}
-        {% for error in form.non_field_errors %}
-          <p>{{ error }}</p>
-        {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="form-group">
+        <label for="id_username">Username</label>
+        <input type="text" name="username" id="id_username" required autocomplete="username">
+        <p class="help-text">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</p>
       </div>
-    {% endif %}
 
-    <div class="form-group">
-      <label for="id_username">Username</label>
-      <input type="text" name="username" id="id_username" required autocomplete="username">
-      <p class="help-text">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</p>
-    </div>
+      <div class="form-group">
+        <label for="id_email">Email address (optional)</label>
+        <input type="email" name="email" id="id_email" autocomplete="email">
+      </div>
 
-    <div class="form-group">
-      <label for="id_email">Email address (optional)</label>
-      <input type="email" name="email" id="id_email" autocomplete="email">
-    </div>
+      <div class="form-group">
+        <label for="id_password1">Password</label>
+        <input type="password" name="password1" id="id_password1" required autocomplete="new-password">
+      </div>
 
-    <div class="form-group">
-      <label for="id_password1">Password</label>
-      <input type="password" name="password1" id="id_password1" required autocomplete="new-password">
-    </div>
+      <div class="form-group">
+        <label for="id_password2">Password confirmation</label>
+        <input type="password" name="password2" id="id_password2" required autocomplete="new-password">
+      </div>
 
-    <div class="form-group">
-      <label for="id_password2">Password confirmation</label>
-      <input type="password" name="password2" id="id_password2" required autocomplete="new-password">
-    </div>
-
-    <div class="btn-group">
-      <button type="submit" class="btn btn-primary">Create account</button>
-      <a href="{% url 'login' %}" class="btn btn-secondary">Already registered? Log in</a>
-    </div>
-  </form>
+      <div class="btn-group" style="margin-top: 1.75rem;">
+        <button type="submit" class="btn btn-primary btn-pill">Create account</button>
+        <a href="{% url 'login' %}" class="btn btn-secondary btn-pill">Already registered? Log in</a>
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}
