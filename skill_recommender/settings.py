@@ -7,8 +7,11 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+is_serverless = bool(os.environ.get('VERCEL') or os.environ.get('AWS_LAMBDA_FUNCTION_NAME') or os.environ.get('LAMBDA_TASK_ROOT'))
+
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-your-secret-key-here')
-DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 't')
+# Default DEBUG to False in serverless/production environments; True for local dev
+DEBUG = os.getenv('DEBUG', 'False' if is_serverless else 'True').lower() in ('true', '1', 't')
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.vercel.app', 'skillrecommender.vercel.app', '*']
 CSRF_TRUSTED_ORIGINS = [
     'https://skillrecommender.vercel.app',
@@ -136,3 +139,19 @@ GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
 GROQ_MODEL = os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile')
 YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY', '')
 GITHUB_TOKEN = os.getenv('GITHUB_TOKEN', '')
+
+# Startup check for environment variables (Log clear warnings without exposing secret values)
+import logging
+startup_logger = logging.getLogger(__name__)
+
+_missing_vars = []
+if not os.getenv('SECRET_KEY') or os.getenv('SECRET_KEY') == 'django-insecure-your-secret-key-here':
+    _missing_vars.append('SECRET_KEY (using default insecure fallback key)')
+if not os.getenv('GROQ_API_KEY'):
+    _missing_vars.append('GROQ_API_KEY (AI assessment and recommendation engine will use fallback mode)')
+if is_serverless and not os.getenv('DATABASE_URL') and not os.getenv('DB_NAME'):
+    _missing_vars.append('DATABASE_URL (serverless deployment detected; SQLite in /tmp will be ephemeral)')
+
+for _var in _missing_vars:
+    startup_logger.warning("[CONFIG WARNING] Environment variable notice: %s", _var)
+
