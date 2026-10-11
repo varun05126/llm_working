@@ -5,19 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Home{% endblock %} · SkillHer</title>
 
-  <!-- Open Graph Meta Tags (No image dependency) -->
+  <!-- Open Graph Meta Tags -->
   <meta property="og:title" content="{% block og_title %}{% block title_content %}SkillHer{% endblock %}{% endblock %} · SkillHer">
   <meta property="og:description" content="{% block og_description %}AI-powered skill assessment and learning-path platform for women.{% endblock %}">
   <meta property="og:type" content="website">
 
   <!-- Theme Color Meta Tags -->
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#fff8f3" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#170d1c" media="(prefers-color-scheme: dark)">
 
   <!-- Favicon -->
   <link rel="icon" href="{% static 'img/skillher-icon.svg' %}" type="image/svg+xml">
 
-  <!-- Minimal Hand-Written Stylesheet (< 8 KB) -->
+  <!-- Soft-Modern Editorial Stylesheet -->
   <link rel="stylesheet" href="{% static 'css/app.css' %}">
 
   {% block extra_head %}{% endblock %}
@@ -31,13 +31,24 @@
   <!-- Main Site Header -->
   <header class="site-header">
     <div class="header-inner">
-      <a href="{% url 'home' %}" class="brand">
+      <a href="{% url 'home' %}" class="brand" aria-label="SkillHer Home">
         <img src="{% static 'img/skillher-logo.svg' %}" alt="SkillHer" height="32">
       </a>
-      <nav aria-label="Main Navigation">
+
+      <!-- CSS-Only Mobile Menu Toggle -->
+      <input type="checkbox" id="mobileNavToggle" class="nav-toggle-input" aria-label="Toggle navigation menu">
+      <label for="mobileNavToggle" class="nav-toggle-btn" aria-hidden="true">
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+        <span class="nav-toggle-bar"></span>
+      </label>
+
+      <nav class="site-nav" aria-label="Main Navigation">
         <ul class="nav-links">
           <li><a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a></li>
-          <li><a href="{% url 'skill_assessment' %}" class="{% if request.resolver_match.url_name == 'skill_assessment' %}active{% endif %}">Assess</a></li>
+          <li><a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a></li>
+          <li><a href="{% url 'resources' %}" class="{% if request.resolver_match.url_name == 'resources' %}active{% endif %}">Resources</a></li>
+          <li><a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a></li>
           {% if user.is_authenticated %}
             <li><a href="{% url 'view_recommendations' %}" class="{% if request.resolver_match.url_name == 'view_recommendations' or request.resolver_match.url_name == 'recommendation_detail' %}active{% endif %}">Results</a></li>
             <li><a href="{% url 'profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Profile</a></li>
@@ -48,6 +59,10 @@
           {% endif %}
         </ul>
       </nav>
+
+      <div class="header-action">
+        <a href="{% url 'skill_assessment' %}" class="btn btn-primary btn-sm btn-pill">Assess your skill</a>
+      </div>
     </div>
   </header>
 
@@ -66,18 +81,45 @@
     </div>
   </main>
 
-  <!-- Plain Single-Line Footer -->
+  <!-- 3-Column Soft-Modern Editorial Footer -->
   <footer class="site-footer">
     <div class="footer-inner">
-      <p class="footer-text">SkillHer · Learn the skill. Land the opportunity.</p>
-      <div class="footer-links">
-        <a href="{% url 'about' %}">About</a> ·
-        <a href="{% url 'contact' %}">Contact</a>
+      <div class="footer-col footer-col-brand">
+        <a href="{% url 'home' %}" class="footer-brand">
+          <img src="{% static 'img/skillher-logo.svg' %}" alt="SkillHer" height="28">
+        </a>
+        <p class="footer-tagline">Learn the skill. Land the opportunity.<br>AI-powered skill benchmarks and curated learning paths designed for women.</p>
+      </div>
+
+      <div class="footer-col footer-col-links">
+        <h4 class="footer-heading">Navigation</h4>
+        <ul class="footer-nav-list">
+          <li><a href="{% url 'home' %}">Home</a></li>
+          <li><a href="{% url 'skill_assessment' %}">Skill Assessment</a></li>
+          {% if user.is_authenticated %}
+            <li><a href="{% url 'view_recommendations' %}">My Roadmaps</a></li>
+            <li><a href="{% url 'profile' %}">Profile</a></li>
+          {% else %}
+            <li><a href="{% url 'login' %}">Sign In</a></li>
+            <li><a href="{% url 'register' %}">Create Account</a></li>
+          {% endif %}
+          <li><a href="{% url 'about' %}">About Mission</a></li>
+          <li><a href="{% url 'contact' %}">Contact &amp; Support</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-legal">
+        <h4 class="footer-heading">Platform</h4>
+        <p class="footer-copyright">&copy; 2026 SkillHer. All rights reserved.</p>
+        <div class="footer-legal-links">
+          <a href="#">Privacy Policy</a> · <a href="#">Terms of Service</a>
+        </div>
+        <p class="footer-note">Handcrafted with care. Zero bloated dependencies.</p>
       </div>
     </div>
   </footer>
 
-  <!-- Minimal Vanilla Progressive Enhancement (< 3 KB) -->
+  <!-- Vanilla Progressive Enhancement (< 12 KB) -->
   <script src="{% static 'js/app.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>
