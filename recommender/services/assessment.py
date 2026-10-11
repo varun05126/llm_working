@@ -248,15 +248,38 @@ def validate_question_schema(data: dict) -> bool:
 
 def generate_skill_questions(skill_name: str, goal: str = "Career Advancement") -> list:
     """
-    Generate 8-10 adaptive questions specific to skill_name using Groq LLM.
-    Strict JSON output, schema validation, fallback on error.
+    Generate 8-10 adaptive questions specific to skill_name.
+    Checks database cache first (reusing question sets by normalized skill and goal for 7 days).
+    Calls Groq LLM with strict JSON schema validation, falling back to curated bank on failure.
     """
-    cleaned_skill = skill_name.strip()
-    key = cleaned_skill.lower()
-    if key in CURATED_FALLBACK_BANK:
-        # Check if fast curated bank exists
-        pass
+    from datetime import timedelta
+    from django.utils import timezone
+    from recommender.models import AssessmentQuestionCache
 
+    cleaned_skill = (skill_name or "").strip()
+    cleaned_goal = (goal or "Career Advancement").strip()
+    norm_skill = cleaned_skill.lower()
+    norm_goal = cleaned_goal.lower()
+
+    # 1. Database Cache Check (7-day validity window)
+    try:
+        seven_days_ago = timezone.now() - timedelta(days=7)
+        cached_entry = AssessmentQuestionCache.objects.filter(
+            normalized_skill=norm_skill,
+            normalized_goal=norm_goal,
+            created_at__gte=seven_days_ago
+        ).first()
+
+        if cached_entry and cached_entry.questions_data:
+            logger.info(
+                "Database Cache HIT: Reusing cached question set (%d Qs) for '%s' [Goal: %s].",
+                len(cached_entry.questions_data), norm_skill, norm_goal
+            )
+            return cached_entry.questions_data
+    except Exception as cache_err:
+        logger.warning("Database question cache query failed: %s", cache_err)
+
+    # 2. Query Groq LLM
     system_prompt = (
         "You are an expert technical interviewer and educator for SkillHer. "
         "Your role is to assess learners fairly, accurately, and without bias. "
@@ -264,7 +287,7 @@ def generate_skill_questions(skill_name: str, goal: str = "Career Advancement") 
     )
 
     user_prompt = f"""Generate an 8-question adaptive skill assessment specifically for: "{cleaned_skill}".
-Learner Goal: {goal}.
+Learner Goal: {cleaned_goal}.
 
 Include:
 - 4 Concept-check multiple choice questions (orders 1-4, progression from beginner to intermediate, with one correct option: 'a', 'b', 'c', or 'd').
@@ -313,14 +336,34 @@ JSON Schema:
 
     llm_output = query_groq(messages, response_format_json=True, temperature=0.2, retries=1)
 
+    generated_questions = []
     if llm_output and validate_question_schema(llm_output):
-        logger.info(f"Successfully generated dynamic assessment questions for '{cleaned_skill}' via Groq.")
-        return llm_output.get('questions', [])
+        logger.info("Successfully generated dynamic assessment questions for '%s' via Groq.", cleaned_skill)
+        generated_questions = llm_output.get('questions', [])
+    else:
+        logger.warning(
+            "Groq question generation unavailable or schema validation failed for '%s'. Using curated fallback.",
+            cleaned_skill
+        )
+        if 'python' in norm_skill:
+            generated_questions = CURATED_FALLBACK_BANK['python']
+        else:
+            generated_questions = build_generic_fallback_questions(cleaned_skill)
 
-    logger.warning(f"Groq question generation unavailable or schema validation failed for '{cleaned_skill}'. Using curated fallback.")
-    if 'python' in key:
-        return CURATED_FALLBACK_BANK['python']
-    return build_generic_fallback_questions(cleaned_skill)
+    # 3. Store into Database Cache for future reuse (7 days)
+    if generated_questions:
+        try:
+            AssessmentQuestionCache.objects.create(
+                normalized_skill=norm_skill,
+                normalized_goal=norm_goal,
+                questions_data=generated_questions
+            )
+            logger.info("Stored generated question set in database cache for '%s'.", norm_skill)
+        except Exception as save_err:
+            logger.warning("Failed to persist question set to database cache: %s", save_err)
+
+    return generated_questions
+
 
 
 def score_assessment(questions_with_answers: list) -> dict:
