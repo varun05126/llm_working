@@ -148,3 +148,4 @@ CHANGELOG_SUMMARY.md
 
 .env.example
 *.env.example
+.gitignore
