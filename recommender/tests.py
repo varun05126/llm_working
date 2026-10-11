@@ -471,3 +471,103 @@ class QuestionCachingTestCase(TestCase):
         q_set_3 = generate_skill_questions("Django", "Backend Dev")
         self.assertEqual(mock_groq.call_count, 2)
 
+
+class UrlTrailingSlashRedirectTestCase(TestCase):
+    """Test APPEND_SLASH redirection for clean URL handling."""
+    def setUp(self):
+        self.client = Client()
+
+    def test_trailing_slash_redirects(self):
+        for route in ('contact', 'about', 'login'):
+            res = self.client.get(f'/{route}')
+            self.assertEqual(res.status_code, 301, f"GET /{route} must return 301 redirect")
+            self.assertEqual(res.url, f'/{route}/')
+
+            # Follow redirect and verify 200 OK
+            follow_res = self.client.get(f'/{route}', follow=True)
+            self.assertEqual(follow_res.status_code, 200)
+
+
+class MarkdownRendererTestCase(TestCase):
+    """Test safe zero-dependency Markdown-to-HTML converter."""
+
+    def test_headings_conversion(self):
+        from recommender.services.markdown_render import render_markdown
+        text = "# Heading 1\n## Heading 2\n### Heading 3\n#### Heading 4"
+        out = render_markdown(text)
+        self.assertIn('<h1>Heading 1</h1>', out)
+        self.assertIn('<h2>Heading 2</h2>', out)
+        self.assertIn('<h3>Heading 3</h3>', out)
+        self.assertIn('<h4>Heading 4</h4>', out)
+
+    def test_bold_italic_and_inline_code(self):
+        from recommender.services.markdown_render import render_markdown
+        text = "This is **bold** text, *italic* word, and `my_code()` function."
+        out = render_markdown(text)
+        self.assertIn('<strong>bold</strong>', out)
+        self.assertIn('<em>italic</em>', out)
+        self.assertIn('<code>my_code()</code>', out)
+
+    def test_lists_unordered_and_ordered(self):
+        from recommender.services.markdown_render import render_markdown
+        ul_text = "- Item A\n* Item B\n+ Item C"
+        ul_out = render_markdown(ul_text)
+        self.assertIn('<ul>', ul_out)
+        self.assertIn('<li>Item A</li>', ul_out)
+        self.assertIn('<li>Item B</li>', ul_out)
+        self.assertIn('<li>Item C</li>', ul_out)
+        self.assertIn('</ul>', ul_out)
+
+        ol_text = "1. Step One\n2. Step Two"
+        ol_out = render_markdown(ol_text)
+        self.assertIn('<ol>', ol_out)
+        self.assertIn('<li>Step One</li>', ol_out)
+        self.assertIn('<li>Step Two</li>', ol_out)
+        self.assertIn('</ol>', ol_out)
+
+    def test_links_safe_vs_malicious(self):
+        from recommender.services.markdown_render import render_markdown
+        safe_text = "Visit [Official Website](https://skillher.org) for details."
+        safe_out = render_markdown(safe_text)
+        self.assertIn('<a href="https://skillher.org" target="_blank" rel="noopener noreferrer">Official Website</a>', safe_out)
+
+        # Malicious links must be neutralized
+        bad_text = "Click [Exploit](javascript:alert(1)) or [Data](data:text/html;base64,...)"
+        bad_out = render_markdown(bad_text)
+        self.assertNotIn('<a href="javascript:', bad_out)
+        self.assertNotIn('<a href="data:', bad_out)
+        self.assertIn('Exploit (javascript:alert(1))', bad_out)
+
+    def test_code_blocks(self):
+        from recommender.services.markdown_render import render_markdown
+        code = "```python\ndef solve():\n    return 42\n```"
+        out = render_markdown(code)
+        self.assertIn('<pre><code>def solve():\n    return 42</code></pre>', out)
+
+    def test_xss_neutralization(self):
+        from recommender.services.markdown_render import render_markdown
+        dirty = "<script>alert('xss')</script> and <img src=x onerror=alert(1)>"
+        out = render_markdown(dirty)
+        self.assertNotIn('<script>', out)
+        self.assertNotIn('<img', out)
+        self.assertIn('&lt;script&gt;', out)
+        self.assertIn('&lt;img src=x onerror=alert(1)&gt;', out)
+
+    def test_single_line_legacy_record_repair(self):
+        from recommender.services.markdown_render import render_markdown
+        legacy = "Baseline summary. ### Key Milestones: * Setup environment * Build API"
+        out = render_markdown(legacy)
+        self.assertIn('<h3>Key Milestones:</h3>', out)
+        self.assertIn('<ul>', out)
+        self.assertIn('<li>Setup environment</li>', out)
+        self.assertIn('<li>Build API</li>', out)
+
+    def test_model_name_stripped(self):
+        from recommender.services.markdown_render import render_markdown
+        text = "### Strategic AI Career Guidance (qwen/qwen3.8-27b):\nRoadmap overview."
+        out = render_markdown(text)
+        self.assertNotIn('Strategic AI Career Guidance', out)
+        self.assertNotIn('qwen', out)
+        self.assertIn('<p>Roadmap overview.</p>', out)
+
+
