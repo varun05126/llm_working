@@ -1,138 +1,134 @@
-# 🌸 SkillHer — AI-Powered Skill Development & Career Roadmap Platform
+<p align="center">
+  <img src="brand/skillher-logo.svg" alt="SkillHer" height="40">
+</p>
 
-[![Live Deployment](https://img.shields.io/badge/Production-Live%20on%20Vercel-success?style=for-the-badge&logo=vercel)](https://skillrecommender.vercel.app/)
-[![Django](https://img.shields.io/badge/Django-5.x-092E20?style=for-the-badge&logo=django)](https://www.djangoproject.com/)
-[![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python)](https://python.org)
-[![Groq AI](https://img.shields.io/badge/Groq%20AI-Llama%203-f55036?style=for-the-badge)](https://groq.com/)
-[![Nodemailer](https://img.shields.io/badge/Mailer-Dual--Engine%20TLS-6366f1?style=for-the-badge)](file:///Users/malthumkarvarun/LLM%20working/skill_recommender/mailer.js)
-
-**SkillHer** is an intelligent career acceleration platform tailored for women in technology, leadership, and engineering. It analyzes user skill profiles, evaluates competencies via interactive assessments, and generates structured 3-month growth roadmaps powered by **Groq LLM** with deterministic real-time fallbacks.
-
-🌐 **Live Website**: [https://skillrecommender.vercel.app/](https://skillrecommender.vercel.app/)  
-📬 **Contact**: [malthumkarvarun@gmail.com](mailto:malthumkarvarun@gmail.com)
+<p align="center">
+  <strong>Learn the skill. Land the opportunity.</strong><br>
+  An AI-powered skill assessment and learning-path platform for women.
+</p>
 
 ---
 
-## ✨ Key Features
+## Overview
 
-- **🎯 Skill Assessment Engine**: Interactive quizzes across technical domains, soft skills, and leadership to identify proficiency benchmarks.
-- **⚡ Real-Time AI Roadmaps**: Custom 3-month actionable learning paths powered by Groq's high-speed LLM inference, with instant domain synthesis across 8 key tracks.
-- **🛡️ Multi-Tier AI Guardrails Engine**:
-  - **Rate Limiting**: Sliding-window IP rate limiter (30 req / 60s) preventing automated spam and abuse.
-  - **Input Sanitization**: Cleanses non-printable control characters, null bytes, and enforces maximum character bounds.
-  - **Heuristic Pattern Defense**: Zero-latency regex detection against jailbreaks, system overrides (`DAN`, roleplay bypasses), and malicious exploits.
-  - **Meta Llama-Prompt-Guard-2-86M**: Real-time semantic injection probability analysis via Groq Cloud (`threshold > 0.85`).
-  - **Output Moderation & Redaction**: Automatic scrubbing of sensitive API keys (`gsk_...`) and security credentials.
-  - **Aria Persona Deflection**: Graceful, brand-aligned redirects maintaining professional career mentorship tone.
-- **💬 Aria • AI Career Mentor Chatbot**: Floating, responsive AI coach with contextual career guidance, mock interviews, and portfolio strategies.
-- **📄 1-Click High-Res PDF Export**: Client-side vectorized PDF export for customized 3-month blueprints.
-- **🔄 Interactive Progress Tracker**: Live skill status tracking (Not Started, In Progress, Completed) with automatic completion percentages.
-- **📬 Dual-Engine Email Dispatcher**:
-  - **Local / Container**: Node.js & Nodemailer (`mailer.js`).
-  - **Vercel Serverless**: Native Python TLS `smtplib` with automatic Google App Password sanitization.
-- **🎨 Modern Responsive UI**:
-  - Theme switcher with Dark, Light, and Cyber-Purple modes.
-  - Fully mobile-optimized responsive navigation and card layouts.
-  - Glassmorphic panels, gradient badges, and micro-animations.
-- **📚 Curated Learning Library**: Filterable database of tutorials, courses, books, and certifications categorized by domain and level.
+**SkillHer** is a minimal, typography-led web platform designed to benchmark technical and professional proficiencies and generate actionable, milestone-driven learning roadmaps. It combines fast Groq LLM inference for adaptive question generation and curriculum synthesis with strict, deterministic backend link builders that prevent LLM URL hallucinations.
+
+### Key Capabilities
+- **Dynamic Per-Skill Assessments**: Enter any technical or professional skill (e.g. Data Analysis, React, UI Design, Public Speaking) to receive an 8–10 question adaptive assessment with server-side objective scoring.
+- **Actionable 4 or 12-Week Roadmaps**: Weekly concrete deliverables calibrated to your available hours, complete with interactive progress checkboxes and a clean printable view (print CSS).
+- **Deterministic Link Integrity**: All learning resources (YouTube tutorials, top GitHub repositories, internship search queries, free docs, communities, and certifications) are constructed deterministically with URL-encoding on the backend.
+- **Ultra-Minimal UI (< 8 KB CSS, < 3 KB JS)**: Monochrome design language, system font stack, automatic dark mode via `prefers-color-scheme`, zero frontend frameworks, and full keyboard/screen-reader accessibility.
+- **Serverless-Ready Architecture**: Runs natively on Vercel (`@vercel/python`) with WhiteNoise static asset compression.
 
 ---
 
-## 🛠️ Technology Stack
+## Environment Variables
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Backend** | Python 3.12, Django 5.x, WhiteNoise |
-| **Frontend** | Vanilla CSS3, Bootstrap 5.3, FontAwesome 6, Google Fonts (Outfit / Inter) |
-| **AI / Inference** | Groq Cloud API (Llama 3 / Mixtral) |
-| **Email Engines** | Python `smtplib` (TLS), Nodemailer (Node.js) |
-| **Hosting & CI/CD** | Vercel Serverless (`@vercel/python`), GitHub Actions |
-| **Testing** | Django `TestCase`, Mock, Integration Test Suite |
+Configure these variables in your `.env` file locally or in **Vercel Project Settings > Environment Variables**:
+
+| Variable | Required | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `SECRET_KEY` | **Yes** | — | Django cryptographic secret key |
+| `DEBUG` | No | `False` | Enable/disable debug mode (`True` for local development) |
+| `GROQ_API_KEY` | **Yes** | — | Groq Cloud API key for AI question and roadmap generation |
+| `GROQ_MODEL` | No | `llama-3.3-70b-versatile` | Supported Groq model (e.g., `llama-3.3-70b-versatile` or `llama-3.1-8b-instant`) |
+| `YOUTUBE_API_KEY` | No | — | Optional YouTube Data API v3 key for live top video results (falls back to search queries) |
+| `GITHUB_TOKEN` | No | — | Optional GitHub personal access token for higher rate limits on repository lookups |
+| `DATABASE_URL` | No | SQLite | Optional hosted PostgreSQL connection string (e.g. Neon, Supabase) |
+| `CONTACT_EMAIL` | No | `malthumkarvarun@gmail.com` | Destination inbox for contact form submissions |
+| `SMTP_HOST` | No | `smtp.gmail.com` | Outgoing SMTP host for email delivery |
+| `SMTP_PORT` | No | `587` | Outgoing SMTP port (TLS) |
+| `SMTP_USER` | No | — | SMTP user credentials |
+| `SMTP_PASS` | No | — | SMTP app password |
+
+See [.env.example](file:///.env.example) for a ready-to-use template.
 
 ---
 
-## 🚀 Quick Start & Local Setup
+## Local Development Setup
 
 ### 1. Clone & Navigate
 ```bash
 git clone https://github.com/varun05126/llm_working.git
-cd skill_recommender
+cd llm_working/skill_recommender
 ```
 
 ### 2. Set Up Virtual Environment
 ```bash
 python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Optional: Install Node Dependencies (For Nodemailer)
+### 3. Configure Environment
+Copy `.env.example` to `.env` and configure your keys:
 ```bash
-npm install
+cp .env.example .env
 ```
 
-### 4. Configure Environment Variables
-Create a `.env` file in the project root:
-```env
-# AI API
-GROQ_API_KEY=your_groq_api_key_here
-
-# Django Security
-SECRET_KEY=your_django_secret_key_here
-DEBUG=True
-
-# Email Delivery Configuration
-CONTACT_EMAIL=malthumkarvarun@gmail.com
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=malthumkarvarun@gmail.com
-SMTP_PASS=your_google_app_password
-```
-
-### 5. Run Migrations & Start Server
+### 4. Run Migrations & Collect Static Files
 ```bash
 python manage.py migrate
+python manage.py collectstatic --noinput
+```
+
+### 5. Run the Development Server
+```bash
 python manage.py runserver
 ```
-Visit `http://127.0.0.1:8000/` in your browser.
+Visit [http://127.0.0.1:8000/](http://127.0.0.1:8000/) in your browser.
 
 ---
 
-## 🧪 Running Automated Tests
+## Running Automated Tests
 
-Run the full automated unit and integration test suite:
+Run the full automated test suite (including schema validation, scoring engine, link builders, static assets, and mocked LLM flows):
 ```bash
 python manage.py test
 ```
-**Test Coverage Includes:**
-- Public route availability (`home`, `about`, `contact`, `resources`).
-- Authenticated vs unauthenticated permissions.
-- Contact form submissions and database logging (`ContactMessage`).
-- Dual-engine email dispatching and error handling.
-- AJAX JSON API endpoints (`/api/contact/`).
 
 ---
 
-## ☁️ Vercel Deployment
+## Vercel Deployment
 
-The project is configured for one-click Vercel serverless deployment using `vercel.json`:
-- **Builder**: `@vercel/python` routing through `skill_recommender/wsgi.py`.
-- **Static Assets**: Served via `WhiteNoiseMiddleware`.
-- **CSRF Protection**: Preconfigured for HTTPS wildcard subdomains (`https://*.vercel.app`).
+SkillHer is preconfigured for zero-configuration deployment on Vercel using `vercel.json` and `@vercel/python`:
 
-### Production Environment Variables in Vercel:
-Add the following in **Project Settings > Environment Variables**:
-- `GROQ_API_KEY`: Groq inference API key.
-- `CONTACT_EMAIL`: Recipient inbox (`malthumkarvarun@gmail.com`).
-- `SMTP_HOST`: `smtp.gmail.com`
-- `SMTP_PORT`: `587`
-- `SMTP_USER`: Gmail address.
-- `SMTP_PASS`: 16-character Google App Password.
+1. Import the repository into your Vercel Dashboard.
+2. In **Project Settings > Root Directory**, select `skill_recommender`.
+3. Set your production environment variables (`GROQ_API_KEY`, `SECRET_KEY`, `GROQ_MODEL`, and optionally `DATABASE_URL`).
+4. Click **Deploy**.
+
+> [!NOTE]
+> **Ephemeral SQLite Limitation**: On serverless platforms like Vercel, the local filesystem is ephemeral and read-only outside `/tmp/`. By default, SkillHer gracefully falls back to `/tmp/db.sqlite3` in serverless environments. For persistent production user accounts and saved roadmaps across invocations, configure a managed PostgreSQL database via the `DATABASE_URL` environment variable (e.g., Neon or Supabase).
 
 ---
 
-## 📄 License & Credits
+## Architecture & Code Structure
 
-- Developed with ❤️ for women empowerment and career advancement.
-- Licensed under the [MIT License](LICENSE).
-- Maintainer: [Varun Malthumkar](mailto:malthumkarvarun@gmail.com).
+```text
+skill_recommender/
+├── brand/                    # Master SVG brand assets (skillher-logo.svg, skillher-icon.svg)
+├── static/
+│   ├── css/app.css          # Single hand-written stylesheet (< 8 KB, dark mode, print CSS)
+│   ├── js/app.js            # Progressive enhancement (< 3 KB vanilla JS)
+│   └── img/                 # SVG assets served statically
+├── templates/recommender/    # Semantic templates extending minimal base.html
+├── recommender/
+│   ├── services/
+│   │   ├── llm.py           # Groq API client with timeouts, retries, and strict JSON parsing
+│   │   ├── assessment.py    # Dynamic question generation, validation, and server-side scoring
+│   │   ├── recommendations.py # 4/12-week roadmap synthesis, projects, and portfolio tips
+│   │   └── links.py         # Deterministic URL builders (YouTube, GitHub, Jobs, Courses, Docs)
+│   ├── models.py            # Assessment, AssessmentQuestion, AssessmentAnswer, Recommendation
+│   ├── views.py             # Thin controller views
+│   └── tests.py             # Comprehensive automated test suite
+├── vercel.json              # Vercel serverless function configuration
+└── requirements.txt         # Minimal Python dependencies (Django, requests, whitenoise, etc.)
+```
+
+---
+
+## License
+
+Developed with care for women empowerment and career advancement. Licensed under the [MIT License](LICENSE).  
+Maintainer: [Varun Malthumkar](mailto:malthumkarvarun@gmail.com)
