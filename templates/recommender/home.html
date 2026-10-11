@@ -4,10 +4,19 @@
 {% block title %}AI-Powered Learning Paths for Women{% endblock %}
 
 {% block content %}
-<!-- Full-Width Hero Section -->
+<!-- ==================================================
+     HERO SECTION WITH 3D WOMEN EMPOWERMENT SCENE
+     ================================================== -->
 <section class="hero-section">
+  <div class="hero-glow-blob" aria-hidden="true"></div>
+
   <div class="hero-content">
-    <h1 class="hero-title" aria-label="Learn the skill. Land the opportunity. Empowering women to Learn, Build, Lead, and Grow.">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      <span>Empowering the Next Generation of Women in Tech</span>
+    </div>
+
+    <h1 class="hero-title display-serif" aria-label="Learn the skill. Land the opportunity. Empowering women to Learn, Build, Lead, and Grow.">
       Learn the skill.<br>Land the opportunity.
       <span class="rotating-headline" aria-hidden="true">
         <span class="rotating-prefix">Empowering women to</span>
@@ -25,103 +34,265 @@
     </p>
 
     {% if user.is_authenticated and active_assessment %}
-      <div class="active-roadmap-banner" data-reveal>
+      <div class="active-roadmap-banner card-soft" data-reveal>
         <span class="badge">Active Roadmap</span>
         <p class="active-roadmap-title">
           <strong>{{ active_assessment.skill_name }}</strong> · {{ active_assessment.level|capfirst }} Level · {{ active_assessment.weekly_hours }} hrs/week
         </p>
         <div class="btn-group">
-          <a href="{% url 'view_recommendations' %}" class="btn btn-primary">View current plan</a>
-          <a href="{% url 'skill_assessment' %}" class="btn btn-secondary">Assess a new skill</a>
+          <a href="{% url 'view_recommendations' %}" class="btn btn-primary btn-pill">View current plan</a>
+          <a href="{% url 'skill_assessment' %}" class="btn btn-secondary btn-pill">Assess a new skill</a>
         </div>
       </div>
     {% else %}
       <div class="btn-group">
-        <a href="{% url 'skill_assessment' %}" class="btn btn-primary">Assess your skill</a>
+        <a href="{% url 'skill_assessment' %}" class="btn btn-primary btn-pill">Assess your skill</a>
         {% if not user.is_authenticated %}
-          <a href="{% url 'register' %}" class="btn btn-secondary">Create free account</a>
+          <a href="{% url 'register' %}" class="btn btn-secondary btn-pill">Create free account</a>
         {% endif %}
       </div>
     {% endif %}
   </div>
 
-  <div class="hero-visual" aria-hidden="true">
-    <svg class="hero-illustration-svg" viewBox="0 0 520 400" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Illustration of a woman ascending learning milestones towards a summit star">
-      <!-- Ground Horizon Line -->
-      <line x1="30" y1="360" x2="490" y2="360" stroke="var(--border)" stroke-width="2" stroke-linecap="round"/>
-      
-      <!-- Ascending Milestone Steps -->
-      <g class="hero-steps">
-        <rect class="hero-step hero-step-1" x="60" y="300" width="85" height="60" rx="4" fill="var(--hover-bg)" stroke="var(--border)" stroke-width="1.5"/>
-        <rect class="hero-step hero-step-2" x="145" y="240" width="85" height="120" rx="4" fill="var(--hover-bg)" stroke="var(--border)" stroke-width="1.5"/>
-        <rect class="hero-step hero-step-3" x="230" y="180" width="85" height="180" rx="4" fill="var(--hover-bg)" stroke="var(--border)" stroke-width="1.5"/>
-        <rect class="hero-step hero-step-4" x="315" y="120" width="115" height="240" rx="4" fill="var(--hover-bg)" stroke="var(--border)" stroke-width="1.5"/>
-      </g>
+  <div class="hero-visual">
+    <span class="sr-only">An illustrated 3D woman climbing steps toward a star</span>
+    <!-- Pure CSS 3D Empowerment Scene -->
+    <div class="scene3d" id="heroScene" data-stage="lead" aria-hidden="true">
+      <div class="scene-ground-shadow"></div>
+      <div class="stage">
+        <!-- 5 Rising Staircase Blocks -->
+        <div class="staircase">
+          <div class="step-cube step-1">
+            <div class="cube-face face-top"></div>
+            <div class="cube-face face-left"></div>
+            <div class="cube-face face-right"></div>
+          </div>
+          <div class="step-cube step-2">
+            <div class="cube-face face-top"></div>
+            <div class="cube-face face-left"></div>
+            <div class="cube-face face-right"></div>
+          </div>
+          <div class="step-cube step-3">
+            <div class="cube-face face-top"></div>
+            <div class="cube-face face-left"></div>
+            <div class="cube-face face-right"></div>
+          </div>
+          <div class="step-cube step-4">
+            <div class="cube-face face-top"></div>
+            <div class="cube-face face-left"></div>
+            <div class="cube-face face-right"></div>
+          </div>
+          <div class="step-cube step-5 summit-step">
+            <div class="cube-face face-top"></div>
+            <div class="cube-face face-left"></div>
+            <div class="cube-face face-right"></div>
+          </div>
+        </div>
 
-      <!-- Trajectory Ascent Path -->
-      <path class="hero-trail" d="M 80 290 C 160 260, 200 160, 345 115" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="420" stroke-linecap="round"/>
+        <!-- Stylized Geometric 3D Woman Figure -->
+        <div class="figure3d">
+          <div class="fig-head-wrap">
+            <div class="fig-head"></div>
+            <div class="fig-bun"></div>
+          </div>
+          <div class="fig-torso"></div>
+          <div class="fig-arm fig-arm-l"></div>
+          <div class="fig-arm fig-arm-r"></div>
+          <div class="fig-leg fig-leg-l"></div>
+          <div class="fig-leg fig-leg-r"></div>
+        </div>
 
-      <!-- Star at Summit -->
-      <polygon class="hero-star" points="365,55 370,68 384,68 373,77 377,90 365,82 353,90 357,77 346,68 360,68" fill="var(--accent)"/>
+        <!-- Floating Props: Book & Summit Star -->
+        <div class="prop-book">
+          <div class="book-page book-l"></div>
+          <div class="book-page book-r"></div>
+        </div>
 
-      <!-- Line-art Woman Figure Atop Summit -->
-      <g class="hero-figure">
-        <!-- Head -->
-        <circle cx="365" cy="30" r="10" stroke="currentColor" stroke-width="2.5" fill="none"/>
-        <!-- Torso -->
-        <line x1="365" y1="40" x2="365" y2="78" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- Raised Arm Reaching to Star -->
-        <path d="M 365 50 L 380 38 L 392 28" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- Grounded / Steady Arm -->
-        <path d="M 365 50 L 350 62 L 348 74" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-        <!-- Legs Stood Firm on Summit -->
-        <line x1="365" y1="78" x2="356" y2="118" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-        <line x1="365" y1="78" x2="376" y2="118" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-      </g>
+        <div class="prop-star">
+          <div class="star-shape">&#9733;</div>
+          <div class="star-aura"></div>
+          <div class="star-sparkle sp-1"></div>
+          <div class="star-sparkle sp-2"></div>
+          <div class="star-sparkle sp-3"></div>
+        </div>
 
-      <!-- Twinkling Sparkles Along Ascent -->
-      <g class="hero-sparkles">
-        <path class="hero-sparkle hero-sp-1" d="M 130 224 L 132 229 L 137 231 L 132 233 L 130 238 L 128 233 L 123 231 L 128 229 Z" fill="var(--accent)"/>
-        <path class="hero-sparkle hero-sp-2" d="M 220 148 L 222 153 L 227 155 L 222 157 L 220 162 L 218 157 L 213 155 L 218 153 Z" fill="var(--accent)"/>
-        <path class="hero-sparkle hero-sp-3" d="M 420 70 L 422 75 L 427 77 L 422 79 L 420 84 L 418 79 L 413 77 L 418 75 Z" fill="var(--accent)"/>
-        <path class="hero-sparkle hero-sp-4" d="M 95 305 L 96.5 309 L 101 310.5 L 96.5 312 L 95 316 L 93.5 312 L 89 310.5 L 93.5 309 Z" fill="var(--accent)"/>
-      </g>
-    </svg>
+        <!-- Orbiting Skill Cubes -->
+        <div class="orbiting-skills">
+          <div class="orbit-item orb-1"><span class="orbit-badge">Code</span></div>
+          <div class="orbit-item orb-2"><span class="orbit-badge">Data</span></div>
+          <div class="orbit-item orb-3"><span class="orbit-badge">Design</span></div>
+          <div class="orbit-item orb-4"><span class="orbit-badge">Lead</span></div>
+          <div class="orbit-item orb-5"><span class="orbit-badge">Build</span></div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
-<!-- How SkillHer Works Section -->
+<!-- ==================================================
+     SCROLL STORY: "LEARN → BUILD → LEAD"
+     ================================================== -->
+<section class="scroll-story-section" id="journeyStory" data-reveal>
+  <div class="section-header text-center" style="margin-bottom: 2.5rem;">
+    <span class="badge" style="margin-bottom: 0.5rem;">Your Journey</span>
+    <h2 class="display-serif">The Three Stages of Mastery</h2>
+    <p class="section-subtitle">From objective diagnostic benchmarking to landing career milestones.</p>
+  </div>
+
+  <div class="story-container">
+    <div class="story-sticky-col">
+      <!-- 3D Scene Synced with Scroll Story -->
+      <div class="scene3d story-scene" id="storyScene" data-stage="learn" aria-hidden="true">
+        <div class="scene-ground-shadow"></div>
+        <div class="stage">
+          <div class="staircase">
+            <div class="step-cube step-1">
+              <div class="cube-face face-top"></div>
+              <div class="cube-face face-left"></div>
+              <div class="cube-face face-right"></div>
+            </div>
+            <div class="step-cube step-2">
+              <div class="cube-face face-top"></div>
+              <div class="cube-face face-left"></div>
+              <div class="cube-face face-right"></div>
+            </div>
+            <div class="step-cube step-3">
+              <div class="cube-face face-top"></div>
+              <div class="cube-face face-left"></div>
+              <div class="cube-face face-right"></div>
+            </div>
+            <div class="step-cube step-4">
+              <div class="cube-face face-top"></div>
+              <div class="cube-face face-left"></div>
+              <div class="cube-face face-right"></div>
+            </div>
+            <div class="step-cube step-5 summit-step">
+              <div class="cube-face face-top"></div>
+              <div class="cube-face face-left"></div>
+              <div class="cube-face face-right"></div>
+            </div>
+          </div>
+
+          <div class="figure3d">
+            <div class="fig-head-wrap">
+              <div class="fig-head"></div>
+              <div class="fig-bun"></div>
+            </div>
+            <div class="fig-torso"></div>
+            <div class="fig-arm fig-arm-l"></div>
+            <div class="fig-arm fig-arm-r"></div>
+            <div class="fig-leg fig-leg-l"></div>
+            <div class="fig-leg fig-leg-r"></div>
+          </div>
+
+          <div class="prop-book">
+            <div class="book-page book-l"></div>
+            <div class="book-page book-r"></div>
+          </div>
+
+          <div class="prop-star">
+            <div class="star-shape">&#9733;</div>
+            <div class="star-aura"></div>
+            <div class="star-sparkle sp-1"></div>
+            <div class="star-sparkle sp-2"></div>
+            <div class="star-sparkle sp-3"></div>
+          </div>
+
+          <div class="orbiting-skills">
+            <div class="orbit-item orb-1"><span class="orbit-badge">Code</span></div>
+            <div class="orbit-item orb-2"><span class="orbit-badge">Data</span></div>
+            <div class="orbit-item orb-3"><span class="orbit-badge">Design</span></div>
+            <div class="orbit-item orb-4"><span class="orbit-badge">Lead</span></div>
+            <div class="orbit-item orb-5"><span class="orbit-badge">Build</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="story-panels-col">
+      <!-- Panel 1: LEARN -->
+      <div class="story-panel card-soft tilt-card" data-story-stage="learn">
+        <span class="panel-eyebrow">Stage 01</span>
+        <h3 class="panel-title display-serif">Learn — Diagnostic Assessment</h3>
+        <p class="panel-desc">
+          Benchmark your proficiency with an adaptive 8–10 question evaluation. Designed with concept checks, practical scenario challenges, and depth ratings—scoring happens objectively on the server to surface your true strengths and gaps without generic advice.
+        </p>
+        <div class="panel-tags">
+          <span class="badge">Adaptive Evaluation</span>
+          <span class="badge">Objective Scoring</span>
+          <span class="badge">Actionable Gaps</span>
+        </div>
+      </div>
+
+      <!-- Panel 2: BUILD -->
+      <div class="story-panel card-soft tilt-card" data-story-stage="build">
+        <span class="panel-eyebrow">Stage 02</span>
+        <h3 class="panel-title display-serif">Build — Calibrated Roadmaps</h3>
+        <p class="panel-desc">
+          Translate findings into structured progress. Receive a 4-week sprint (for &le; 8 hrs/week) or a 12-week comprehensive blueprint (for 10+ hrs/week) packed with weekly outcomes, hands-on portfolio projects, curated tutorials, and interactive milestone checkboxes.
+        </p>
+        <div class="panel-tags">
+          <span class="badge">4 or 12-Week Sprints</span>
+          <span class="badge">Portfolio Projects</span>
+          <span class="badge">Progress Tracking</span>
+        </div>
+      </div>
+
+      <!-- Panel 3: LEAD -->
+      <div class="story-panel card-soft tilt-card" data-story-stage="lead">
+        <span class="panel-eyebrow">Stage 03</span>
+        <h3 class="panel-title display-serif">Lead — Land Career Opportunities</h3>
+        <p class="panel-desc">
+          Reach the summit and turn capability into employment. Access pre-configured search links for early-career internships, master key technical interview topics, and showcase verified GitHub repositories built throughout your roadmap.
+        </p>
+        <div class="panel-tags">
+          <span class="badge">Targeted Search Links</span>
+          <span class="badge">Interview Topics</span>
+          <span class="badge">Resume Positioning</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================================================
+     HOW SKILLHER WORKS (3-CARD GRID WITH 3D TILT)
+     ================================================== -->
 <section class="home-section" data-reveal>
   <div class="section-header">
-    <h2>How SkillHer Works</h2>
-    <p class="section-subtitle">A transparent, three-step engine turning goals into measurable capability.</p>
+    <span class="badge" style="margin-bottom: 0.5rem;">The Architecture</span>
+    <h2 class="display-serif">How SkillHer Works</h2>
+    <p class="section-subtitle">A transparent, three-step engine turning goals into verified capability.</p>
   </div>
   <div class="steps-grid">
-    <div class="step-card" data-reveal>
+    <div class="step-card card-soft tilt-card" data-reveal>
       <span class="step-number">01</span>
-      <h3>Dynamic Skill Assessment</h3>
-      <p>Choose any technical or professional skill. SkillHer dynamically generates an adaptive 8–10 question evaluation tailored to your domain and real scenarios.</p>
+      <h3 class="display-serif">Dynamic Skill Assessment</h3>
+      <p>Choose any technical or professional skill. SkillHer dynamically generates an adaptive evaluation tailored to your domain and real scenarios.</p>
     </div>
-    <div class="step-card" data-reveal>
+    <div class="step-card card-soft tilt-card" data-reveal>
       <span class="step-number">02</span>
-      <h3>Server-Side Objective Scoring</h3>
+      <h3 class="display-serif">Server-Side Objective Scoring</h3>
       <p>Receive an honest benchmark (Beginner, Intermediate, or Advanced) with identified strengths and concrete gaps. No vague flattery or generic advice.</p>
     </div>
-    <div class="step-card" data-reveal>
+    <div class="step-card card-soft tilt-card" data-reveal>
       <span class="step-number">03</span>
-      <h3>Personalized Learning Roadmap</h3>
+      <h3 class="display-serif">Personalized Learning Roadmap</h3>
       <p>A structured schedule calibrated to your weekly commitment, with portfolio project briefs, curated documentation, video tutorials, and search links.</p>
     </div>
   </div>
 </section>
 
-<!-- Supported Learning Domains Section -->
+<!-- ==================================================
+     SUPPORTED LEARNING DOMAINS (CENTERED, NO ORPHANS)
+     ================================================== -->
 <section class="home-section" data-reveal>
-  <div class="section-header">
-    <h2>Supported Learning Domains</h2>
+  <div class="section-header text-center">
+    <span class="badge" style="margin-bottom: 0.5rem;">Explore Disciplines</span>
+    <h2 class="display-serif">Supported Learning Domains</h2>
     <p class="section-subtitle">Benchmark proficiency across technical disciplines or test any custom skill.</p>
   </div>
-  <div class="domains-grid">
+  <div class="domains-grid-centered">
     <a href="{% url 'skill_assessment' %}?skill=Software+Engineering" class="domain-chip">Software Engineering</a>
     <a href="{% url 'skill_assessment' %}?skill=Machine+Learning" class="domain-chip">Machine Learning &amp; AI</a>
     <a href="{% url 'skill_assessment' %}?skill=Product+Design" class="domain-chip">Product Design (UI/UX)</a>
@@ -133,43 +304,63 @@
   </div>
 </section>
 
-<!-- Women Who Led the Way Strip -->
+<!-- ==================================================
+     WOMEN WHO LED THE WAY (5 COLUMNS / 3+2 CENTERED)
+     ================================================== -->
 <section class="home-section" data-reveal>
-  <div class="section-header">
-    <h2>Women Who Led the Way</h2>
+  <div class="section-header text-center">
+    <span class="badge" style="margin-bottom: 0.5rem;">Inspiration</span>
+    <h2 class="display-serif">Women Who Led the Way</h2>
     <p class="section-subtitle">Real pioneers who built the foundations of computing. Your roadmap starts here.</p>
   </div>
-  <div class="pioneers-grid">
-    <div class="pioneer-card" data-reveal>
-      <div class="pioneer-name">Ada Lovelace</div>
+  <div class="pioneers-grid-editorial">
+    <div class="pioneer-card card-soft tilt-card" data-reveal>
+      <div class="pioneer-header">
+        <span class="pioneer-index">01</span>
+        <div class="pioneer-name display-serif">Ada Lovelace</div>
+      </div>
       <div class="pioneer-fact">Wrote what is widely regarded as the first computer program.</div>
     </div>
-    <div class="pioneer-card" data-reveal>
-      <div class="pioneer-name">Grace Hopper</div>
+    <div class="pioneer-card card-soft tilt-card" data-reveal>
+      <div class="pioneer-header">
+        <span class="pioneer-index">02</span>
+        <div class="pioneer-name display-serif">Grace Hopper</div>
+      </div>
       <div class="pioneer-fact">Pioneered computer compilers and the COBOL programming language.</div>
     </div>
-    <div class="pioneer-card" data-reveal>
-      <div class="pioneer-name">Katherine Johnson</div>
+    <div class="pioneer-card card-soft tilt-card" data-reveal>
+      <div class="pioneer-header">
+        <span class="pioneer-index">03</span>
+        <div class="pioneer-name display-serif">Katherine Johnson</div>
+      </div>
       <div class="pioneer-fact">Calculated critical NASA orbital trajectories for human spaceflight.</div>
     </div>
-    <div class="pioneer-card" data-reveal>
-      <div class="pioneer-name">Margaret Hamilton</div>
+    <div class="pioneer-card card-soft tilt-card" data-reveal>
+      <div class="pioneer-header">
+        <span class="pioneer-index">04</span>
+        <div class="pioneer-name display-serif">Margaret Hamilton</div>
+      </div>
       <div class="pioneer-fact">Led the MIT team that developed the Apollo flight software.</div>
     </div>
-    <div class="pioneer-card" data-reveal>
-      <div class="pioneer-name">Radia Perlman</div>
+    <div class="pioneer-card card-soft tilt-card" data-reveal>
+      <div class="pioneer-header">
+        <span class="pioneer-index">05</span>
+        <div class="pioneer-name display-serif">Radia Perlman</div>
+      </div>
       <div class="pioneer-fact">Invented the Spanning Tree Protocol (STP) fundamental to network routing.</div>
     </div>
   </div>
 </section>
 
-<!-- Call to Action Banner -->
-<section class="home-cta-section" data-reveal>
-  <h2>Ready to benchmark your skillset?</h2>
+<!-- ==================================================
+     CALL TO ACTION BANNER
+     ================================================== -->
+<section class="home-cta-section card-soft" data-reveal>
+  <h2 class="display-serif">Ready to benchmark your skillset?</h2>
   <p class="lead" style="margin-inline: auto;">Assess your level in minutes and get a structured roadmap tailored to your weekly availability.</p>
   <div class="btn-group" style="justify-content: center;">
-    <a href="{% url 'skill_assessment' %}" class="btn btn-primary">Assess your skill</a>
-    <a href="{% url 'about' %}" class="btn btn-secondary">Learn about our mission</a>
+    <a href="{% url 'skill_assessment' %}" class="btn btn-primary btn-pill">Assess your skill</a>
+    <a href="{% url 'about' %}" class="btn btn-secondary btn-pill">Learn about our mission</a>
   </div>
 </section>
 {% endblock %}
