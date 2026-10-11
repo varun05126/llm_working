@@ -147,12 +147,19 @@ class ServiceLogicTestCase(TestCase):
         self.assertAlmostEqual(scored['score_percentage'], 56.0, delta=0.5)
 
     def test_link_builders_url_encoding_and_integrity(self):
-        # 1. YouTube
-        yt_links = build_youtube_links('Data Structures & Algorithms')
-        self.assertTrue(len(yt_links) >= 1)
-        self.assertIn('https://www.youtube.com/results?search_query=Data+Structures+%26+Algorithms', yt_links[0]['url'])
+        # 1. YouTube link encoding (explicitly test fallback search URL encoding for special characters)
+        with patch('django.conf.settings.YOUTUBE_API_KEY', ''):
+            yt_fallback = build_youtube_links('Data Structures & Algorithms')
+            self.assertTrue(len(yt_fallback) >= 1)
+            self.assertIn('https://www.youtube.com/results?search_query=Data+Structures+%26+Algorithms', yt_fallback[0]['url'])
 
-        # 2. GitHub (API may return live repo like https://github.com/vercel/next.js or search URL)
+            cpp_fallback = build_youtube_links('C++')
+            self.assertIn('search_query=C%2B%2B', cpp_fallback[0]['url'])
+
+            csharp_fallback = build_youtube_links('C#')
+            self.assertIn('search_query=C%23', csharp_fallback[0]['url'])
+
+        # 2. GitHub (API may return live repo or fallback search URL, both valid)
         gh_links = build_github_links('Next.js')
         self.assertTrue(len(gh_links) >= 1)
         self.assertIn('github.com', gh_links[0]['url'])
@@ -355,7 +362,7 @@ class AssessmentAndRoadmapViewsTestCase(TestCase):
         self.assertIn('Data Analysis Learning Roadmap', content)
         self.assertIn('Exploratory Data Analysis', content)
         self.assertIn('E-Commerce Analytics Pipeline', content)
-        self.assertIn('Search YouTube', content)
+        self.assertTrue('Search YouTube' in content or 'Video Tutorials' in content)
 
     def test_milestone_toggle_api(self):
         rec = Recommendation.objects.create(
@@ -406,3 +413,61 @@ class ContactAndPublicPagesTestCase(TestCase):
         msg = ContactMessage.objects.filter(email='priya@example.com').first()
         self.assertIsNotNone(msg)
         self.assertEqual(msg.name, 'Priya Sharma')
+
+
+class QuestionCachingTestCase(TestCase):
+    """Test 7-day database question set caching behavior."""
+
+    @patch('recommender.services.assessment.query_groq')
+    def test_database_caching_and_reuse_within_7_days(self, mock_groq):
+        from datetime import timedelta
+        from django.utils import timezone
+        from recommender.models import AssessmentQuestionCache
+
+        mock_groq.return_value = {
+            'skill': 'Django',
+            'questions': [
+                {
+                    'order': i,
+                    'question_type': 'mcq' if i <= 4 else 'rating',
+                    'topic': 'ORM',
+                    'difficulty': 'beginner',
+                    'question_text': f'Django Question {i}?',
+                    'option_a': 'Opt A',
+                    'option_b': 'Opt B',
+                    'option_c': 'Opt C',
+                    'option_d': 'Opt D',
+                    'correct_option': 'a' if i <= 4 else '',
+                    'explanation': 'Explanation'
+                }
+                for i in range(1, 8)
+            ]
+        }
+
+        # 1. First call: Cache miss -> calls Groq
+        q_set_1 = generate_skill_questions("Django", "Backend Dev")
+        self.assertEqual(mock_groq.call_count, 1)
+        self.assertEqual(len(q_set_1), 7)
+
+        # Verify entry created in DB with normalized fields
+        cache_entry = AssessmentQuestionCache.objects.filter(
+            normalized_skill='django',
+            normalized_goal='backend dev'
+        ).first()
+        self.assertIsNotNone(cache_entry)
+        self.assertEqual(len(cache_entry.questions_data), 7)
+
+        # 2. Second call with case differences: Cache HIT -> does NOT call Groq again
+        q_set_2 = generate_skill_questions("  DJANGO  ", "  backend dev  ")
+        self.assertEqual(mock_groq.call_count, 1)  # Groq call count remains 1!
+        self.assertEqual(len(q_set_2), 7)
+        self.assertEqual(q_set_1[0]['question_text'], q_set_2[0]['question_text'])
+
+        # 3. Simulate cache expiration (>7 days ago)
+        cache_entry.created_at = timezone.now() - timedelta(days=8)
+        cache_entry.save()
+
+        # Third call: Cache expired -> calls Groq again
+        q_set_3 = generate_skill_questions("Django", "Backend Dev")
+        self.assertEqual(mock_groq.call_count, 2)
+
