@@ -3,11 +3,11 @@
 {% block title %}Server Error (500){% endblock %}
 
 {% block content %}
-<div class="error-page" style="text-align: center; padding: 4rem 1rem;">
-  <span class="badge" style="margin-bottom: 1rem;">500 Error</span>
+<div class="error-page" style="text-align: center; padding: 4rem 1rem; max-width: 600px; margin: 0 auto;">
+  <span class="badge" style="margin-bottom: 1rem;">500 Server Error</span>
   <h1 style="margin-bottom: 1rem;">Something went wrong</h1>
-  <p class="muted-text" style="max-width: 50ch; margin: 0 auto 2rem;">
-    Our servers encountered an unexpected issue while processing your request. Please try again shortly.
+  <p class="muted-text" style="max-width: 48ch; margin: 0 auto 2rem; font-size: 1.05rem;">
+    Our servers encountered an unexpected issue while processing your request. Please try again shortly, or let us know if the issue persists.
   </p>
   <div class="btn-group" style="justify-content: center;">
     <a href="{% url 'home' %}" class="btn btn-primary">Return Home</a>
