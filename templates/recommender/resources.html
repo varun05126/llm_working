@@ -1,185 +1,69 @@
 {% extends 'recommender/base.html' %}
-{% load static %}
 
-{% block title %}Curated Tech Learning Resources - SkillHer{% endblock %}
+{% block title %}Curated Resources{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<h1>Learning Resources</h1>
+<p class="lead">Essential documentation, starter kits, and learning libraries for women in technology.</p>
 
-    <!-- Header -->
-    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
-        <div>
-            <span class="badge-pill badge-cyan mb-2">Verified Curations</span>
-            <h1 class="h2 fw-bold mb-1">Learning Resource Library</h1>
-            <p class="text-secondary small mb-0">
-                Top-rated, verified free and premium courses from Harvard, MIT, Mozilla, and leading engineering communities.
-            </p>
-        </div>
-
-        <a href="{% url 'view_recommendations' %}" class="btn-outline-glass btn-sm py-2 px-3">
-            <i class="fas fa-wand-magic-sparkles text-gradient me-1"></i> My Tailored Roadmap
-        </a>
+<h2>Foundational Documentation &amp; Guides</h2>
+<ul class="plain-list">
+  <li>
+    <div class="resource-row">
+      <a href="https://developer.mozilla.org/" target="_blank" rel="noopener noreferrer" class="resource-title">MDN Web Docs</a>
+      <span class="resource-meta">Free · Reference</span>
     </div>
-
-    <!-- Instant Live Search & Filter Bar -->
-    <div class="glass-panel p-3 mb-4">
-        <!-- Client-Side Instant Real-Time Search -->
-        <div class="position-relative mb-3">
-            <span class="search-icon-wrapper"><i class="fas fa-magnifying-glass"></i></span>
-            <input type="text" id="resourceLiveSearch" class="search-input-glass" 
-                   placeholder="Type to filter courses instantly by title, skill, provider (e.g. Harvard, Python, AWS)..." 
-                   oninput="filterResourcesLive()">
-        </div>
-
-        <form method="get" class="row g-2 align-items-center">
-            <!-- Domain Filter -->
-            <div class="col-md-3">
-                <select name="domain" class="form-select-custom py-1 small" onchange="this.form.submit()">
-                    <option value="">All Career Domains</option>
-                    {% for code, label in domains %}
-                        {% if code != 'general' %}
-                        <option value="{{ code }}" {% if selected_domain == code %}selected{% endif %}>{{ label }}</option>
-                        {% endif %}
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Resource Type Filter -->
-            <div class="col-md-3">
-                <select name="type" class="form-select-custom py-1 small" onchange="this.form.submit()">
-                    <option value="">All Formats (Course, Book...)</option>
-                    {% for code, label in resource_types %}
-                    <option value="{{ code }}" {% if selected_type == code %}selected{% endif %}>{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <!-- Free Only Checkbox -->
-            <div class="col-md-3 d-flex align-items-center gap-2 px-3">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="free" value="1" id="freeCheck" onchange="this.form.submit()" {% if free_only == '1' %}checked{% endif %}>
-                    <label class="form-check-label small text-secondary" for="freeCheck">
-                        100% Free Only
-                    </label>
-                </div>
-            </div>
-
-            <!-- Filter Buttons & Live Counter -->
-            <div class="col-md-3 d-flex align-items-center justify-content-between gap-2">
-                <span class="badge-pill badge-purple small py-1 px-3" id="liveMatchCounter">
-                    {{ resources|length }} Available
-                </span>
-                <a href="{% url 'resources' %}" class="btn-outline-glass btn-sm py-1 px-2">Reset</a>
-            </div>
-        </form>
+    <span class="resource-desc">The definitive open reference for HTML, CSS, JavaScript, and web APIs.</span>
+  </li>
+  <li>
+    <div class="resource-row">
+      <a href="https://docs.python.org/3/" target="_blank" rel="noopener noreferrer" class="resource-title">Official Python Documentation</a>
+      <span class="resource-meta">Free · Official Docs</span>
     </div>
-
-
-    <!-- Resources Grid -->
-    <div class="row g-4" id="resourcesGrid">
-        {% for res in resources %}
-
-        <div class="col-md-6 col-lg-4 resource-item-card" 
-             data-title="{{ res.title|lower }}" 
-             data-provider="{{ res.provider|lower }}" 
-             data-desc="{{ res.description|lower }}">
-            <div class="glass-panel p-4 h-100 d-flex flex-column justify-content-between">
-                <div>
-                    <div class="d-flex align-items-center justify-content-between mb-2">
-                        <span class="badge-pill badge-cyan small py-0 px-2">{{ res.get_resource_type_display }}</span>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="small text-muted"><i class="fas fa-star text-warning"></i> {{ res.rating }}</span>
-                            <button class="btn btn-sm btn-link text-secondary p-0 bookmark-btn" 
-                                    title="Save to bookmarks" 
-                                    onclick="toggleBookmark(this, '{{ res.title|escapejs }}')">
-                                <i class="far fa-bookmark"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <h5 class="fw-bold mb-2 text-white">{{ res.title }}</h5>
-                    <p class="text-secondary small mb-3">{{ res.description }}</p>
-                </div>
-
-                <div>
-                    <div class="d-flex align-items-center justify-content-between small text-muted mb-3 pt-2 border-top border-secondary border-opacity-25">
-                        <span><i class="fas fa-building text-gradient me-1"></i> {{ res.provider }}</span>
-                        <span><i class="fas fa-clock me-1"></i> {{ res.duration_hours }} hrs</span>
-                    </div>
-
-                    <a href="{{ res.url }}" target="_blank" class="btn btn-outline-glass btn-sm w-100 justify-content-center">
-                        Launch Course <i class="fas fa-external-link-alt ms-1 small"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-        {% empty %}
-        <div class="col-12 text-center py-5 glass-panel">
-            <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
-            <h5>No resources found matching your filter criteria.</h5>
-            <p class="text-secondary small">Try clearing filters to browse all verified learning options.</p>
-            <a href="{% url 'resources' %}" class="btn-primary-gradient btn-sm">Clear Filters</a>
-        </div>
-        {% endfor %}
+    <span class="resource-desc">Comprehensive tutorials and library reference for modern Python.</span>
+  </li>
+  <li>
+    <div class="resource-row">
+      <a href="https://react.dev/" target="_blank" rel="noopener noreferrer" class="resource-title">React Official Docs</a>
+      <span class="resource-meta">Free · Interactive</span>
     </div>
+    <span class="resource-desc">Modern interactive tutorials for building components and frontend applications.</span>
+  </li>
+  <li>
+    <div class="resource-row">
+      <a href="https://www.freecodecamp.org/" target="_blank" rel="noopener noreferrer" class="resource-title">freeCodeCamp</a>
+      <span class="resource-meta">Free · Certifications</span>
+    </div>
+    <span class="resource-desc">Interactive curriculum covering responsive design, algorithms, APIs, and machine learning.</span>
+  </li>
+</ul>
 
+<h2>Communities &amp; Mentorship for Women</h2>
+<ul class="plain-list">
+  <li>
+    <div class="resource-row">
+      <a href="https://www.womenwhocode.com/" target="_blank" rel="noopener noreferrer" class="resource-title">Women Who Code</a>
+      <span class="resource-meta">Community · Global</span>
+    </div>
+    <span class="resource-desc">Global community providing networking, tech talks, coding cohorts, and career support.</span>
+  </li>
+  <li>
+    <div class="resource-row">
+      <a href="https://anitab.org/" target="_blank" rel="noopener noreferrer" class="resource-title">AnitaB.org &amp; Grace Hopper Celebration</a>
+      <span class="resource-meta">Mentorship · Scholarships</span>
+    </div>
+    <span class="resource-desc">Non-profit supporting women and non-binary technologists through global conferences and research.</span>
+  </li>
+  <li>
+    <div class="resource-row">
+      <a href="https://rewritingthecode.org/" target="_blank" rel="noopener noreferrer" class="resource-title">Rewriting the Code (RTC)</a>
+      <span class="resource-meta">Students &amp; Early Career</span>
+    </div>
+    <span class="resource-desc">Fellowships, mentorship programs, and company connections for collegiate women in tech.</span>
+  </li>
+</ul>
+
+<div class="btn-group">
+  <a href="{% url 'skill_assessment' %}" class="btn btn-primary">Create a personalized skill roadmap</a>
 </div>
 {% endblock %}
-
-{% block extra_scripts %}
-<script>
-    function filterResourcesLive() {
-        const query = document.getElementById('resourceLiveSearch').value.toLowerCase().trim();
-        const cards = document.querySelectorAll('.resource-item-card');
-        let visibleCount = 0;
-
-        cards.forEach(card => {
-            const title = card.getAttribute('data-title') || '';
-            const provider = card.getAttribute('data-provider') || '';
-            const desc = card.getAttribute('data-desc') || '';
-
-            if (!query || title.includes(query) || provider.includes(query) || desc.includes(query)) {
-                card.style.display = '';
-                visibleCount++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-
-        const counter = document.getElementById('liveMatchCounter');
-        if (counter) {
-            counter.innerText = `${visibleCount} of ${cards.length} Shown`;
-        }
-    }
-
-    function toggleBookmark(btn, title) {
-        const icon = btn.querySelector('i');
-        let bookmarks = JSON.parse(localStorage.getItem('skillher_bookmarks') || '[]');
-        
-        if (bookmarks.includes(title)) {
-            bookmarks = bookmarks.filter(b => b !== title);
-            icon.className = 'far fa-bookmark text-secondary';
-        } else {
-            bookmarks.push(title);
-            icon.className = 'fas fa-bookmark text-warning';
-            if (typeof triggerConfetti === 'function') {
-                triggerConfetti();
-            }
-        }
-        localStorage.setItem('skillher_bookmarks', JSON.stringify(bookmarks));
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        const bookmarks = JSON.parse(localStorage.getItem('skillher_bookmarks') || '[]');
-        document.querySelectorAll('.resource-item-card').forEach(card => {
-            const btn = card.querySelector('.bookmark-btn');
-            const title = card.querySelector('h5') ? card.querySelector('h5').innerText.trim() : '';
-            if (btn && bookmarks.includes(title)) {
-                const icon = btn.querySelector('i');
-                if (icon) icon.className = 'fas fa-bookmark text-warning';
-            }
-        });
-    });
-</script>
-{% endblock %}
-
