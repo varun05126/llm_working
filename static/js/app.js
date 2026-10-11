@@ -1,11 +1,15 @@
-// SkillHer Progressive Enhancement (< 6 KB)
+// SkillHer Progressive Enhancement & 3D Interactive Controller (< 12 KB)
 document.addEventListener('DOMContentLoaded', function () {
+  'use strict';
   document.documentElement.classList.add('js-enabled');
 
-  // 1. Scroll reveal (IntersectionObserver)
+  var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var isFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  // 1. Scroll Reveal (IntersectionObserver)
   var revealElements = document.querySelectorAll('[data-reveal]');
   if ('IntersectionObserver' in window && revealElements.length > 0) {
-    var observer = new IntersectionObserver(function (entries, obs) {
+    var revealObserver = new IntersectionObserver(function (entries, obs) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
           entry.target.classList.add('revealed');
@@ -18,13 +22,115 @@ document.addEventListener('DOMContentLoaded', function () {
       if (el.classList.contains('step-card') || el.classList.contains('pioneer-card')) {
         el.style.transitionDelay = ((index % 5) * 80) + 'ms';
       }
-      observer.observe(el);
+      revealObserver.observe(el);
     });
   } else {
     revealElements.forEach(function (el) { el.classList.add('revealed'); });
   }
 
-  // 2. Form loading states
+  // 2. 3D Scene Controller & Pointer Parallax (+-8deg)
+  var scenes = document.querySelectorAll('.scene3d');
+  if (scenes.length > 0 && !prefersReducedMotion) {
+    // Visibility & Off-screen pause
+    if ('IntersectionObserver' in window) {
+      var sceneObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.remove('paused');
+          } else {
+            entry.target.classList.add('paused');
+          }
+        });
+      }, { threshold: 0.05 });
+
+      scenes.forEach(function (sc) { sceneObserver.observe(sc); });
+    }
+
+    document.addEventListener('visibilitychange', function () {
+      scenes.forEach(function (sc) {
+        if (document.hidden) {
+          sc.classList.add('paused');
+        } else {
+          sc.classList.remove('paused');
+        }
+      });
+    });
+
+    // Pointer Parallax (RAF driven)
+    if (isFinePointer) {
+      scenes.forEach(function (scene) {
+        var targetRx = 0;
+        var targetRy = 0;
+        var currentRx = 0;
+        var currentRy = 0;
+        var isRafActive = false;
+
+        function updateTilt() {
+          currentRx += (targetRx - currentRx) * 0.1;
+          currentRy += (targetRy - currentRy) * 0.1;
+
+          scene.style.setProperty('--rx', currentRx.toFixed(2) + 'deg');
+          scene.style.setProperty('--ry', currentRy.toFixed(2) + 'deg');
+
+          if (Math.abs(targetRx - currentRx) > 0.05 || Math.abs(targetRy - currentRy) > 0.05) {
+            requestAnimationFrame(updateTilt);
+          } else {
+            isRafActive = false;
+          }
+        }
+
+        scene.addEventListener('mousemove', function (e) {
+          var rect = scene.getBoundingClientRect();
+          var x = (e.clientX - rect.left) / rect.width - 0.5;
+          var y = (e.clientY - rect.top) / rect.height - 0.5;
+
+          // Parallax range: +-8 degrees
+          targetRx = -y * 16;
+          targetRy = x * 16;
+
+          if (!isRafActive) {
+            isRafActive = true;
+            requestAnimationFrame(updateTilt);
+          }
+        });
+
+        scene.addEventListener('mouseleave', function () {
+          targetRx = 0;
+          targetRy = 0;
+          if (!isRafActive) {
+            isRafActive = true;
+            requestAnimationFrame(updateTilt);
+          }
+        });
+      });
+    }
+  }
+
+  // 3. Scroll Story Controller ("Learn → Build → Lead")
+  var storyPanels = document.querySelectorAll('.story-panel[data-story-stage]');
+  var storyScene = document.getElementById('storyScene');
+
+  if (storyPanels.length > 0 && storyScene && 'IntersectionObserver' in window) {
+    var storyObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          var stage = entry.target.getAttribute('data-story-stage');
+          if (stage) {
+            storyScene.setAttribute('data-stage', stage);
+            // Highlight active panel
+            storyPanels.forEach(function (p) { p.classList.remove('active'); });
+            entry.target.classList.add('active');
+          }
+        }
+      });
+    }, { rootMargin: '-25% 0px -25% 0px', threshold: 0.3 });
+
+    storyPanels.forEach(function (panel) {
+      storyObserver.observe(panel);
+    });
+  }
+
+  // 4. Form Loading States
   var forms = document.querySelectorAll('form[data-loading]');
   forms.forEach(function (form) {
     form.addEventListener('submit', function () {
@@ -35,12 +141,12 @@ document.addEventListener('DOMContentLoaded', function () {
       var submitBtn = form.querySelector('button[type="submit"]');
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Generating plan...';
+        submitBtn.textContent = 'Generating blueprint...';
       }
     });
   });
 
-  // 3. Assessment wizard step transitions
+  // 5. Assessment Wizard Step Transitions
   var steps = document.querySelectorAll('.assessment-step-card');
   if (steps.length > 1) {
     var currentIndex = 0;
@@ -88,7 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
     showStep(0);
   }
 
-  // 4. Rating buttons
+  // 6. Rating Buttons
   var ratingBtns = document.querySelectorAll('.rating-btn');
   ratingBtns.forEach(function (btn) {
     var input = btn.querySelector('input[type="radio"]');
@@ -103,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // 5. Milestone progress tracker
+  // 7. Milestone Progress Tracker & Server Synchronization
   var checkboxes = document.querySelectorAll('.milestone-check');
   if (checkboxes.length > 0) {
     function updateProgress() {
@@ -124,16 +230,36 @@ document.addEventListener('DOMContentLoaded', function () {
           else parent.classList.remove('done');
         }
         updateProgress();
+
+        // Sync with API
+        var recId = cb.getAttribute('data-rec-id');
+        var key = cb.getAttribute('data-milestone-key');
+        if (recId && key) {
+          var csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+          var csrf = csrfInput ? csrfInput.value : '';
+          fetch('/api/milestone/toggle/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': csrf
+            },
+            body: JSON.stringify({
+              recommendation_id: recId,
+              milestone_key: key,
+              completed: cb.checked
+            })
+          }).catch(function (err) {
+            console.error('Milestone sync failed', err);
+          });
+        }
       });
     });
 
     updateProgress();
   }
 
-  // 6. Results celebration (under 1 KB, respects reduced motion)
+  // 8. Results Celebration Canvas Burst
   var celebrationEl = document.getElementById('celebrationBurst');
-  var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
   if (celebrationEl && !prefersReducedMotion) {
     var recId = celebrationEl.getAttribute('data-rec-id') || 'general';
     var storageKey = 'skillher_celebrated_' + recId;
@@ -159,23 +285,22 @@ document.addEventListener('DOMContentLoaded', function () {
     var ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var colors = ['#b83280', '#f472b6', '#ec4899', '#db2777', isDark ? '#f5f5f5' : '#111111'];
+    var colors = ['#b83280', '#f472b6', '#f5a623', '#fbbf24', '#701a75'];
     var particles = [];
-    var count = 28;
+    var count = 36;
     var originX = window.innerWidth / 2;
     var originY = Math.min(window.innerHeight * 0.35, 260);
 
     for (var i = 0; i < count; i++) {
       var angle = (Math.PI * 2 * i) / count + (Math.random() * 0.2 - 0.1);
-      var speed = 2.5 + Math.random() * 4;
+      var speed = 3.0 + Math.random() * 4.5;
       particles.push({
         x: originX, y: originY,
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 1.5,
-        radius: 2 + Math.random() * 2,
+        vy: Math.sin(angle) * speed - 1.8,
+        radius: 2.5 + Math.random() * 2.5,
         color: colors[Math.floor(Math.random() * colors.length)],
-        alpha: 1, decay: 0.016 + Math.random() * 0.01
+        alpha: 1, decay: 0.015 + Math.random() * 0.01
       });
     }
 
@@ -188,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (p.alpha > 0.01) {
           activeCount++;
           p.x += p.vx; p.y += p.vy;
-          p.vy += 0.08; p.vx *= 0.98;
+          p.vy += 0.09; p.vx *= 0.98;
           p.alpha -= p.decay;
           ctx.save();
           ctx.globalAlpha = Math.max(0, p.alpha);
@@ -199,7 +324,7 @@ document.addEventListener('DOMContentLoaded', function () {
           ctx.restore();
         }
       });
-      if (activeCount > 0 && elapsed < 1300) {
+      if (activeCount > 0 && elapsed < 1400) {
         requestAnimationFrame(animate);
       } else if (canvas.parentNode) {
         canvas.parentNode.removeChild(canvas);
