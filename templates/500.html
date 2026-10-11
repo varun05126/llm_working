@@ -1,0 +1,17 @@
+{% extends 'recommender/base.html' %}
+
+{% block title %}Server Error (500){% endblock %}
+
+{% block content %}
+<div class="error-page" style="text-align: center; padding: 4rem 1rem;">
+  <span class="badge" style="margin-bottom: 1rem;">500 Error</span>
+  <h1 style="margin-bottom: 1rem;">Something went wrong</h1>
+  <p class="muted-text" style="max-width: 50ch; margin: 0 auto 2rem;">
+    Our servers encountered an unexpected issue while processing your request. Please try again shortly.
+  </p>
+  <div class="btn-group" style="justify-content: center;">
+    <a href="{% url 'home' %}" class="btn btn-primary">Return Home</a>
+    <a href="{% url 'contact' %}" class="btn btn-secondary">Report an Issue</a>
+  </div>
+</div>
+{% endblock %}
