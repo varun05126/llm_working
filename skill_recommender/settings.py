@@ -132,4 +132,7 @@ WHITENOISE_USE_FINDERS = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+GROQ_API_KEY = os.getenv('GROQ_API_KEY', '')
+GROQ_MODEL = os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile')
+YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY', '')
+GITHUB_TOKEN = os.getenv('GITHUB_TOKEN', '')
