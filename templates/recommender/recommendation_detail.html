@@ -1,81 +1,192 @@
 {% extends 'recommender/base.html' %}
-{% load static %}
 
-{% block title %}{{ recommendation.title }} - SkillHer{% endblock %}
+{% block title %}{{ recommendation.title }}{% endblock %}
 
 {% block content %}
-<div class="container py-4">
+<div class="no-print">
+  <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+    <span class="progress-indicator">Learning Blueprint · {{ assessment.level }} Tier</span>
+    <span class="muted-text">Commitment: {{ recommendation.weekly_hours }} hrs/week</span>
+  </div>
+</div>
 
-    <!-- Back Link -->
-    <a href="{% url 'view_recommendations' %}" class="btn btn-outline-glass btn-sm mb-4">
-        <i class="fas fa-arrow-left me-1"></i> Back to Live Dashboard
-    </a>
+<h1>{{ recommendation.skill_name }} Learning Roadmap</h1>
 
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <div class="glass-panel p-4 mb-4 glow-purple">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                    <span class="badge-pill badge-purple">{{ recommendation.get_recommendation_type_display }}</span>
-                    <span class="small text-muted">Generated {{ recommendation.created_at|date:"M d, Y" }}</span>
-                </div>
+<div class="lead">
+  {{ recommendation.description }}
+</div>
 
-                <h2 class="fw-bold mb-3">{{ recommendation.title }}</h2>
-                <div class="text-secondary small mb-4" style="line-height: 1.7; white-space: pre-line;">
-                    {{ recommendation.description }}
-                </div>
+<!-- Progress Bar -->
+<div class="progress-bar-wrapper no-print">
+  <div class="progress-label">
+    <span>Milestone Progress</span>
+    <span id="roadmapProgressText">{{ progress_pct }}% completed</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" id="roadmapProgressFill" style="width: {{ progress_pct }}%;"></div>
+  </div>
+</div>
 
-                <div class="d-flex align-items-center gap-3 pt-3 border-top border-secondary border-opacity-25">
-                    <span class="badge-pill badge-emerald">
-                        <i class="fas fa-chart-line me-1"></i> Match Score: {{ recommendation.match_score|floatformat:0 }}%
-                    </span>
-                    <span class="badge-pill badge-cyan">
-                        <i class="fas fa-briefcase me-1"></i> Target: {{ recommendation.target_role }}
-                    </span>
-                </div>
-            </div>
+<!-- Action buttons (Print / Re-assess) -->
+<div class="btn-group no-print" style="margin-bottom: 2rem;">
+  <button type="button" class="btn btn-secondary btn-sm" onclick="window.print()">Print / Save as PDF</button>
+  <a href="{% url 'skill_assessment' %}?reassess={{ recommendation.skill_name|urlencode }}" class="btn btn-secondary btn-sm">Re-assess {{ recommendation.skill_name }}</a>
+  <a href="{% url 'profile' %}" class="btn btn-secondary btn-sm">View all plans</a>
+</div>
 
-            <!-- Milestone Skills -->
-            <div class="glass-panel p-4 mb-4">
-                <h5 class="fw-bold mb-4">Milestone Competencies</h5>
-                <div class="d-flex flex-column gap-3">
-                    {% for rec_skill in recommendation_skills %}
-                    <div class="p-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="{{ rec_skill.skill.icon }} text-gradient"></i>
-                                <h6 class="fw-bold mb-0">{{ rec_skill.skill.name }}</h6>
-                            </div>
-                            <span class="badge-pill badge-pink small">{{ rec_skill.timeline }}</span>
-                        </div>
-                        <p class="small text-secondary mb-0">{{ rec_skill.reasoning }}</p>
-                    </div>
-                    {% empty %}
-                    <p class="text-secondary small">No specific skills linked to this recommendation.</p>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+<h2>Weekly Milestones &amp; Outcomes</h2>
+{% csrf_token %}
+{% for week in weeks %}
+  <div class="roadmap-week">
+    <div class="week-header">{{ week.title }}</div>
+    <p class="muted-text"><strong>Outcome:</strong> {{ week.concrete_outcome }}</p>
 
-        <div class="col-lg-4">
-            <div class="glass-panel p-4">
-                <h5 class="fw-bold mb-3">Linked Resources</h5>
-                <div class="d-flex flex-column gap-3">
-                    {% for rec_res in recommendation_resources %}
-                    <div class="p-3 rounded-3" style="background: var(--bg-surface-2); border: 1px solid var(--border-subtle);">
-                        <span class="badge-pill badge-cyan small mb-2">{{ rec_res.resource.get_resource_type_display }}</span>
-                        <h6 class="fw-bold mb-1 text-white">{{ rec_res.resource.title }}</h6>
-                        <p class="small text-muted mb-2">{{ rec_res.resource.provider }} &bull; {{ rec_res.resource.duration_hours }} hrs</p>
-                        <a href="{{ rec_res.resource.url }}" target="_blank" class="btn btn-outline-glass btn-sm w-100 py-1 text-center justify-content-center">
-                            Open Resource <i class="fas fa-external-link-alt ms-1 small"></i>
-                        </a>
-                    </div>
-                    {% empty %}
-                    <p class="text-secondary small">No resources attached.</p>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
+    <!-- Checklist Items -->
+    <div class="milestones-checklist">
+      {% for item in week.items %}
+        <label class="milestone-item">
+          <input type="checkbox" class="milestone-check"
+                 data-rec-id="{{ recommendation.id }}"
+                 data-milestone-key="w{{ week.week_number }}_i{{ forloop.counter0 }}">
+          <span>{{ item }}</span>
+        </label>
+      {% endfor %}
     </div>
 
+    <!-- YouTube links for this topic -->
+    {% if week.youtube_links %}
+      <div style="margin-top: 0.5rem;">
+        <span class="muted-text" style="font-size: 0.85rem;">Video Tutorials:</span>
+        <ul class="plain-list" style="margin: 0.25rem 0 0.5rem; border-top: none;">
+          {% for yt in week.youtube_links %}
+            <li style="padding: 0.3rem 0; border-bottom: none;">
+              <a href="{{ yt.url }}" target="_blank" rel="noopener noreferrer">
+                {{ yt.title }}
+              </a>
+              <span class="resource-meta">({{ yt.channel }})</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </div>
+{% endfor %}
+
+<h2>Portfolio Project Ideas</h2>
+<ul class="plain-list">
+  {% for proj in projects %}
+    <li>
+      <div class="resource-row">
+        <span class="resource-title">{{ proj.title }}</span>
+        <span class="resource-meta">{{ proj.difficulty }} Tier</span>
+      </div>
+      <p class="resource-desc" style="margin-bottom: 0.35rem;">{{ proj.description }}</p>
+      <span class="resource-meta"><strong>Why recruiters care:</strong> {{ proj.portfolio_highlight }}</span>
+    </li>
+  {% endfor %}
+</ul>
+
+<h2>Curated Learning Resources</h2>
+
+<h3>GitHub Starter Kits &amp; Awesome Lists</h3>
+<ul class="plain-list">
+  {% for gh in resources.github_repos %}
+    <li>
+      <div class="resource-row">
+        <a href="{{ gh.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
+          {{ gh.title }}
+        </a>
+        {% if gh.stars %}
+          <span class="resource-meta">&#9733; {{ gh.stars }}</span>
+        {% endif %}
+      </div>
+      <span class="resource-desc">{{ gh.description }}</span>
+    </li>
+  {% endfor %}
+</ul>
+
+<h3>Internships &amp; Entry Opportunities</h3>
+<ul class="plain-list">
+  {% for job in resources.internships %}
+    <li>
+      <div class="resource-row">
+        <a href="{{ job.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
+          {{ job.title }}
+        </a>
+        <span class="resource-meta">{{ job.portal }}</span>
+      </div>
+      <span class="resource-desc">{{ job.note }}</span>
+    </li>
+  {% endfor %}
+</ul>
+
+<h3>Free Courses &amp; Documentation</h3>
+<ul class="plain-list">
+  {% for course in resources.courses_and_docs %}
+    <li>
+      <div class="resource-row">
+        <a href="{{ course.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
+          {{ course.title }}
+        </a>
+        <span class="resource-meta">{{ course.type }}</span>
+      </div>
+      <span class="resource-desc">Provider: {{ course.provider }}</span>
+    </li>
+  {% endfor %}
+</ul>
+
+<h3>Communities &amp; Mentorship for Women</h3>
+<ul class="plain-list">
+  {% for comm in resources.community_and_certs.communities %}
+    <li>
+      <div class="resource-row">
+        <a href="{{ comm.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
+          {{ comm.name }}
+        </a>
+      </div>
+      <span class="resource-desc">{{ comm.description }}</span>
+    </li>
+  {% endfor %}
+</ul>
+
+<h3>Recognized Certifications</h3>
+<ul class="plain-list">
+  {% for cert in resources.community_and_certs.certifications %}
+    <li>
+      <div class="resource-row">
+        <a href="{{ cert.url }}" target="_blank" rel="noopener noreferrer" class="resource-title">
+          {{ cert.name }}
+        </a>
+        <span class="resource-meta">{{ cert.cost_type }}</span>
+      </div>
+    </li>
+  {% endfor %}
+</ul>
+
+{% if resume_tips or interview_topics %}
+  <h2>Career Preparation &amp; Interviews</h2>
+
+  {% if resume_tips %}
+    <h3>Resume &amp; Portfolio Advice</h3>
+    <ul class="plain-list">
+      {% for tip in resume_tips %}
+        <li><span class="resource-desc">{{ tip }}</span></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if interview_topics %}
+    <h3>Key Technical Interview Topics</h3>
+    <ul class="plain-list">
+      {% for topic in interview_topics %}
+        <li><span class="resource-desc">{{ topic }}</span></li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endif %}
+
+<div class="btn-group no-print" style="margin-top: 2.5rem;">
+  <a href="{% url 'skill_assessment' %}" class="btn btn-primary">Assess another skill</a>
+  <a href="{% url 'profile' %}" class="btn btn-secondary">Back to profile</a>
 </div>
 {% endblock %}
