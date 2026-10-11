@@ -115,30 +115,71 @@ class UserSkill(models.Model):
         return mapping.get(self.proficiency_level, 0)
 
 
+class Assessment(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='skill_assessments')
+    skill_name = models.CharField(max_length=150)
+    goal = models.CharField(max_length=150, default='Career Growth')
+    weekly_hours = models.IntegerField(default=10)
+    level = models.CharField(max_length=50, default='Beginner')  # Beginner, Intermediate, Advanced
+    score_percentage = models.FloatField(default=0.0)
+    strengths = models.JSONField(default=list, blank=True)
+    gaps = models.JSONField(default=list, blank=True)
+    summary = models.TextField(blank=True)
+    completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user_profile.user.username} - {self.skill_name} ({self.level})"
+
+
 class AssessmentQuestion(models.Model):
-    domain = models.CharField(max_length=50, choices=Skill.DOMAIN_CHOICES)
+    QUESTION_TYPES = [
+        ('mcq', 'Concept Check Multiple Choice'),
+        ('scenario', 'Practical Scenario'),
+        ('rating', 'Self-Rating (1-5)'),
+    ]
+
+    domain = models.CharField(max_length=50, choices=Skill.DOMAIN_CHOICES, blank=True)
     skill = models.ForeignKey(Skill, on_delete=models.CASCADE, null=True, blank=True, related_name='questions')
+    assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE, null=True, blank=True, related_name='questions')
     question_text = models.TextField()
-    option_a = models.CharField(max_length=300)
-    option_b = models.CharField(max_length=300)
-    option_c = models.CharField(max_length=300)
-    option_d = models.CharField(max_length=300)
-    correct_option = models.CharField(max_length=1, choices=[
-        ('a', 'Option A'),
-        ('b', 'Option B'),
-        ('c', 'Option C'),
-        ('d', 'Option D'),
-    ])
+    question_type = models.CharField(max_length=20, choices=QUESTION_TYPES, default='mcq')
+    topic = models.CharField(max_length=100, blank=True)
+    option_a = models.CharField(max_length=300, blank=True)
+    option_b = models.CharField(max_length=300, blank=True)
+    option_c = models.CharField(max_length=300, blank=True)
+    option_d = models.CharField(max_length=300, blank=True)
+    correct_option = models.CharField(max_length=10, blank=True)
     explanation = models.TextField(blank=True)
     difficulty = models.CharField(max_length=20, choices=[
         ('beginner', 'Beginner'),
         ('intermediate', 'Intermediate'),
         ('advanced', 'Advanced'),
     ], default='intermediate')
+    order = models.IntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+
+    def __str__(self):
+        prefix = f"[{self.assessment.skill_name}] " if self.assessment else f"[{self.domain}] "
+        return f"{prefix}{self.question_text[:50]}..."
+
+
+class AssessmentAnswer(models.Model):
+    assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE, related_name='answers')
+    question = models.ForeignKey(AssessmentQuestion, on_delete=models.CASCADE, related_name='answers')
+    selected_option = models.CharField(max_length=10, blank=True)
+    rating_value = models.IntegerField(null=True, blank=True)
+    is_correct = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"[{self.domain}] {self.question_text[:60]}..."
+        return f"{self.assessment.skill_name} - Q{self.question_id}: {self.selected_option or self.rating_value}"
 
 
 class AssessmentResult(models.Model):
@@ -201,11 +242,20 @@ class Recommendation(models.Model):
     ]
 
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='recommendations')
+    assessment = models.ForeignKey(Assessment, on_delete=models.SET_NULL, null=True, blank=True, related_name='recommendations')
     recommendation_type = models.CharField(max_length=30, choices=RECOMMENDATION_TYPES, default='realtime_roadmap')
     title = models.CharField(max_length=200)
+    skill_name = models.CharField(max_length=150, blank=True)
+    weekly_hours = models.IntegerField(default=10)
     description = models.TextField()
     target_role = models.CharField(max_length=100, blank=True)
     match_score = models.FloatField(default=70.0, help_text="Market readiness match score (0-100%)")
+    roadmap_data = models.JSONField(default=dict, blank=True)
+    project_ideas = models.JSONField(default=list, blank=True)
+    resume_tips = models.JSONField(default=list, blank=True)
+    interview_topics = models.JSONField(default=list, blank=True)
+    resources_data = models.JSONField(default=dict, blank=True)
+    completed_milestones = models.JSONField(default=list, blank=True)
     generated_by_llm = models.BooleanField(default=True)
     groq_model_used = models.CharField(max_length=60, blank=True)
     is_active = models.BooleanField(default=True)
